@@ -153,7 +153,7 @@ function ArticleGenerator({ initialTopic = '' }) {
       if (data.error) throw new Error(data.error);
       const a = { ...data.article, category, author: 'StarScoop Daily Staff', date: new Date().toISOString().split('T')[0] };
       setArticle(a);
-      if (a.hero_image_query) setImageQuery(a.hero_image_query);
+      setImageQuery(a.title || a.hero_image_query || '');
       if (a.inline_image_queries?.[0]) setInlineImage1Query(a.inline_image_queries[0]);
       if (a.inline_image_queries?.[1]) setInlineImage2Query(a.inline_image_queries[1]);
     } catch (e) {
@@ -163,37 +163,28 @@ function ArticleGenerator({ initialTopic = '' }) {
     }
   };
 
-  const searchImages = async () => {
-    if (!imageQuery.trim()) return;
-    setPexelsLoading(true);
+  const searchImages = async (query, type) => {
+    if (!query.trim()) return;
+    const setLoading = type === 'hero' ? setPexelsLoading : type === 'inline1' ? setPexelsInline1Loading : setPexelsInline2Loading;
+    const setImgs = type === 'hero' ? setPexelsImages : type === 'inline1' ? setPexelsInline1 : setPexelsInline2;
+    setLoading(true);
     try {
-      const res = await fetch(`/api/google-images?q=${encodeURIComponent(imageQuery)}`);
+      const res = await fetch(`/api/google-images?q=${encodeURIComponent(query)}`);
       const data = await res.json();
-      setPexelsImages(data.images || []);
-    } catch {}
-    finally { setPexelsLoading(false); }
-  };
-
-  const searchImagesInline1 = async () => {
-    if (!inlineImage1Query.trim()) return;
-    setPexelsInline1Loading(true);
-    try {
-      const res = await fetch(`/api/google-images?q=${encodeURIComponent(inlineImage1Query)}`);
-      const data = await res.json();
-      setPexelsInline1(data.images || []);
-    } catch {}
-    finally { setPexelsInline1Loading(false); }
-  };
-
-  const searchImagesInline2 = async () => {
-    if (!inlineImage2Query.trim()) return;
-    setPexelsInline2Loading(true);
-    try {
-      const res = await fetch(`/api/google-images?q=${encodeURIComponent(inlineImage2Query)}`);
-      const data = await res.json();
-      setPexelsInline2(data.images || []);
-    } catch {}
-    finally { setPexelsInline2Loading(false); }
+      if (data.error) {
+        alert('Image search error: ' + data.error);
+        return;
+      }
+      if (!data.images || data.images.length === 0) {
+        alert('No images found. Try different search terms.');
+        return;
+      }
+      setImgs(data.images);
+    } catch (err) {
+      alert('Search failed: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const publishArticle = async () => {
@@ -459,10 +450,10 @@ function ArticleGenerator({ initialTopic = '' }) {
                   onChange={(e) => setImageQuery(e.target.value)}
                   placeholder="Search photos (e.g. celebrity red carpet)"
                   className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
-                  onKeyDown={(e) => e.key === 'Enter' && searchImages()}
+                  onKeyDown={(e) => e.key === 'Enter' && searchImages(imageQuery, 'hero')}
                 />
                 <button
-                  onClick={searchImages}
+                  onClick={() => searchImages(imageQuery, 'hero')}
                   disabled={pexelsLoading}
                   className="bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60"
                 >
@@ -533,8 +524,8 @@ function ArticleGenerator({ initialTopic = '' }) {
                 <input type="text" value={inlineImage1Query} onChange={(e) => setInlineImage1Query(e.target.value)}
                   placeholder="Search photos for inline image 1"
                   className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
-                  onKeyDown={(e) => e.key === 'Enter' && searchImagesInline1()} />
-                <button onClick={searchImagesInline1} disabled={pexelsInline1Loading}
+                  onKeyDown={(e) => e.key === 'Enter' && searchImages(inlineImage1Query, 'inline1')} />
+                <button onClick={() => searchImages(inlineImage1Query, 'inline1')} disabled={pexelsInline1Loading}
                   className="bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60">
                   {pexelsInline1Loading ? '...' : 'Search'}
                 </button>
@@ -583,8 +574,8 @@ function ArticleGenerator({ initialTopic = '' }) {
                 <input type="text" value={inlineImage2Query} onChange={(e) => setInlineImage2Query(e.target.value)}
                   placeholder="Search photos for inline image 2"
                   className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
-                  onKeyDown={(e) => e.key === 'Enter' && searchImagesInline2()} />
-                <button onClick={searchImagesInline2} disabled={pexelsInline2Loading}
+                  onKeyDown={(e) => e.key === 'Enter' && searchImages(inlineImage2Query, 'inline2')} />
+                <button onClick={() => searchImages(inlineImage2Query, 'inline2')} disabled={pexelsInline2Loading}
                   className="bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60">
                   {pexelsInline2Loading ? '...' : 'Search'}
                 </button>
@@ -998,11 +989,16 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('fetcher');
   const [topicFromFetcher, setTopicFromFetcher] = useState('');
 
+  useEffect(() => {
+    if (localStorage.getItem('ssd_admin_auth') === 'true') setAuthed(true);
+  }, []);
+
   const login = (e) => {
     e.preventDefault();
     if (pw === ADMIN_PASSWORD) {
       setAuthed(true);
       setPwError(false);
+      localStorage.setItem('ssd_admin_auth', 'true');
     } else {
       setPwError(true);
     }
@@ -1063,7 +1059,7 @@ export default function AdminPage() {
         <div className="flex items-center gap-3">
           <a href="/" target="_blank" className="text-gray-400 hover:text-white text-xs transition-colors">View Site →</a>
           <button
-            onClick={() => setAuthed(false)}
+            onClick={() => { setAuthed(false); localStorage.removeItem('ssd_admin_auth'); }}
             className="text-gray-400 hover:text-white text-xs transition-colors"
           >
             Sign Out
