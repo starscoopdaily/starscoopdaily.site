@@ -117,6 +117,18 @@ function ArticleGenerator({ initialTopic = '' }) {
   const [pexelsLoading, setPexelsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [manualImageUrl, setManualImageUrl] = useState('');
+  const [inlineImage1Mode, setInlineImage1Mode] = useState('pexels');
+  const [inlineImage1Query, setInlineImage1Query] = useState('');
+  const [pexelsInline1, setPexelsInline1] = useState([]);
+  const [pexelsInline1Loading, setPexelsInline1Loading] = useState(false);
+  const [selectedInlineImage1, setSelectedInlineImage1] = useState(null);
+  const [manualInlineImage1Url, setManualInlineImage1Url] = useState('');
+  const [inlineImage2Mode, setInlineImage2Mode] = useState('pexels');
+  const [inlineImage2Query, setInlineImage2Query] = useState('');
+  const [pexelsInline2, setPexelsInline2] = useState([]);
+  const [pexelsInline2Loading, setPexelsInline2Loading] = useState(false);
+  const [selectedInlineImage2, setSelectedInlineImage2] = useState(null);
+  const [manualInlineImage2Url, setManualInlineImage2Url] = useState('');
   const [preview, setPreview] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
@@ -142,6 +154,8 @@ function ArticleGenerator({ initialTopic = '' }) {
       const a = { ...data.article, category, author: 'StarScoop Daily Staff', date: new Date().toISOString().split('T')[0] };
       setArticle(a);
       if (a.hero_image_query) setImageQuery(a.hero_image_query);
+      if (a.inline_image_queries?.[0]) setInlineImage1Query(a.inline_image_queries[0]);
+      if (a.inline_image_queries?.[1]) setInlineImage2Query(a.inline_image_queries[1]);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -160,15 +174,57 @@ function ArticleGenerator({ initialTopic = '' }) {
     finally { setPexelsLoading(false); }
   };
 
+  const searchPexelsInline1 = async () => {
+    if (!inlineImage1Query.trim()) return;
+    setPexelsInline1Loading(true);
+    try {
+      const res = await fetch(`/api/pexels?query=${encodeURIComponent(inlineImage1Query)}&per_page=6`);
+      const data = await res.json();
+      setPexelsInline1(data.photos || []);
+    } catch {}
+    finally { setPexelsInline1Loading(false); }
+  };
+
+  const searchPexelsInline2 = async () => {
+    if (!inlineImage2Query.trim()) return;
+    setPexelsInline2Loading(true);
+    try {
+      const res = await fetch(`/api/pexels?query=${encodeURIComponent(inlineImage2Query)}&per_page=6`);
+      const data = await res.json();
+      setPexelsInline2(data.photos || []);
+    } catch {}
+    finally { setPexelsInline2Loading(false); }
+  };
+
   const publishArticle = async () => {
     if (!article) return;
     const heroImage = imageMode === 'pexels' ? selectedImage?.url : manualImageUrl;
     const heroAlt = imageMode === 'pexels' ? selectedImage?.alt : article.title;
 
+    const inline1Url = inlineImage1Mode === 'pexels' ? selectedInlineImage1?.url : manualInlineImage1Url;
+    const inline1Alt = inlineImage1Mode === 'pexels' ? (selectedInlineImage1?.alt || article.title) : article.title;
+    const inline2Url = inlineImage2Mode === 'pexels' ? selectedInlineImage2?.url : manualInlineImage2Url;
+    const inline2Alt = inlineImage2Mode === 'pexels' ? (selectedInlineImage2?.alt || article.title) : article.title;
+
+    const makeFigure = (url, alt) =>
+      `<figure><img src="${url}" alt="${alt}" style="width:100%;border-radius:8px;margin:20px 0"/><figcaption style="text-align:center;color:#666;font-size:14px;">${alt}</figcaption></figure>`;
+
+    const injectInlineImages = (html) => {
+      const parts = html.split('</h2>');
+      return parts.map((part, i) => {
+        let chunk = part;
+        if (i < parts.length - 1) chunk += '</h2>';
+        if (i === 1 && inline1Url) chunk += makeFigure(inline1Url, inline1Alt);
+        if (i === 3 && inline2Url) chunk += makeFigure(inline2Url, inline2Alt);
+        return chunk;
+      }).join('');
+    };
+
     const finalArticle = {
       ...article,
       image: heroImage || '',
       imageAlt: heroAlt || article.title,
+      content: injectInlineImages(article.content || ''),
       featured: false,
     };
 
@@ -455,6 +511,106 @@ function ArticleGenerator({ initialTopic = '' }) {
               {manualImageUrl && (
                 <img src={manualImageUrl} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />
               )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Inline Image 1 */}
+      {article && (
+        <div className="mt-6 border border-gray-200 rounded-xl p-5">
+          <h3 className="font-bold text-gray-800 mb-1">Inline Image 1 <span className="text-xs font-normal text-gray-400">(inserted after 2nd heading)</span></h3>
+          <div className="flex gap-2 mb-4 mt-3">
+            {['pexels', 'url'].map((m) => (
+              <button key={m} onClick={() => setInlineImage1Mode(m)}
+                className={`px-4 py-2 rounded-lg font-semibold text-xs transition-colors ${inlineImage1Mode === m ? 'bg-[#cc0000] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                {m === 'pexels' ? '📷 Search Pexels' : '🔗 Direct URL'}
+              </button>
+            ))}
+          </div>
+          {inlineImage1Mode === 'pexels' ? (
+            <>
+              <div className="flex gap-2 mb-4">
+                <input type="text" value={inlineImage1Query} onChange={(e) => setInlineImage1Query(e.target.value)}
+                  placeholder="Search photos for inline image 1"
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
+                  onKeyDown={(e) => e.key === 'Enter' && searchPexelsInline1()} />
+                <button onClick={searchPexelsInline1} disabled={pexelsInline1Loading}
+                  className="bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60">
+                  {pexelsInline1Loading ? '...' : 'Search'}
+                </button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {pexelsInline1.map((img) => (
+                  <button key={img.id} onClick={() => setSelectedInlineImage1(img)}
+                    className={`relative rounded-lg overflow-hidden aspect-video border-2 transition-all ${selectedInlineImage1?.id === img.id ? 'border-[#cc0000] ring-2 ring-[#cc0000]' : 'border-gray-200 hover:border-gray-400'}`}>
+                    <img src={img.thumb} alt={img.alt} className="w-full h-full object-cover" />
+                    {selectedInlineImage1?.id === img.id && (
+                      <div className="absolute inset-0 bg-[#cc0000]/20 flex items-center justify-center">
+                        <span className="text-white text-2xl">✓</span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+              {selectedInlineImage1 && <p className="text-xs text-gray-400 mt-2">Selected: {selectedInlineImage1.alt}</p>}
+            </>
+          ) : (
+            <div>
+              <input type="url" value={manualInlineImage1Url} onChange={(e) => setManualInlineImage1Url(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+              {manualInlineImage1Url && <img src={manualInlineImage1Url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Inline Image 2 */}
+      {article && (
+        <div className="mt-6 border border-gray-200 rounded-xl p-5">
+          <h3 className="font-bold text-gray-800 mb-1">Inline Image 2 <span className="text-xs font-normal text-gray-400">(inserted after 4th heading)</span></h3>
+          <div className="flex gap-2 mb-4 mt-3">
+            {['pexels', 'url'].map((m) => (
+              <button key={m} onClick={() => setInlineImage2Mode(m)}
+                className={`px-4 py-2 rounded-lg font-semibold text-xs transition-colors ${inlineImage2Mode === m ? 'bg-[#cc0000] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                {m === 'pexels' ? '📷 Search Pexels' : '🔗 Direct URL'}
+              </button>
+            ))}
+          </div>
+          {inlineImage2Mode === 'pexels' ? (
+            <>
+              <div className="flex gap-2 mb-4">
+                <input type="text" value={inlineImage2Query} onChange={(e) => setInlineImage2Query(e.target.value)}
+                  placeholder="Search photos for inline image 2"
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
+                  onKeyDown={(e) => e.key === 'Enter' && searchPexelsInline2()} />
+                <button onClick={searchPexelsInline2} disabled={pexelsInline2Loading}
+                  className="bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60">
+                  {pexelsInline2Loading ? '...' : 'Search'}
+                </button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {pexelsInline2.map((img) => (
+                  <button key={img.id} onClick={() => setSelectedInlineImage2(img)}
+                    className={`relative rounded-lg overflow-hidden aspect-video border-2 transition-all ${selectedInlineImage2?.id === img.id ? 'border-[#cc0000] ring-2 ring-[#cc0000]' : 'border-gray-200 hover:border-gray-400'}`}>
+                    <img src={img.thumb} alt={img.alt} className="w-full h-full object-cover" />
+                    {selectedInlineImage2?.id === img.id && (
+                      <div className="absolute inset-0 bg-[#cc0000]/20 flex items-center justify-center">
+                        <span className="text-white text-2xl">✓</span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+              {selectedInlineImage2 && <p className="text-xs text-gray-400 mt-2">Selected: {selectedInlineImage2.alt}</p>}
+            </>
+          ) : (
+            <div>
+              <input type="url" value={manualInlineImage2Url} onChange={(e) => setManualInlineImage2Url(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+              {manualInlineImage2Url && <img src={manualInlineImage2Url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
             </div>
           )}
         </div>

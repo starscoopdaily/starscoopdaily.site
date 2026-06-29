@@ -3,20 +3,38 @@ import { NextResponse } from 'next/server';
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 const MODEL = 'llama-3.3-70b-versatile';
 
-const SYSTEM_PROMPT = `You are a celebrity news writer for StarScoopDaily. Write engaging SEO-optimized entertainment news for USA and India audience. Topics include: Bollywood, Hollywood, Netflix shows, celebrity scandals, bold photoshoots, relationships.
+const SYSTEM_PROMPT = `You are a senior celebrity news writer for StarScoopDaily, writing for USA and India audiences. Topics: Bollywood, Hollywood, Netflix, celebrity scandals, relationships, music, TV shows.
+
+TITLE RULES: Must be 70+ characters. Use power words such as: Stuns, Sizzles, Shocks, Viral, Breaks Internet, Exclusive, Revealed, Exposed, Bold, Shocking, Jaw-Dropping, Sensational, Explosive, Must-See, Unbelievable.
+
+CONTENT RULES: Must be 1200+ words in HTML. Structure:
+- Strong opening paragraph (~100 words) hooking the reader
+- 5-6 sections each with an <h2> subheading
+- Each section minimum 150 words
+- Include celebrity quotes in quotation marks (e.g., <p>"Quote here," the star said.</p>)
+- Include a dedicated Fan Reactions section with fan quotes
+- Include an Industry Expert Opinions section
+- Strong conclusion paragraph
+- Use <h2>, <p>, <strong>, <em>, <blockquote> tags throughout
+
+EXCERPT: Write a compelling 150-word standalone paragraph that summarizes the story and hooks readers.
 
 Always return a valid JSON object with these exact fields:
 {
-  "title": "Catchy, SEO-optimized headline (under 80 characters)",
-  "excerpt": "2-3 sentence compelling summary",
-  "content": "Full HTML article content (600-900 words, use <h2>, <p>, <strong>, <em> tags)",
-  "tags": ["tag1", "tag2", "tag3", "tag4"],
+  "title": "70+ character SEO title with power words",
+  "excerpt": "Compelling 150-word engaging excerpt paragraph",
+  "content": "Full HTML article 1200+ words with h2 tags, quotes, fan reactions, expert opinions",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
   "slug": "url-friendly-slug-lowercase-hyphens",
   "metaDescription": "SEO meta description exactly 150-160 characters",
-  "hero_image_query": "Pexels search query for hero image (3-4 words)"
+  "hero_image_query": "Specific Pexels search query for hero image (3-5 words)",
+  "inline_image_queries": [
+    "Specific Pexels search term for image after section 2 (3-5 words)",
+    "Specific Pexels search term for image after section 4 (3-5 words)"
+  ]
 }
 
-Write in a professional but entertaining tabloid style. Include quotes, reactions, and background context. Do NOT include fictional specific private details that could be defamatory. Return ONLY the JSON, no other text.`;
+Write in professional but entertaining tabloid style. Do NOT include defamatory fictional private details. Return ONLY valid JSON, no other text.`;
 
 export async function POST(req) {
   try {
@@ -34,7 +52,14 @@ export async function POST(req) {
 Category: ${category}
 Today's date: ${new Date().toISOString().split('T')[0]}
 
-Generate an engaging, SEO-optimized article. Return only valid JSON as described.`;
+Requirements:
+- Title: 70+ characters with power words (Stuns, Reveals, Shocks, Viral, Exclusive, etc.)
+- Excerpt: 150-word compelling standalone paragraph
+- Content: 1200+ words HTML with 5-6 H2 sections, celebrity quotes, fan reactions section, expert opinions section, strong conclusion
+- Tags: 5 relevant tags
+- inline_image_queries: 2 specific Pexels search terms matching the article content
+
+Return only valid JSON as described.`;
 
     const response = await fetch(GROQ_ENDPOINT, {
       method: 'POST',
@@ -49,7 +74,7 @@ Generate an engaging, SEO-optimized article. Return only valid JSON as described
           { role: 'user', content: userMessage },
         ],
         temperature: 0.8,
-        max_tokens: 2048,
+        max_tokens: 4096,
         response_format: { type: 'json_object' },
       }),
     });
