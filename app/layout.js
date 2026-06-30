@@ -92,6 +92,12 @@ export default function RootLayout({ children }) {
         <AdSlot slot="header" />
         <main className="min-h-screen">{children}</main>
         <Footer />
+        <Script
+          src="https://www.nexguild.in/nexguild-verify.js"
+          data-site-slug="starscoopdaily"
+          data-countdown="45"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
