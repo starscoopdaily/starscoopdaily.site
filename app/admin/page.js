@@ -103,7 +103,7 @@ function NewsFetcher({ onUseTopic }) {
 }
 
 // ─── Tab 2: Article Generator ────────────────────────────────────
-function ArticleGenerator({ initialTopic = '' }) {
+function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   const [topic, setTopic] = useState(initialTopic);
   const [category, setCategory] = useState('Celebrity');
   const [mode, setMode] = useState('auto');
@@ -111,6 +111,7 @@ function ArticleGenerator({ initialTopic = '' }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [article, setArticle] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [imageMode, setImageMode] = useState('pexels');
   const [imageQuery, setImageQuery] = useState('');
   const [pexelsImages, setPexelsImages] = useState([]);
@@ -135,6 +136,32 @@ function ArticleGenerator({ initialTopic = '' }) {
   useEffect(() => {
     if (initialTopic) setTopic(initialTopic);
   }, [initialTopic]);
+
+  useEffect(() => {
+    if (!editArticle) return;
+    setIsEditing(true);
+    setMode('manual');
+    setArticle(editArticle);
+    setTopic(editArticle.title || '');
+    setCategory(editArticle.category || 'Celebrity');
+    setImageQuery(editArticle.title || '');
+    if (editArticle.image) {
+      setImageMode('url');
+      setManualImageUrl(editArticle.image);
+    } else {
+      setImageMode('pexels');
+      setManualImageUrl('');
+      setSelectedImage(null);
+    }
+    setSelectedInlineImage1(null);
+    setManualInlineImage1Url('');
+    setSelectedInlineImage2(null);
+    setManualInlineImage2Url('');
+    setPexelsImages([]);
+    setPreview(false);
+    setSuccess('');
+    setError('');
+  }, [editArticle]);
 
   const generateArticle = async () => {
     if (!topic.trim()) return;
@@ -238,7 +265,7 @@ function ArticleGenerator({ initialTopic = '' }) {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setSuccess(`✅ Article published! Vercel will rebuild in 30-60 seconds. View at: ${data.url}`);
+      setSuccess(`✅ Article ${isEditing ? 'updated' : 'published'}! Vercel will rebuild in 30-60 seconds. View at: ${data.url}`);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -333,7 +360,7 @@ function ArticleGenerator({ initialTopic = '' }) {
       {/* Generated Article Edit Fields */}
       {article && (
         <div className="space-y-4 border border-gray-200 rounded-xl p-5 bg-gray-50">
-          <h3 className="font-bold text-gray-800">Edit Generated Article</h3>
+          <h3 className="font-bold text-gray-800">{isEditing ? '✏️ Editing Article' : 'Edit Generated Article'}</h3>
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Title</label>
@@ -608,7 +635,7 @@ function ArticleGenerator({ initialTopic = '' }) {
             disabled={publishing}
             className="bg-green-600 text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-green-700 transition-colors disabled:opacity-60 flex items-center gap-2"
           >
-            {publishing ? <><span className="animate-spin">⟳</span> Publishing...</> : '🚀 Publish Article'}
+            {publishing ? <><span className="animate-spin">⟳</span> {isEditing ? 'Updating...' : 'Publishing...'}</> : isEditing ? '✏️ Update Article' : '🚀 Publish Article'}
           </button>
         </div>
       )}
@@ -1136,6 +1163,7 @@ export default function AdminPage() {
   const [pwError, setPwError] = useState(false);
   const [activeTab, setActiveTab] = useState('fetcher');
   const [topicFromFetcher, setTopicFromFetcher] = useState('');
+  const [editArticleData, setEditArticleData] = useState(null);
 
   useEffect(() => {
     if (localStorage.getItem('ssd_admin_auth') === 'true') setAuthed(true);
@@ -1238,8 +1266,8 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
           {activeTab === 'fetcher' && <NewsFetcher onUseTopic={handleUseTopic} />}
-          {activeTab === 'generator' && <ArticleGenerator initialTopic={topicFromFetcher} />}
-          {activeTab === 'articles' && <PublishedArticles onEdit={(a) => { setActiveTab('generator'); }} />}
+          {activeTab === 'generator' && <ArticleGenerator initialTopic={topicFromFetcher} editArticle={editArticleData} />}
+          {activeTab === 'articles' && <PublishedArticles onEdit={(a) => { setEditArticleData(a); setActiveTab('generator'); }} />}
           {activeTab === 'controls' && <SiteControls />}
           {activeTab === 'stats' && <QuickStats />}
           {activeTab === 'ads' && <AdsManager />}
