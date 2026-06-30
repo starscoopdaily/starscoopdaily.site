@@ -2,6 +2,7 @@ import './globals.css';
 import Script from 'next/script';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AdSlot from '@/components/AdSlot';
 
 export const metadata = {
   metadataBase: new URL('https://starscoopdaily.site'),
@@ -85,14 +86,10 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-152JNSZSJY');
           `}
         </Script>
-        {/* Adsterra Social Bar */}
-        <Script
-          src="https://pl29877798.effectivecpmnetwork.com/d0/5e/f9/d05ef968117a93a5caaf996f5cdf01b0.js"
-          strategy="afterInteractive"
-        />
       </head>
       <body className="bg-white text-gray-900 font-inter">
         <Header />
+        <AdSlot slot="header" />
         <main className="min-h-screen">{children}</main>
         <Footer />
       </body>

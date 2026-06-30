@@ -1,0 +1,28 @@
+{
+  "slots": {
+    "header": {
+      "enabled": true,
+      "code": "<script src=\"https://pl29877798.effectivecpmnetwork.com/d0/5e/f9/d05ef968117a93a5caaf996f5cdf01b0.js\"></script>"
+    },
+    "homepage-top": {
+      "enabled": true,
+      "code": ""
+    },
+    "article-top": {
+      "enabled": true,
+      "code": ""
+    },
+    "article-middle": {
+      "enabled": true,
+      "code": "<script async=\"async\" data-cfasync=\"false\" src=\"https://pl29878174.effectivecpmnetwork.com/3cad9852f5b47b92edea689177a42e75/invoke.js\"></script><div id=\"container-3cad9852f5b47b92edea689177a42e75\"></div>"
+    },
+    "sidebar": {
+      "enabled": true,
+      "code": ""
+    },
+    "footer": {
+      "enabled": true,
+      "code": ""
+    }
+  }
+}

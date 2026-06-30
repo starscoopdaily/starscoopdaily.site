@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { getArticleBySlug, getAllArticles, getRelatedArticles } from '@/lib/articles';
 import Sidebar from '@/components/Sidebar';
 import ArticleCard from '@/components/ArticleCard';
-import { NativeBannerAd } from '@/components/AdSlot';
+import AdSlot from '@/components/AdSlot';
 
 export async function generateStaticParams() {
   try {
@@ -199,7 +199,8 @@ export default function ArticlePage({ params }) {
             <ShareButtons title={article.title} slug={article.slug} />
 
             {/* Ad after share */}
-            <NativeBannerAd />
+            <AdSlot slot="article-top" />
+            <AdSlot slot="article-middle" />
 
             {/* Article Content */}
             <div
@@ -247,7 +248,7 @@ export default function ArticlePage({ params }) {
 
           {/* Sidebar */}
           <div>
-            <Sidebar />
+            <Sidebar adContent={<AdSlot slot="sidebar" />} />
           </div>
         </div>
       </div>

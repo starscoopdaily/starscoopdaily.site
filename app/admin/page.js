@@ -956,106 +956,166 @@ function QuickStats() {
 }
 
 // ─── Tab 6: Ads Manager ─────────────────────────────────────────
+const SLOT_LABELS = {
+  'header': { label: 'Header', desc: 'Social bar / sticky header ad (loads on every page)' },
+  'homepage-top': { label: 'Homepage Top', desc: 'Below latest news section on the homepage' },
+  'article-top': { label: 'Article Top', desc: 'Above article content (after share buttons)' },
+  'article-middle': { label: 'Article Middle', desc: 'Native banner injected within article' },
+  'sidebar': { label: 'Sidebar', desc: 'Sidebar ad widget (homepage & article pages)' },
+  'footer': { label: 'Footer', desc: 'Above the footer section' },
+};
+
+function Toggle({ enabled, onChange }) {
+  return (
+    <div onClick={onChange} className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer flex-shrink-0 ${enabled ? 'bg-[#cc0000]' : 'bg-gray-300'}`}>
+      <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${enabled ? 'translate-x-5' : 'translate-x-0'}`} />
+    </div>
+  );
+}
+
 function AdsManager() {
-  const [socialCode, setSocialCode] = useState('');
-  const [nativeCode, setNativeCode] = useState('');
-  const [socialEnabled, setSocialEnabled] = useState(true);
-  const [nativeEnabled, setNativeEnabled] = useState(true);
+  const [config, setConfig] = useState({ slots: {} });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState('');
+  const [newSlotName, setNewSlotName] = useState('');
 
   useEffect(() => {
-    setSocialCode(localStorage.getItem('ssd_ad_social') || '');
-    setNativeCode(localStorage.getItem('ssd_ad_native') || '');
-    setSocialEnabled(localStorage.getItem('ssd_ad_social_enabled') !== 'false');
-    setNativeEnabled(localStorage.getItem('ssd_ad_native_enabled') !== 'false');
+    fetch('/api/ad-config')
+      .then((r) => r.json())
+      .then((data) => { setConfig(data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
-  const saveAdSettings = () => {
-    localStorage.setItem('ssd_ad_social', socialCode);
-    localStorage.setItem('ssd_ad_native', nativeCode);
-    localStorage.setItem('ssd_ad_social_enabled', String(socialEnabled));
-    localStorage.setItem('ssd_ad_native_enabled', String(nativeEnabled));
-    setSaved('✅ Ad settings saved!');
-    setTimeout(() => setSaved(''), 3000);
+  const updateSlot = (slotName, field, value) => {
+    setConfig((prev) => ({
+      ...prev,
+      slots: { ...prev.slots, [slotName]: { ...prev.slots[slotName], [field]: value } },
+    }));
   };
 
-  const inputClass = 'w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000] font-mono';
+  const addSlot = () => {
+    const name = newSlotName.trim().toLowerCase().replace(/\s+/g, '-');
+    if (!name || config.slots[name]) return;
+    setConfig((prev) => ({
+      ...prev,
+      slots: { ...prev.slots, [name]: { enabled: true, code: '' } },
+    }));
+    setNewSlotName('');
+  };
+
+  const saveConfig = async () => {
+    const githubToken = localStorage.getItem('ssd_gh_token');
+    const githubUser = localStorage.getItem('ssd_gh_user');
+    const githubRepo = localStorage.getItem('ssd_gh_repo');
+
+    if (!githubToken || !githubUser || !githubRepo) {
+      setSaved('❌ GitHub credentials missing. Set them in Site Controls tab.');
+      return;
+    }
+
+    setSaving(true);
+    setSaved('');
+    try {
+      const res = await fetch('/api/ad-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config, githubToken, githubUser, githubRepo }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setSaved('✅ Saved! Site rebuilding in 30-60 seconds...');
+    } catch (e) {
+      setSaved(`❌ ${e.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-16 text-gray-400"><div className="animate-pulse text-4xl mb-3">📢</div><p>Loading ad config...</p></div>;
+  }
+
+  const slots = Object.entries(config.slots || {});
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-xl font-black text-gray-900 mb-1">Ads Manager</h2>
-        <p className="text-gray-500 text-sm">Store and manage your ad codes for reference.</p>
-      </div>
-
-      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
-        <strong>Note:</strong> Changes here are stored locally for reference only. To activate/deactivate ads, update <code className="bg-amber-100 px-1 rounded">components/AdSlot.js</code> manually.
+    <div className="space-y-6">
+      {/* Header row */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-black text-gray-900 mb-1">Ads Manager</h2>
+          <p className="text-gray-500 text-sm">Toggle slots and update ad code. Save pushes to GitHub and triggers a Vercel rebuild.</p>
+        </div>
+        <button
+          onClick={saveConfig}
+          disabled={saving}
+          className="flex-shrink-0 bg-[#cc0000] text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-[#aa0000] transition-colors disabled:opacity-60"
+        >
+          {saving ? '⟳ Saving...' : '💾 Save All Ad Settings'}
+        </button>
       </div>
 
       {saved && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+        <div className={`px-4 py-3 rounded-lg text-sm ${saved.startsWith('✅') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
           {saved}
         </div>
       )}
 
-      {/* Social Bar Ad */}
-      <div className="border border-gray-200 rounded-xl p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-bold text-gray-800">Social Bar Ad</h3>
-            <p className="text-xs text-gray-400 mt-0.5">Full-page social bar script (Adsterra or similar)</p>
-          </div>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <span className="text-sm font-medium text-gray-600">{socialEnabled ? 'Enabled' : 'Disabled'}</span>
-            <div
-              onClick={() => setSocialEnabled(!socialEnabled)}
-              className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${socialEnabled ? 'bg-[#cc0000]' : 'bg-gray-300'}`}
-            >
-              <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${socialEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+      {/* Slot cards */}
+      {slots.map(([slotName, slot]) => {
+        const meta = SLOT_LABELS[slotName];
+        return (
+          <div key={slotName} className="border border-gray-200 rounded-xl p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="font-bold text-gray-800">{meta?.label || slotName}</h3>
+                <p className="text-xs text-gray-400 mt-0.5">{meta?.desc || ''} <span className="font-mono text-gray-300">· slot="{slotName}"</span></p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className={`text-xs font-semibold ${slot.enabled ? 'text-green-600' : 'text-gray-400'}`}>
+                  {slot.enabled ? 'On' : 'Off'}
+                </span>
+                <Toggle enabled={slot.enabled} onChange={() => updateSlot(slotName, 'enabled', !slot.enabled)} />
+              </div>
             </div>
-          </label>
-        </div>
-        <textarea
-          rows={5}
-          value={socialCode}
-          onChange={(e) => setSocialCode(e.target.value)}
-          placeholder="<!-- Paste Social Bar ad script here -->"
-          className={inputClass}
-        />
-      </div>
-
-      {/* Native Banner Ad */}
-      <div className="border border-gray-200 rounded-xl p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-bold text-gray-800">Native Banner Ad</h3>
-            <p className="text-xs text-gray-400 mt-0.5">In-content native banner script</p>
+            <textarea
+              rows={3}
+              value={slot.code || ''}
+              onChange={(e) => updateSlot(slotName, 'code', e.target.value)}
+              placeholder="<!-- Paste ad script/HTML here -->"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#cc0000] bg-gray-50"
+            />
+            {slot.code?.trim() && (
+              <details className="text-xs">
+                <summary className="text-gray-400 cursor-pointer hover:text-gray-600 select-none">▸ Preview code</summary>
+                <pre className="mt-2 bg-gray-100 rounded p-3 overflow-x-auto text-gray-600 whitespace-pre-wrap break-all">{slot.code}</pre>
+              </details>
+            )}
           </div>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <span className="text-sm font-medium text-gray-600">{nativeEnabled ? 'Enabled' : 'Disabled'}</span>
-            <div
-              onClick={() => setNativeEnabled(!nativeEnabled)}
-              className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${nativeEnabled ? 'bg-[#cc0000]' : 'bg-gray-300'}`}
-            >
-              <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${nativeEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
-            </div>
-          </label>
-        </div>
-        <textarea
-          rows={5}
-          value={nativeCode}
-          onChange={(e) => setNativeCode(e.target.value)}
-          placeholder="<!-- Paste Native Banner ad script here -->"
-          className={inputClass}
-        />
-      </div>
+        );
+      })}
 
-      <button
-        onClick={saveAdSettings}
-        className="bg-[#cc0000] text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-[#aa0000] transition-colors"
-      >
-        💾 Save Ad Settings
-      </button>
+      {/* Add New Slot */}
+      <div className="border border-dashed border-gray-300 rounded-xl p-5">
+        <h3 className="font-bold text-gray-700 mb-3 text-sm">Add New Ad Slot</h3>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={newSlotName}
+            onChange={(e) => setNewSlotName(e.target.value)}
+            placeholder="e.g. category-page-top"
+            onKeyDown={(e) => e.key === 'Enter' && addSlot()}
+            className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
+          />
+          <button
+            onClick={addSlot}
+            className="bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-700 transition-colors whitespace-nowrap"
+          >
+            + Add Slot
+          </button>
+        </div>
+        <p className="text-xs text-gray-400 mt-2">Use it with <code className="bg-gray-100 px-1 rounded">&lt;AdSlot slot="your-slot-name" /&gt;</code> in any page/component.</p>
+      </div>
     </div>
   );
 }

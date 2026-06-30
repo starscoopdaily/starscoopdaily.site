@@ -13,7 +13,7 @@ const CATEGORIES = [
   { label: 'Sports', href: '/category/sports', icon: '🏆' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ adContent = null }) {
   const [trending, setTrending] = useState([]);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterDone, setNewsletterDone] = useState(false);
@@ -66,10 +66,8 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Ad Placeholder */}
-      <div className="border border-dashed border-gray-200 rounded bg-gray-50 text-center py-8 px-4">
-        <p className="text-xs text-gray-400 uppercase tracking-widest">Advertisement</p>
-      </div>
+      {/* Sidebar Ad */}
+      {adContent}
 
       {/* Categories */}
       <div className="bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm">

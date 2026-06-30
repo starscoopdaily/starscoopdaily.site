@@ -3,7 +3,7 @@ import Image from 'next/image';
 import ArticleCard from '@/components/ArticleCard';
 import Sidebar from '@/components/Sidebar';
 import NewsletterSignup from '@/components/NewsletterSignup';
-import { NativeBannerAd } from '@/components/AdSlot';
+import AdSlot from '@/components/AdSlot';
 import {
   getFeaturedArticle,
   getLatestArticles,
@@ -107,9 +107,9 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Native Banner Ad */}
+            {/* Homepage Top Ad */}
             <div className="mt-6">
-              <NativeBannerAd />
+              <AdSlot slot="homepage-top" />
             </div>
 
             {/* Category Sections */}
@@ -140,7 +140,7 @@ export default function HomePage() {
 
           {/* Sidebar */}
           <div>
-            <Sidebar />
+            <Sidebar adContent={<AdSlot slot="sidebar" />} />
           </div>
         </div>
       </div>
