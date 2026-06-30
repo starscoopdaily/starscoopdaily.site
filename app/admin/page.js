@@ -223,34 +223,22 @@ function ArticleGenerator({ initialTopic = '' }) {
     setError('');
     setSuccess('');
     try {
-      const githubToken = localStorage.getItem('ss_github_token');
-      const githubOwner = localStorage.getItem('ss_github_owner');
-      const githubRepo = localStorage.getItem('ss_github_repo');
+      const githubToken = localStorage.getItem('ssd_gh_token');
+      const githubUser = localStorage.getItem('ssd_gh_user');
+      const githubRepo = localStorage.getItem('ssd_gh_repo');
 
-      let published = false;
-
-      if (githubToken && githubOwner && githubRepo) {
-        const res = await fetch('/api/publish', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ article: finalArticle, githubToken, githubOwner, githubRepo }),
-        });
-        const data = await res.json();
-        if (data.error) throw new Error(`GitHub: ${data.error}`);
-        published = true;
-        setSuccess(`✅ Published to GitHub! Vercel will deploy in ~30 seconds. Commit: ${data.commit}`);
-      } else {
-        // Fallback: save locally
-        const res = await fetch('/api/articles', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(finalArticle),
-        });
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        published = true;
-        setSuccess('✅ Article saved locally! (Configure GitHub in Site Controls for auto-deploy)');
+      if (!githubToken || !githubUser || !githubRepo) {
+        throw new Error('GitHub credentials missing. Add them in Site Controls tab.');
       }
+
+      const res = await fetch('/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ article: finalArticle, githubToken, githubUser, githubRepo }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setSuccess(`✅ Article published! Vercel will rebuild in 30-60 seconds. View at: ${data.url}`);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -664,21 +652,15 @@ function PublishedArticles({ onEdit }) {
     if (!confirm(`Delete "${slug}"? This cannot be undone.`)) return;
     setDeleting(slug);
     try {
-      const githubToken = localStorage.getItem('ss_github_token');
-      const githubOwner = localStorage.getItem('ss_github_owner');
-      const githubRepo = localStorage.getItem('ss_github_repo');
+      const githubToken = localStorage.getItem('ssd_gh_token');
+      const githubUser = localStorage.getItem('ssd_gh_user');
+      const githubRepo = localStorage.getItem('ssd_gh_repo');
 
-      if (githubToken && githubOwner && githubRepo) {
+      if (githubToken && githubUser && githubRepo) {
         await fetch('/api/publish', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slug, githubToken, githubOwner, githubRepo }),
-        });
-      } else {
-        await fetch('/api/articles', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slug }),
+          body: JSON.stringify({ slug, githubToken, githubUser, githubRepo }),
         });
       }
       await load();
@@ -781,9 +763,9 @@ function SiteControls() {
     }).catch(() => {});
 
     // Load from localStorage
-    setGithubToken(localStorage.getItem('ss_github_token') || '');
-    setGithubOwner(localStorage.getItem('ss_github_owner') || '');
-    setGithubRepo(localStorage.getItem('ss_github_repo') || '');
+    setGithubToken(localStorage.getItem('ssd_gh_token') || '');
+    setGithubOwner(localStorage.getItem('ssd_gh_user') || '');
+    setGithubRepo(localStorage.getItem('ssd_gh_repo') || '');
     setGroqKey(localStorage.getItem('ss_groq_key') || '');
   }, []);
 
@@ -810,9 +792,9 @@ function SiteControls() {
   };
 
   const saveCredentials = () => {
-    localStorage.setItem('ss_github_token', githubToken);
-    localStorage.setItem('ss_github_owner', githubOwner);
-    localStorage.setItem('ss_github_repo', githubRepo);
+    localStorage.setItem('ssd_gh_token', githubToken);
+    localStorage.setItem('ssd_gh_user', githubOwner);
+    localStorage.setItem('ssd_gh_repo', githubRepo);
     localStorage.setItem('ss_groq_key', groqKey);
     setSaved('✅ Credentials saved to browser storage!');
   };
@@ -973,6 +955,111 @@ function QuickStats() {
   );
 }
 
+// ─── Tab 6: Ads Manager ─────────────────────────────────────────
+function AdsManager() {
+  const [socialCode, setSocialCode] = useState('');
+  const [nativeCode, setNativeCode] = useState('');
+  const [socialEnabled, setSocialEnabled] = useState(true);
+  const [nativeEnabled, setNativeEnabled] = useState(true);
+  const [saved, setSaved] = useState('');
+
+  useEffect(() => {
+    setSocialCode(localStorage.getItem('ssd_ad_social') || '');
+    setNativeCode(localStorage.getItem('ssd_ad_native') || '');
+    setSocialEnabled(localStorage.getItem('ssd_ad_social_enabled') !== 'false');
+    setNativeEnabled(localStorage.getItem('ssd_ad_native_enabled') !== 'false');
+  }, []);
+
+  const saveAdSettings = () => {
+    localStorage.setItem('ssd_ad_social', socialCode);
+    localStorage.setItem('ssd_ad_native', nativeCode);
+    localStorage.setItem('ssd_ad_social_enabled', String(socialEnabled));
+    localStorage.setItem('ssd_ad_native_enabled', String(nativeEnabled));
+    setSaved('✅ Ad settings saved!');
+    setTimeout(() => setSaved(''), 3000);
+  };
+
+  const inputClass = 'w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000] font-mono';
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-xl font-black text-gray-900 mb-1">Ads Manager</h2>
+        <p className="text-gray-500 text-sm">Store and manage your ad codes for reference.</p>
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+        <strong>Note:</strong> Changes here are stored locally for reference only. To activate/deactivate ads, update <code className="bg-amber-100 px-1 rounded">components/AdSlot.js</code> manually.
+      </div>
+
+      {saved && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+          {saved}
+        </div>
+      )}
+
+      {/* Social Bar Ad */}
+      <div className="border border-gray-200 rounded-xl p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-bold text-gray-800">Social Bar Ad</h3>
+            <p className="text-xs text-gray-400 mt-0.5">Full-page social bar script (Adsterra or similar)</p>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-sm font-medium text-gray-600">{socialEnabled ? 'Enabled' : 'Disabled'}</span>
+            <div
+              onClick={() => setSocialEnabled(!socialEnabled)}
+              className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${socialEnabled ? 'bg-[#cc0000]' : 'bg-gray-300'}`}
+            >
+              <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${socialEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+            </div>
+          </label>
+        </div>
+        <textarea
+          rows={5}
+          value={socialCode}
+          onChange={(e) => setSocialCode(e.target.value)}
+          placeholder="<!-- Paste Social Bar ad script here -->"
+          className={inputClass}
+        />
+      </div>
+
+      {/* Native Banner Ad */}
+      <div className="border border-gray-200 rounded-xl p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-bold text-gray-800">Native Banner Ad</h3>
+            <p className="text-xs text-gray-400 mt-0.5">In-content native banner script</p>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-sm font-medium text-gray-600">{nativeEnabled ? 'Enabled' : 'Disabled'}</span>
+            <div
+              onClick={() => setNativeEnabled(!nativeEnabled)}
+              className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${nativeEnabled ? 'bg-[#cc0000]' : 'bg-gray-300'}`}
+            >
+              <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${nativeEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+            </div>
+          </label>
+        </div>
+        <textarea
+          rows={5}
+          value={nativeCode}
+          onChange={(e) => setNativeCode(e.target.value)}
+          placeholder="<!-- Paste Native Banner ad script here -->"
+          className={inputClass}
+        />
+      </div>
+
+      <button
+        onClick={saveAdSettings}
+        className="bg-[#cc0000] text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-[#aa0000] transition-colors"
+      >
+        💾 Save Ad Settings
+      </button>
+    </div>
+  );
+}
+
 // ─── Main Admin Panel ────────────────────────────────────────────
 const TABS = [
   { id: 'fetcher', label: '📡 News Fetcher' },
@@ -980,6 +1067,7 @@ const TABS = [
   { id: 'articles', label: '📋 Published Articles' },
   { id: 'controls', label: '⚙️ Site Controls' },
   { id: 'stats', label: '📊 Quick Stats' },
+  { id: 'ads', label: '📢 Ads Manager' },
 ];
 
 export default function AdminPage() {
@@ -1094,6 +1182,7 @@ export default function AdminPage() {
           {activeTab === 'articles' && <PublishedArticles onEdit={(a) => { setActiveTab('generator'); }} />}
           {activeTab === 'controls' && <SiteControls />}
           {activeTab === 'stats' && <QuickStats />}
+          {activeTab === 'ads' && <AdsManager />}
         </div>
       </div>
     </div>

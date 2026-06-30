@@ -4,9 +4,9 @@ const GITHUB_API = 'https://api.github.com';
 
 export async function POST(req) {
   try {
-    const { article, githubToken, githubOwner, githubRepo } = await req.json();
+    const { article, githubToken, githubUser, githubRepo } = await req.json();
 
-    if (!githubToken || !githubOwner || !githubRepo) {
+    if (!githubToken || !githubUser || !githubRepo) {
       return NextResponse.json(
         { error: 'GitHub credentials missing. Configure in Admin → Site Controls.' },
         { status: 400 }
@@ -21,9 +21,10 @@ export async function POST(req) {
     const content = Buffer.from(JSON.stringify(article, null, 2)).toString('base64');
     const commitMessage = `feat: ${article.slug} — published via StarScoop Admin`;
 
-    // Check if file already exists (needed for update)
-    const checkUrl = `${GITHUB_API}/repos/${githubOwner}/${githubRepo}/contents/${filePath}`;
-    const checkRes = await fetch(checkUrl, {
+    const fileUrl = `${GITHUB_API}/repos/${githubUser}/${githubRepo}/contents/${filePath}`;
+
+    // Check if file already exists (needed for update SHA)
+    const checkRes = await fetch(fileUrl, {
       headers: {
         Authorization: `Bearer ${githubToken}`,
         Accept: 'application/vnd.github.v3+json',
@@ -37,11 +38,10 @@ export async function POST(req) {
       sha = existing.sha;
     }
 
-    // Create or update file
     const body = { message: commitMessage, content };
     if (sha) body.sha = sha;
 
-    const putRes = await fetch(checkUrl, {
+    const putRes = await fetch(fileUrl, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${githubToken}`,
@@ -63,8 +63,8 @@ export async function POST(req) {
     const result = await putRes.json();
     return NextResponse.json({
       success: true,
+      url: `https://starscoopdaily.site/article/${article.slug}`,
       sha: result.content?.sha,
-      url: result.content?.html_url,
       commit: result.commit?.html_url,
     });
   } catch (err) {
@@ -74,14 +74,14 @@ export async function POST(req) {
 
 export async function DELETE(req) {
   try {
-    const { slug, githubToken, githubOwner, githubRepo } = await req.json();
+    const { slug, githubToken, githubUser, githubRepo } = await req.json();
 
-    if (!githubToken || !githubOwner || !githubRepo) {
+    if (!githubToken || !githubUser || !githubRepo) {
       return NextResponse.json({ error: 'GitHub credentials missing' }, { status: 400 });
     }
 
     const filePath = `data/articles/${slug}.json`;
-    const fileUrl = `${GITHUB_API}/repos/${githubOwner}/${githubRepo}/contents/${filePath}`;
+    const fileUrl = `${GITHUB_API}/repos/${githubUser}/${githubRepo}/contents/${filePath}`;
 
     const checkRes = await fetch(fileUrl, {
       headers: {
