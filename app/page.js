@@ -39,7 +39,7 @@ export default function HomePage() {
       {featured && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-8">
           <Link href={`/article/${featured.slug}`} className="group block">
-            <div className="relative rounded-xl overflow-hidden h-80 sm:h-[28rem] bg-gray-200 shadow-xl">
+            <div className="relative rounded-xl overflow-hidden h-80 sm:h-[28rem] bg-gray-200 shadow-xl isolate">
               {featured.image && (
                 <Image
                   src={featured.image}
@@ -51,27 +51,26 @@ export default function HomePage() {
                 />
               )}
               {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent z-10" />
 
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8">
-                <div className="flex items-center gap-2 mb-3">
-                  <span style={{ background: '#cc0000', color: '#fff', fontWeight: 700, padding: '4px 12px', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Featured
+              {/* Badges — anchored top-left so they're never pushed out by long text */}
+              <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-30 flex items-center gap-2">
+                <span style={{ background: '#cc0000', color: '#fff', fontWeight: 700, padding: '4px 12px', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Featured
+                </span>
+                {featured.category && (
+                  <span style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', fontWeight: 700, padding: '4px 12px', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {featured.category}
                   </span>
-                  {featured.category && (
-                    <span style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', fontWeight: 700, padding: '4px 12px', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      {featured.category}
-                    </span>
-                  )}
-                </div>
-                <h1 className="text-white font-black text-xl sm:text-3xl lg:text-4xl leading-tight mb-3 max-w-3xl group-hover:text-red-100 transition-colors">
+                )}
+              </div>
+
+              {/* Content — title + author only at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 z-20">
+                <h1 className="text-white font-black text-xl sm:text-3xl lg:text-4xl leading-tight mb-3 max-w-3xl line-clamp-3 group-hover:text-red-100 transition-colors">
                   {featured.title}
                 </h1>
-                <p className="text-gray-200 text-sm sm:text-base line-clamp-2 max-w-2xl hidden sm:block">
-                  {featured.excerpt}
-                </p>
-                <div className="flex items-center gap-3 mt-3 text-gray-300 text-xs">
+                <div className="flex items-center gap-3 text-gray-300 text-xs">
                   <span>{featured.author}</span>
                   <span>•</span>
                   <span>
