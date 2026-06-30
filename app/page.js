@@ -56,11 +56,11 @@ export default function HomePage() {
               {/* Content */}
               <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="bg-[#cc0000] text-white text-xs font-black uppercase px-3 py-1 rounded tracking-wider pulse-red">
+                  <span style={{ background: '#cc0000', color: '#fff', fontWeight: 700, padding: '4px 12px', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Featured
                   </span>
                   {featured.category && (
-                    <span className="bg-white/20 backdrop-blur text-white text-xs font-semibold uppercase px-3 py-1 rounded tracking-wider">
+                    <span style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', fontWeight: 700, padding: '4px 12px', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       {featured.category}
                     </span>
                   )}
