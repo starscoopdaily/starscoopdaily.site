@@ -26,7 +26,7 @@ export default function sitemap() {
 
     const categories = getAllCategories();
     categoryPages = categories.map((cat) => ({
-      url: `${baseUrl}/category/${cat.toLowerCase()}`,
+      url: `${baseUrl}/category/${cat.toLowerCase().replace(/\s+/g, '-')}`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.7,

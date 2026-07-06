@@ -9,7 +9,7 @@ export async function generateStaticParams() {
   ];
   try {
     const cats = getAllCategories();
-    const all = [...new Set([...KNOWN_CATEGORIES, ...cats.map((c) => c.toLowerCase().replace(' ', '-'))])];
+    const all = [...new Set([...KNOWN_CATEGORIES, ...cats.map((c) => c.toLowerCase().replace(/\s+/g, '-'))])];
     return all.map((name) => ({ name }));
   } catch {
     return KNOWN_CATEGORIES.map((name) => ({ name }));
