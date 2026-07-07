@@ -132,6 +132,9 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   const [manualInlineImage2Url, setManualInlineImage2Url] = useState('');
   const [preview, setPreview] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [heroUploadUrl, setHeroUploadUrl] = useState('');
+  const [inline1UploadUrl, setInline1UploadUrl] = useState('');
+  const [inline2UploadUrl, setInline2UploadUrl] = useState('');
 
   useEffect(() => {
     if (initialTopic) setTopic(initialTopic);
@@ -158,6 +161,9 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setSelectedInlineImage2(null);
     setManualInlineImage2Url('');
     setPexelsImages([]);
+    setHeroUploadUrl('');
+    setInline1UploadUrl('');
+    setInline2UploadUrl('');
     setPreview(false);
     setSuccess('');
     setError('');
@@ -190,39 +196,22 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     }
   };
 
-  const searchImages = async (query, type) => {
-    if (!query.trim()) return;
-    const setLoading = type === 'hero' ? setPexelsLoading : type === 'inline1' ? setPexelsInline1Loading : setPexelsInline2Loading;
-    const setImgs = type === 'hero' ? setPexelsImages : type === 'inline1' ? setPexelsInline1 : setPexelsInline2;
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/google-images?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      if (data.error) {
-        alert('Image search error: ' + data.error);
-        return;
-      }
-      if (!data.images || data.images.length === 0) {
-        alert('No images found. Try different search terms.');
-        return;
-      }
-      setImgs(data.images);
-    } catch (err) {
-      alert('Search failed: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
+  const handleImageUpload = (file, setter) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => setter(e.target.result);
+    reader.readAsDataURL(file);
   };
 
   const publishArticle = async () => {
     if (!article) return;
-    const heroImage = imageMode === 'pexels' ? selectedImage?.url : manualImageUrl;
-    const heroAlt = imageMode === 'pexels' ? (selectedImage?.title || article.title) : article.title;
+    const heroImage = imageMode === 'upload' ? heroUploadUrl : manualImageUrl;
+    const heroAlt = article.title;
 
-    const inline1Url = inlineImage1Mode === 'pexels' ? selectedInlineImage1?.url : manualInlineImage1Url;
-    const inline1Alt = inlineImage1Mode === 'pexels' ? (selectedInlineImage1?.title || article.title) : article.title;
-    const inline2Url = inlineImage2Mode === 'pexels' ? selectedInlineImage2?.url : manualInlineImage2Url;
-    const inline2Alt = inlineImage2Mode === 'pexels' ? (selectedInlineImage2?.title || article.title) : article.title;
+    const inline1Url = inlineImage1Mode === 'upload' ? inline1UploadUrl : manualInlineImage1Url;
+    const inline1Alt = article.title;
+    const inline2Url = inlineImage2Mode === 'upload' ? inline2UploadUrl : manualInlineImage2Url;
+    const inline2Alt = article.title;
 
     const makeFigure = (url, alt) =>
       `<figure><img src="${url}" alt="${alt}" style="width:100%;border-radius:8px;margin:20px 0"/><figcaption style="text-align:center;color:#666;font-size:14px;">${alt}</figcaption></figure>`;
@@ -441,81 +430,48 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       {article && (
         <div className="mt-6 border border-gray-200 rounded-xl p-5">
           <h3 className="font-bold text-gray-800 mb-4">Hero Image</h3>
-
           <div className="flex gap-2 mb-4">
-            {['pexels', 'url'].map((m) => (
-              <button
-                key={m}
-                onClick={() => setImageMode(m)}
-                className={`px-4 py-2 rounded-lg font-semibold text-xs transition-colors ${
-                  imageMode === m ? 'bg-[#cc0000] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {m === 'pexels' ? '🔍 Google Images' : '🔗 Direct URL'}
+            {[{ id: 'pexels', label: '🔍 Google Images' }, { id: 'url', label: '🔗 Direct URL' }, { id: 'upload', label: '📤 Upload' }].map(({ id, label }) => (
+              <button key={id} onClick={() => setImageMode(id)}
+                className={`px-4 py-2 rounded-lg font-semibold text-xs transition-colors ${imageMode === id ? 'bg-[#cc0000] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                {label}
               </button>
             ))}
           </div>
-
-          {imageMode === 'pexels' ? (
+          {imageMode === 'pexels' && (
             <>
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="text"
-                  value={imageQuery}
-                  onChange={(e) => setImageQuery(e.target.value)}
+              <div className="flex gap-2 mb-3">
+                <input type="text" value={imageQuery} onChange={(e) => setImageQuery(e.target.value)}
                   placeholder="Search photos (e.g. celebrity red carpet)"
-                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
-                  onKeyDown={(e) => e.key === 'Enter' && searchImages(imageQuery, 'hero')}
-                />
-                <button
-                  onClick={() => searchImages(imageQuery, 'hero')}
-                  disabled={pexelsLoading}
-                  className="bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60"
-                >
-                  {pexelsLoading ? '...' : 'Search'}
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+                <button onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(imageQuery)}&tbm=isch`, '_blank')}
+                  className="bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-colors whitespace-nowrap">
+                  🔍 Search Google Images
                 </button>
               </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {pexelsImages.map((img) => (
-                  <button
-                    key={img.url}
-                    onClick={() => setSelectedImage(img)}
-                    className={`relative rounded-lg overflow-hidden aspect-video border-2 transition-all ${
-                      selectedImage?.url === img.url
-                        ? 'border-[#cc0000] ring-2 ring-[#cc0000]'
-                        : 'border-gray-200 hover:border-gray-400'
-                    }`}
-                  >
-                    <img src={img.thumbnail} alt={img.title} className="w-full h-full object-cover" />
-                    {selectedImage?.url === img.url && (
-                      <div className="absolute inset-0 bg-[#cc0000]/20 flex items-center justify-center">
-                        <span className="text-white text-2xl">✓</span>
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              {selectedImage && (
-                <p className="text-xs text-gray-400 mt-2">
-                  Selected: {selectedImage.title} — Source: {selectedImage.source}
-                </p>
-              )}
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Paste Image URL from Google</label>
+              <input type="url" value={manualImageUrl} onChange={(e) => setManualImageUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+              {manualImageUrl && <img src={manualImageUrl} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
             </>
-          ) : (
+          )}
+          {imageMode === 'url' && (
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Image URL</label>
-              <input
-                type="url"
-                value={manualImageUrl}
-                onChange={(e) => setManualImageUrl(e.target.value)}
+              <input type="url" value={manualImageUrl} onChange={(e) => setManualImageUrl(e.target.value)}
                 placeholder="https://example.com/image.jpg"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
-              />
-              {manualImageUrl && (
-                <img src={manualImageUrl} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />
-              )}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+              {manualImageUrl && <img src={manualImageUrl} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
+            </div>
+          )}
+          {imageMode === 'upload' && (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Upload Image</label>
+              <input type="file" accept="image/*"
+                onChange={(e) => handleImageUpload(e.target.files[0], setHeroUploadUrl)}
+                className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-700 cursor-pointer" />
+              {heroUploadUrl && <img src={heroUploadUrl} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
             </div>
           )}
         </div>
@@ -526,46 +482,46 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
         <div className="mt-6 border border-gray-200 rounded-xl p-5">
           <h3 className="font-bold text-gray-800 mb-1">Inline Image 1 <span className="text-xs font-normal text-gray-400">(inserted after 2nd heading)</span></h3>
           <div className="flex gap-2 mb-4 mt-3">
-            {['pexels', 'url'].map((m) => (
-              <button key={m} onClick={() => setInlineImage1Mode(m)}
-                className={`px-4 py-2 rounded-lg font-semibold text-xs transition-colors ${inlineImage1Mode === m ? 'bg-[#cc0000] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                {m === 'pexels' ? '🔍 Google Images' : '🔗 Direct URL'}
+            {[{ id: 'pexels', label: '🔍 Google Images' }, { id: 'url', label: '🔗 Direct URL' }, { id: 'upload', label: '📤 Upload' }].map(({ id, label }) => (
+              <button key={id} onClick={() => setInlineImage1Mode(id)}
+                className={`px-4 py-2 rounded-lg font-semibold text-xs transition-colors ${inlineImage1Mode === id ? 'bg-[#cc0000] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                {label}
               </button>
             ))}
           </div>
-          {inlineImage1Mode === 'pexels' ? (
+          {inlineImage1Mode === 'pexels' && (
             <>
-              <div className="flex gap-2 mb-4">
+              <div className="flex gap-2 mb-3">
                 <input type="text" value={inlineImage1Query} onChange={(e) => setInlineImage1Query(e.target.value)}
                   placeholder="Search photos for inline image 1"
-                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
-                  onKeyDown={(e) => e.key === 'Enter' && searchImages(inlineImage1Query, 'inline1')} />
-                <button onClick={() => searchImages(inlineImage1Query, 'inline1')} disabled={pexelsInline1Loading}
-                  className="bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60">
-                  {pexelsInline1Loading ? '...' : 'Search'}
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+                <button onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(inlineImage1Query)}&tbm=isch`, '_blank')}
+                  className="bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-colors whitespace-nowrap">
+                  🔍 Search Google Images
                 </button>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {pexelsInline1.map((img) => (
-                  <button key={img.url} onClick={() => setSelectedInlineImage1(img)}
-                    className={`relative rounded-lg overflow-hidden aspect-video border-2 transition-all ${selectedInlineImage1?.url === img.url ? 'border-[#cc0000] ring-2 ring-[#cc0000]' : 'border-gray-200 hover:border-gray-400'}`}>
-                    <img src={img.thumbnail} alt={img.title} className="w-full h-full object-cover" />
-                    {selectedInlineImage1?.url === img.url && (
-                      <div className="absolute inset-0 bg-[#cc0000]/20 flex items-center justify-center">
-                        <span className="text-white text-2xl">✓</span>
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-              {selectedInlineImage1 && <p className="text-xs text-gray-400 mt-2">Selected: {selectedInlineImage1.title} — Source: {selectedInlineImage1.source}</p>}
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Paste Image URL from Google</label>
+              <input type="url" value={manualInlineImage1Url} onChange={(e) => setManualInlineImage1Url(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+              {manualInlineImage1Url && <img src={manualInlineImage1Url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
             </>
-          ) : (
+          )}
+          {inlineImage1Mode === 'url' && (
             <div>
               <input type="url" value={manualInlineImage1Url} onChange={(e) => setManualInlineImage1Url(e.target.value)}
                 placeholder="https://example.com/image.jpg"
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
               {manualInlineImage1Url && <img src={manualInlineImage1Url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
+            </div>
+          )}
+          {inlineImage1Mode === 'upload' && (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Upload Image</label>
+              <input type="file" accept="image/*"
+                onChange={(e) => handleImageUpload(e.target.files[0], setInline1UploadUrl)}
+                className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-700 cursor-pointer" />
+              {inline1UploadUrl && <img src={inline1UploadUrl} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
             </div>
           )}
         </div>
@@ -576,46 +532,46 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
         <div className="mt-6 border border-gray-200 rounded-xl p-5">
           <h3 className="font-bold text-gray-800 mb-1">Inline Image 2 <span className="text-xs font-normal text-gray-400">(inserted after 4th heading)</span></h3>
           <div className="flex gap-2 mb-4 mt-3">
-            {['pexels', 'url'].map((m) => (
-              <button key={m} onClick={() => setInlineImage2Mode(m)}
-                className={`px-4 py-2 rounded-lg font-semibold text-xs transition-colors ${inlineImage2Mode === m ? 'bg-[#cc0000] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                {m === 'pexels' ? '🔍 Google Images' : '🔗 Direct URL'}
+            {[{ id: 'pexels', label: '🔍 Google Images' }, { id: 'url', label: '🔗 Direct URL' }, { id: 'upload', label: '📤 Upload' }].map(({ id, label }) => (
+              <button key={id} onClick={() => setInlineImage2Mode(id)}
+                className={`px-4 py-2 rounded-lg font-semibold text-xs transition-colors ${inlineImage2Mode === id ? 'bg-[#cc0000] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                {label}
               </button>
             ))}
           </div>
-          {inlineImage2Mode === 'pexels' ? (
+          {inlineImage2Mode === 'pexels' && (
             <>
-              <div className="flex gap-2 mb-4">
+              <div className="flex gap-2 mb-3">
                 <input type="text" value={inlineImage2Query} onChange={(e) => setInlineImage2Query(e.target.value)}
                   placeholder="Search photos for inline image 2"
-                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
-                  onKeyDown={(e) => e.key === 'Enter' && searchImages(inlineImage2Query, 'inline2')} />
-                <button onClick={() => searchImages(inlineImage2Query, 'inline2')} disabled={pexelsInline2Loading}
-                  className="bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60">
-                  {pexelsInline2Loading ? '...' : 'Search'}
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+                <button onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(inlineImage2Query)}&tbm=isch`, '_blank')}
+                  className="bg-gray-900 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-colors whitespace-nowrap">
+                  🔍 Search Google Images
                 </button>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {pexelsInline2.map((img) => (
-                  <button key={img.url} onClick={() => setSelectedInlineImage2(img)}
-                    className={`relative rounded-lg overflow-hidden aspect-video border-2 transition-all ${selectedInlineImage2?.url === img.url ? 'border-[#cc0000] ring-2 ring-[#cc0000]' : 'border-gray-200 hover:border-gray-400'}`}>
-                    <img src={img.thumbnail} alt={img.title} className="w-full h-full object-cover" />
-                    {selectedInlineImage2?.url === img.url && (
-                      <div className="absolute inset-0 bg-[#cc0000]/20 flex items-center justify-center">
-                        <span className="text-white text-2xl">✓</span>
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-              {selectedInlineImage2 && <p className="text-xs text-gray-400 mt-2">Selected: {selectedInlineImage2.title} — Source: {selectedInlineImage2.source}</p>}
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Paste Image URL from Google</label>
+              <input type="url" value={manualInlineImage2Url} onChange={(e) => setManualInlineImage2Url(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+              {manualInlineImage2Url && <img src={manualInlineImage2Url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
             </>
-          ) : (
+          )}
+          {inlineImage2Mode === 'url' && (
             <div>
               <input type="url" value={manualInlineImage2Url} onChange={(e) => setManualInlineImage2Url(e.target.value)}
                 placeholder="https://example.com/image.jpg"
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
               {manualInlineImage2Url && <img src={manualInlineImage2Url} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
+            </div>
+          )}
+          {inlineImage2Mode === 'upload' && (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Upload Image</label>
+              <input type="file" accept="image/*"
+                onChange={(e) => handleImageUpload(e.target.files[0], setInline2UploadUrl)}
+                className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-700 cursor-pointer" />
+              {inline2UploadUrl && <img src={inline2UploadUrl} alt="Preview" className="mt-3 rounded-lg max-h-48 object-cover" />}
             </div>
           )}
         </div>
