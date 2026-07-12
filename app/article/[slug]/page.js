@@ -203,10 +203,52 @@ export default function ArticlePage({ params }) {
             <AdSlot slot="article-middle" />
 
             {/* Article Content */}
-            <div
-              className="article-content"
-              dangerouslySetInnerHTML={{ __html: article.content }}
-            />
+            {article.articleType === 'list' ? (
+              <div className="list-article-content">
+                {article.intro && (
+                  <div className="article-content mb-8" dangerouslySetInnerHTML={{ __html: article.intro }} />
+                )}
+                <div className="space-y-10">
+                  {article.items?.map((item, idx) => (
+                    <div key={idx} className="border-b border-gray-100 pb-10 last:border-0 last:pb-0">
+                      <div className="flex items-start gap-4 mb-4">
+                        <span className="text-4xl sm:text-5xl font-black text-[#cc0000] leading-none flex-shrink-0 w-14 sm:w-16 text-center tabular-nums">
+                          {String(item.number).padStart(2, '0')}
+                        </span>
+                        <div className="pt-1">
+                          <h2 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">{item.name}</h2>
+                          {item.subtitle && (
+                            <p className="text-[#cc0000] font-semibold text-sm mt-1">{item.subtitle}</p>
+                          )}
+                        </div>
+                      </div>
+                      {item.image && (
+                        <div className="relative w-full h-52 sm:h-72 rounded-xl overflow-hidden mb-5">
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, 66vw"
+                          />
+                        </div>
+                      )}
+                      {item.description && (
+                        <div className="article-content" dangerouslySetInnerHTML={{ __html: item.description }} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {article.conclusion && (
+                  <div className="article-content mt-8 pt-8 border-t border-gray-100" dangerouslySetInnerHTML={{ __html: article.conclusion }} />
+                )}
+              </div>
+            ) : (
+              <div
+                className="article-content"
+                dangerouslySetInnerHTML={{ __html: article.content }}
+              />
+            )}
 
             {/* Tags */}
             {article.tags?.length > 0 && (

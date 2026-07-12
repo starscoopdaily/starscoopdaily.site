@@ -27,18 +27,44 @@ Always return a valid JSON object with these exact fields:
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
   "slug": "url-friendly-slug-lowercase-hyphens",
   "metaDescription": "SEO meta description exactly 150-160 characters",
-  "hero_image_query": "Specific Pexels search query for hero image (3-5 words)",
+  "hero_image_query": "Specific search query for hero image (3-5 words)",
   "inline_image_queries": [
-    "Specific Pexels search term for image after section 2 (3-5 words)",
-    "Specific Pexels search term for image after section 4 (3-5 words)"
+    "Specific search term for image after section 2 (3-5 words)",
+    "Specific search term for image after section 4 (3-5 words)"
   ]
 }
 
 Write in professional but entertaining tabloid style. Do NOT include defamatory fictional private details. Return ONLY valid JSON, no other text.`;
 
+const LIST_SYSTEM_PROMPT = `You are a senior celebrity entertainment writer for StarScoopDaily, writing for USA and India audiences covering Bollywood, Hollywood, Netflix, TV shows, music, and celebrity culture.
+
+Generate a numbered list article. Return ONLY valid JSON with exactly these fields:
+{
+  "title": "Top [N] [Topic] — [Year] (70+ chars, use power words: Must-See, Ultimate, Best, Hottest, Shocking, Viral)",
+  "excerpt": "Compelling 150-word engaging intro paragraph about this list",
+  "metaDescription": "SEO meta description 150-160 characters",
+  "category": "category name",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+  "slug": "url-friendly-slug-lowercase-hyphens",
+  "hero_image_query": "specific 3-5 word search term for hero image",
+  "intro": "<p>First intro paragraph HTML.</p><p>Second intro paragraph HTML.</p>",
+  "items": [
+    {
+      "number": 1,
+      "name": "Exact Show/Celebrity/Movie Name",
+      "subtitle": "One short catchy sentence subtitle",
+      "description": "<p>150-200 word detailed, engaging, specific HTML description for USA/India entertainment audience.</p>",
+      "image_query": "Exact show or celebrity name for image search e.g. Bridgerton Netflix series"
+    }
+  ],
+  "conclusion": "<p>First conclusion paragraph HTML.</p><p>Second conclusion paragraph HTML.</p>"
+}
+
+Generate exactly the requested number of items. Each item must be detailed and specific. Image queries must use the EXACT show/celebrity/movie name for accurate search results. Return ONLY valid JSON, no other text.`;
+
 export async function POST(req) {
   try {
-    const { topic, category, apiKey } = await req.json();
+    const { topic, category, apiKey, articleType, itemCount } = await req.json();
 
     const groqKey = apiKey || process.env.GROQ_API_KEY;
     if (!groqKey) {
@@ -48,7 +74,25 @@ export async function POST(req) {
       );
     }
 
-    const userMessage = `Write a complete celebrity news article about: ${topic}
+    const isList = articleType === 'list';
+    const systemPrompt = isList ? LIST_SYSTEM_PROMPT : SYSTEM_PROMPT;
+
+    const userMessage = isList
+      ? `Write a numbered list article: "${topic}"
+Category: ${category}
+Number of items: ${itemCount || 10}
+Today's date: ${new Date().toISOString().split('T')[0]}
+
+Requirements:
+- Title: 70+ characters with power words (Must-See, Ultimate, Best, Hottest, Shocking, etc.)
+- Generate exactly ${itemCount || 10} items
+- Each item description: 150-200 words of detailed, specific HTML
+- Image queries: use EXACT show/celebrity name for accurate image search
+- Intro: 2 paragraphs HTML before the list
+- Conclusion: 2 paragraphs HTML after the list
+
+Return only valid JSON as described.`
+      : `Write a complete celebrity news article about: ${topic}
 Category: ${category}
 Today's date: ${new Date().toISOString().split('T')[0]}
 
@@ -57,7 +101,7 @@ Requirements:
 - Excerpt: 150-word compelling standalone paragraph
 - Content: 1200+ words HTML with 5-6 H2 sections, celebrity quotes, fan reactions section, expert opinions section, strong conclusion
 - Tags: 5 relevant tags
-- inline_image_queries: 2 specific Pexels search terms matching the article content
+- inline_image_queries: 2 specific search terms matching the article content
 
 Return only valid JSON as described.`;
 
@@ -70,7 +114,7 @@ Return only valid JSON as described.`;
       body: JSON.stringify({
         model: MODEL,
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage },
         ],
         temperature: 0.8,

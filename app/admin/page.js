@@ -135,6 +135,11 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   const [heroUploadUrl, setHeroUploadUrl] = useState('');
   const [inline1UploadUrl, setInline1UploadUrl] = useState('');
   const [inline2UploadUrl, setInline2UploadUrl] = useState('');
+  const [articleSubType, setArticleSubType] = useState('standard');
+  const [listItemCount, setListItemCount] = useState(10);
+  const [listItems, setListItems] = useState([]);
+  const [listIntro, setListIntro] = useState('');
+  const [listConclusion, setListConclusion] = useState('');
 
   useEffect(() => {
     if (initialTopic) setTopic(initialTopic);
@@ -164,6 +169,10 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setHeroUploadUrl('');
     setInline1UploadUrl('');
     setInline2UploadUrl('');
+    setListItems([]);
+    setListIntro('');
+    setListConclusion('');
+    setArticleSubType('standard');
     setPreview(false);
     setSuccess('');
     setError('');
@@ -174,21 +183,30 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setLoading(true);
     setError('');
     setArticle(null);
+    setListItems([]);
     setPreview(false);
     try {
       const groqKey = localStorage.getItem('ss_groq_key') || '';
+      const body = { topic, category, apiKey: groqKey };
+      if (articleSubType === 'list') { body.articleType = 'list'; body.itemCount = listItemCount; }
       const res = await fetch('/api/groq', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, category, apiKey: groqKey }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       const a = { ...data.article, category, author: 'StarScoop Daily Staff', date: new Date().toISOString().split('T')[0] };
       setArticle(a);
-      setImageQuery(a.title || a.hero_image_query || '');
-      if (a.inline_image_queries?.[0]) setInlineImage1Query(a.inline_image_queries[0]);
-      if (a.inline_image_queries?.[1]) setInlineImage2Query(a.inline_image_queries[1]);
+      setImageQuery(a.hero_image_query || a.title || '');
+      if (articleSubType === 'list' && a.items) {
+        setListItems(a.items.map((item) => ({ ...item, imageMode: 'google', imageUrl: '', uploadUrl: '' })));
+        setListIntro(a.intro || '');
+        setListConclusion(a.conclusion || '');
+      } else {
+        if (a.inline_image_queries?.[0]) setInlineImage1Query(a.inline_image_queries[0]);
+        if (a.inline_image_queries?.[1]) setInlineImage2Query(a.inline_image_queries[1]);
+      }
     } catch (e) {
       setError(e.message);
     } finally {
@@ -206,34 +224,52 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   const publishArticle = async () => {
     if (!article) return;
     const heroImage = imageMode === 'upload' ? heroUploadUrl : manualImageUrl;
-    const heroAlt = article.title;
 
-    const inline1Url = inlineImage1Mode === 'upload' ? inline1UploadUrl : manualInlineImage1Url;
-    const inline1Alt = article.title;
-    const inline2Url = inlineImage2Mode === 'upload' ? inline2UploadUrl : manualInlineImage2Url;
-    const inline2Alt = article.title;
+    let finalArticle;
+    if (articleSubType === 'list') {
+      finalArticle = {
+        ...article,
+        articleType: 'list',
+        image: heroImage || '',
+        imageAlt: article.title,
+        intro: listIntro,
+        items: listItems.map((item) => ({
+          number: item.number,
+          name: item.name,
+          subtitle: item.subtitle || '',
+          description: item.description || '',
+          image: item.imageMode === 'upload' ? item.uploadUrl : item.imageUrl,
+        })),
+        conclusion: listConclusion,
+        content: '',
+        featured: false,
+      };
+    } else {
+      const inline1Url = inlineImage1Mode === 'upload' ? inline1UploadUrl : manualInlineImage1Url;
+      const inline2Url = inlineImage2Mode === 'upload' ? inline2UploadUrl : manualInlineImage2Url;
 
-    const makeFigure = (url, alt) =>
-      `<figure><img src="${url}" alt="${alt}" style="width:100%;border-radius:8px;margin:20px 0"/><figcaption style="text-align:center;color:#666;font-size:14px;">${alt}</figcaption></figure>`;
+      const makeFigure = (url, alt) =>
+        `<figure><img src="${url}" alt="${alt}" style="width:100%;border-radius:8px;margin:20px 0"/><figcaption style="text-align:center;color:#666;font-size:14px;">${alt}</figcaption></figure>`;
 
-    const injectInlineImages = (html) => {
-      const parts = html.split('</h2>');
-      return parts.map((part, i) => {
-        let chunk = part;
-        if (i < parts.length - 1) chunk += '</h2>';
-        if (i === 1 && inline1Url) chunk += makeFigure(inline1Url, inline1Alt);
-        if (i === 3 && inline2Url) chunk += makeFigure(inline2Url, inline2Alt);
-        return chunk;
-      }).join('');
-    };
+      const injectInlineImages = (html) => {
+        const parts = html.split('</h2>');
+        return parts.map((part, i) => {
+          let chunk = part;
+          if (i < parts.length - 1) chunk += '</h2>';
+          if (i === 1 && inline1Url) chunk += makeFigure(inline1Url, article.title);
+          if (i === 3 && inline2Url) chunk += makeFigure(inline2Url, article.title);
+          return chunk;
+        }).join('');
+      };
 
-    const finalArticle = {
-      ...article,
-      image: heroImage || '',
-      imageAlt: heroAlt || article.title,
-      content: injectInlineImages(article.content || ''),
-      featured: false,
-    };
+      finalArticle = {
+        ...article,
+        image: heroImage || '',
+        imageAlt: article.title,
+        content: injectInlineImages(article.content || ''),
+        featured: false,
+      };
+    }
 
     setPublishing(true);
     setError('');
@@ -266,6 +302,25 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     <div>
       <h2 className="text-xl font-black text-gray-900 mb-1">Article Generator</h2>
       <p className="text-gray-500 text-sm mb-6">Generate articles with AI (Groq) or write manually</p>
+
+      {/* Article Type Toggle */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {[{ id: 'standard', label: '📝 Standard Article' }, { id: 'list', label: '🔢 List Article' }].map(({ id, label }) => (
+          <button key={id} onClick={() => setArticleSubType(id)}
+            className={`px-5 py-2.5 rounded-lg font-bold text-sm transition-colors ${articleSubType === id ? 'bg-[#cc0000] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+            {label}
+          </button>
+        ))}
+        {articleSubType === 'list' && (
+          <div className="flex items-center gap-2 ml-1">
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Items:</label>
+            <select value={listItemCount} onChange={(e) => setListItemCount(Number(e.target.value))}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000] bg-white">
+              {[5, 10, 15, 20].map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+        )}
+      </div>
 
       {/* Mode Toggle */}
       <div className="flex gap-2 mb-6">
@@ -477,8 +532,95 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
         </div>
       )}
 
-      {/* Inline Image 1 */}
-      {article && (
+      {/* List Items Editor */}
+      {article && articleSubType === 'list' && listItems.length > 0 && (
+        <div className="mt-6 space-y-4">
+          <h3 className="font-bold text-gray-800 text-base">List Items ({listItems.length})</h3>
+
+          <div className="border border-gray-200 rounded-xl p-4">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Intro (HTML)</label>
+            <textarea rows={3} value={listIntro} onChange={(e) => setListIntro(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+          </div>
+
+          {listItems.map((item, idx) => (
+            <div key={idx} className="border border-gray-200 rounded-xl p-5 space-y-3 bg-gray-50">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl font-black text-[#cc0000] w-10 flex-shrink-0 text-center tabular-nums">
+                  {String(item.number).padStart(2, '0')}
+                </span>
+                <input type="text" value={item.name}
+                  onChange={(e) => setListItems((prev) => prev.map((it, i) => i === idx ? { ...it, name: e.target.value } : it))}
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm font-bold bg-white focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
+                  placeholder="Item name" />
+              </div>
+              <input type="text" value={item.subtitle || ''}
+                onChange={(e) => setListItems((prev) => prev.map((it, i) => i === idx ? { ...it, subtitle: e.target.value } : it))}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#cc0000] bg-white focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
+                placeholder="Subtitle (optional)" />
+              <textarea rows={4} value={item.description || ''}
+                onChange={(e) => setListItems((prev) => prev.map((it, i) => i === idx ? { ...it, description: e.target.value } : it))}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-xs font-mono bg-white focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
+                placeholder="Description HTML" />
+              <div>
+                <div className="flex gap-2 mb-2">
+                  {[{ id: 'google', label: '🔍 Google' }, { id: 'url', label: '🔗 URL' }, { id: 'upload', label: '📤 Upload' }].map(({ id, label }) => (
+                    <button key={id} onClick={() => setListItems((prev) => prev.map((it, i) => i === idx ? { ...it, imageMode: id } : it))}
+                      className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${item.imageMode === id ? 'bg-[#cc0000] text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {item.imageMode === 'google' && (
+                  <>
+                    <div className="flex gap-2 mb-2">
+                      <input type="text" value={item.image_query || item.name}
+                        onChange={(e) => setListItems((prev) => prev.map((it, i) => i === idx ? { ...it, image_query: e.target.value } : it))}
+                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
+                        placeholder="Image search query" />
+                      <button onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(item.image_query || item.name)}&tbm=isch`, '_blank')}
+                        className="bg-gray-900 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-gray-700 whitespace-nowrap">
+                        Search →
+                      </button>
+                    </div>
+                    <input type="url" value={item.imageUrl || ''} placeholder="Paste image URL from Google"
+                      onChange={(e) => setListItems((prev) => prev.map((it, i) => i === idx ? { ...it, imageUrl: e.target.value } : it))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+                  </>
+                )}
+                {item.imageMode === 'url' && (
+                  <input type="url" value={item.imageUrl || ''} placeholder="https://example.com/image.jpg"
+                    onChange={(e) => setListItems((prev) => prev.map((it, i) => i === idx ? { ...it, imageUrl: e.target.value } : it))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+                )}
+                {item.imageMode === 'upload' && (
+                  <input type="file" accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (ev) => setListItems((prev) => prev.map((it, i) => i === idx ? { ...it, uploadUrl: ev.target.result } : it));
+                      reader.readAsDataURL(file);
+                    }}
+                    className="block w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-700 cursor-pointer" />
+                )}
+                {((item.imageMode === 'upload' ? item.uploadUrl : item.imageUrl)) && (
+                  <img src={item.imageMode === 'upload' ? item.uploadUrl : item.imageUrl} alt={item.name} className="mt-2 rounded-lg max-h-32 object-cover" />
+                )}
+              </div>
+            </div>
+          ))}
+
+          <div className="border border-gray-200 rounded-xl p-4">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Conclusion (HTML)</label>
+            <textarea rows={3} value={listConclusion} onChange={(e) => setListConclusion(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#cc0000]" />
+          </div>
+        </div>
+      )}
+
+      {/* Inline Image 1 — standard articles only */}
+      {article && articleSubType === 'standard' && (
         <div className="mt-6 border border-gray-200 rounded-xl p-5">
           <h3 className="font-bold text-gray-800 mb-1">Inline Image 1 <span className="text-xs font-normal text-gray-400">(inserted after 2nd heading)</span></h3>
           <div className="flex gap-2 mb-4 mt-3">
@@ -527,8 +669,8 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
         </div>
       )}
 
-      {/* Inline Image 2 */}
-      {article && (
+      {/* Inline Image 2 — standard articles only */}
+      {article && articleSubType === 'standard' && (
         <div className="mt-6 border border-gray-200 rounded-xl p-5">
           <h3 className="font-bold text-gray-800 mb-1">Inline Image 2 <span className="text-xs font-normal text-gray-400">(inserted after 4th heading)</span></h3>
           <div className="flex gap-2 mb-4 mt-3">
@@ -1105,12 +1247,12 @@ function AdsManager() {
 
 // ─── Main Admin Panel ────────────────────────────────────────────
 const TABS = [
-  { id: 'fetcher', label: '📡 News Fetcher' },
-  { id: 'generator', label: '✍️ Article Generator' },
-  { id: 'articles', label: '📋 Published Articles' },
-  { id: 'controls', label: '⚙️ Site Controls' },
-  { id: 'stats', label: '📊 Quick Stats' },
-  { id: 'ads', label: '📢 Ads Manager' },
+  { id: 'fetcher', icon: '📡', label: 'News Fetcher' },
+  { id: 'generator', icon: '✍️', label: 'Article Generator' },
+  { id: 'articles', icon: '📋', label: 'Published Articles' },
+  { id: 'controls', icon: '⚙️', label: 'Site Controls' },
+  { id: 'stats', icon: '📊', label: 'Quick Stats' },
+  { id: 'ads', icon: '📢', label: 'Ads Manager' },
 ];
 
 export default function AdminPage() {
@@ -1143,34 +1285,34 @@ export default function AdminPage() {
 
   if (!authed) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm">
-          <div className="text-center mb-6">
-            <div className="w-14 h-14 bg-[#cc0000] rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <span className="text-white font-black text-2xl">★</span>
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: '#0f0f1a' }}>
+        <div className="rounded-2xl shadow-2xl p-8 w-full max-w-sm border" style={{ background: '#1a1a2e', borderColor: 'rgba(255,255,255,0.08)' }}>
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-[#cc0000] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <span className="text-white font-black text-3xl">★</span>
             </div>
-            <h1 className="font-black text-xl text-gray-900">StarScoop Admin</h1>
-            <p className="text-gray-400 text-sm mt-1">Enter your admin password to continue</p>
+            <h1 className="font-black text-xl text-white">StarScoop Daily</h1>
+            <p className="text-sm mt-1" style={{ color: '#9ca3af' }}>Admin Login</p>
           </div>
           <form onSubmit={login} className="space-y-4">
             <div>
+              <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#9ca3af' }}>Password</label>
               <input
                 type="password"
                 value={pw}
                 onChange={(e) => setPw(e.target.value)}
-                placeholder="Admin password"
+                placeholder="Enter admin password"
                 autoFocus
-                className={`w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000] ${
-                  pwError ? 'border-red-400 bg-red-50' : 'border-gray-200'
-                }`}
+                className="w-full rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#cc0000] text-white placeholder-gray-500"
+                style={{ background: pwError ? 'rgba(220,38,38,0.15)' : '#0f0f1a', border: pwError ? '1px solid #dc2626' : '1px solid rgba(255,255,255,0.1)' }}
               />
-              {pwError && <p className="text-red-500 text-xs mt-1">Incorrect password. Try again.</p>}
+              {pwError && <p className="text-red-400 text-xs mt-1.5">Incorrect password. Try again.</p>}
             </div>
             <button
               type="submit"
-              className="w-full bg-[#cc0000] text-white py-3 rounded-lg font-bold hover:bg-[#aa0000] transition-colors"
+              className="w-full bg-[#cc0000] hover:bg-[#aa0000] text-white py-3 rounded-lg font-bold text-sm transition-colors mt-1"
             >
-              Sign In
+              Sign In →
             </button>
           </form>
         </div>
@@ -1179,55 +1321,79 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Admin Header */}
-      <div className="bg-gray-900 text-white px-4 sm:px-6 py-3 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-hidden" style={{ background: '#f5f5f5', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      {/* Top Bar */}
+      <div className="flex-shrink-0 h-14 flex items-center justify-between px-5" style={{ background: '#16213e' }}>
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 bg-[#cc0000] rounded flex items-center justify-center">
+          <div className="w-7 h-7 bg-[#cc0000] rounded flex items-center justify-center flex-shrink-0">
             <span className="text-white font-black text-sm">★</span>
           </div>
-          <span className="font-black text-sm">StarScoop Admin Panel</span>
+          <span className="text-white font-black text-sm tracking-tight">StarScoop Daily Admin</span>
         </div>
-        <div className="flex items-center gap-3">
-          <a href="/" target="_blank" className="text-gray-400 hover:text-white text-xs transition-colors">View Site →</a>
+        <div className="flex items-center gap-4">
+          <a href="/" target="_blank" className="text-blue-300 hover:text-white text-xs font-medium transition-colors flex items-center gap-1">
+            View Site <span>↗</span>
+          </a>
           <button
             onClick={() => { setAuthed(false); localStorage.removeItem('ssd_admin_auth'); }}
-            className="text-gray-400 hover:text-white text-xs transition-colors"
+            className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition-colors"
           >
             Sign Out
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white border-b border-gray-200 overflow-x-auto">
-        <div className="flex min-w-max sm:max-w-7xl sm:mx-auto px-4 sm:px-6">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <aside className="w-52 flex-shrink-0 flex flex-col overflow-y-auto hidden sm:flex" style={{ background: '#1a1a2e' }}>
+          <nav className="p-3 flex-1">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className="w-full text-left px-3 py-2.5 rounded-lg mb-1 text-sm font-medium transition-colors flex items-center gap-3"
+                style={{
+                  background: activeTab === tab.id ? '#cc0000' : 'transparent',
+                  color: activeTab === tab.id ? '#fff' : '#9ca3af',
+                }}
+                onMouseEnter={(e) => { if (activeTab !== tab.id) { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#fff'; } }}
+                onMouseLeave={(e) => { if (activeTab !== tab.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#9ca3af'; } }}
+              >
+                <span className="text-base leading-none">{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </nav>
+          <div className="p-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+            <p className="text-xs text-center" style={{ color: '#4b5563' }}>StarScoop Daily v1.0</p>
+          </div>
+        </aside>
+
+        {/* Mobile Tab Bar */}
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 flex overflow-x-auto" style={{ background: '#1a1a2e', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
           {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-4 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? 'border-[#cc0000] text-[#cc0000]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {tab.label}
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className="flex-1 min-w-0 flex flex-col items-center justify-center py-2 text-xs"
+              style={{ color: activeTab === tab.id ? '#cc0000' : '#6b7280' }}>
+              <span className="text-base leading-none mb-0.5">{tab.icon}</span>
+              <span className="truncate text-[9px] font-medium w-full text-center px-1">{tab.label}</span>
             </button>
           ))}
         </div>
-      </div>
 
-      {/* Tab Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
-          {activeTab === 'fetcher' && <NewsFetcher onUseTopic={handleUseTopic} />}
-          {activeTab === 'generator' && <ArticleGenerator initialTopic={topicFromFetcher} editArticle={editArticleData} />}
-          {activeTab === 'articles' && <PublishedArticles onEdit={(a) => { setEditArticleData(a); setActiveTab('generator'); }} />}
-          {activeTab === 'controls' && <SiteControls />}
-          {activeTab === 'stats' && <QuickStats />}
-          {activeTab === 'ads' && <AdsManager />}
-        </div>
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto p-4 sm:p-6 pb-20 sm:pb-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-8">
+              {activeTab === 'fetcher' && <NewsFetcher onUseTopic={handleUseTopic} />}
+              {activeTab === 'generator' && <ArticleGenerator initialTopic={topicFromFetcher} editArticle={editArticleData} />}
+              {activeTab === 'articles' && <PublishedArticles onEdit={(a) => { setEditArticleData(a); setActiveTab('generator'); }} />}
+              {activeTab === 'controls' && <SiteControls />}
+              {activeTab === 'stats' && <QuickStats />}
+              {activeTab === 'ads' && <AdsManager />}
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
