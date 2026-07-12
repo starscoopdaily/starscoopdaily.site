@@ -742,13 +742,51 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       {preview && article && (
         <div className="mt-6 border-2 border-[#cc0000] rounded-xl p-6 bg-white">
           <div className="text-xs font-bold uppercase text-[#cc0000] tracking-wider mb-4">Preview</div>
-          {(selectedImage?.url || manualImageUrl) && (
-            <img src={selectedImage?.url || manualImageUrl} alt={article.title} className="w-full h-48 object-cover rounded-lg mb-4" />
+          {(heroUploadUrl || manualImageUrl) && (
+            <img src={heroUploadUrl || manualImageUrl} alt={article.title} className="w-full h-48 object-cover rounded-lg mb-4" />
           )}
           <span className="category-badge mb-3 inline-block">{article.category}</span>
           <h1 className="text-2xl font-black text-gray-900 mb-3">{article.title}</h1>
           <p className="text-gray-500 mb-4">{article.excerpt}</p>
-          <div className="article-content" dangerouslySetInnerHTML={{ __html: article.content }} />
+
+          {articleSubType === 'list' ? (
+            <div>
+              {listIntro && (
+                <div className="article-content mb-6" dangerouslySetInnerHTML={{ __html: listIntro }} />
+              )}
+              <div className="space-y-8">
+                {listItems.map((item, idx) => {
+                  const itemImg = item.imageMode === 'upload' ? item.uploadUrl : item.imageUrl;
+                  return (
+                    <div key={idx} className="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
+                      <div className="flex items-start gap-4 mb-3">
+                        <span className="text-4xl font-black text-[#cc0000] leading-none flex-shrink-0 w-14 text-center tabular-nums">
+                          {String(item.number).padStart(2, '0')}
+                        </span>
+                        <div className="pt-1">
+                          <h2 className="text-xl font-black text-gray-900 leading-tight">{item.name}</h2>
+                          {item.subtitle && (
+                            <p className="text-[#cc0000] font-semibold text-sm mt-0.5">{item.subtitle}</p>
+                          )}
+                        </div>
+                      </div>
+                      {itemImg && (
+                        <img src={itemImg} alt={item.name} className="w-full h-44 object-cover rounded-xl mb-4" />
+                      )}
+                      {item.description && (
+                        <div className="article-content" dangerouslySetInnerHTML={{ __html: item.description }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              {listConclusion && (
+                <div className="article-content mt-6 pt-6 border-t border-gray-100" dangerouslySetInnerHTML={{ __html: listConclusion }} />
+              )}
+            </div>
+          ) : (
+            <div className="article-content" dangerouslySetInnerHTML={{ __html: article.content }} />
+          )}
         </div>
       )}
     </div>
