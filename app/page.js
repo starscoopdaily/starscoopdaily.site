@@ -12,19 +12,19 @@ import {
 } from '@/lib/articles';
 
 export const metadata = {
-  title: 'StarScoop Daily — Celebrity News, Bollywood, Hollywood & Entertainment',
+  title: 'StarScoop Daily — Celebrity News, Hollywood, British Royals & Entertainment',
   description:
-    'StarScoop Daily is your #1 source for the latest celebrity news, Bollywood gossip, Hollywood scoops, TV show updates, and breaking entertainment news.',
+    'StarScoop Daily is your #1 source for the latest celebrity news, Hollywood scoops, British Royals gossip, UK celebrity news, and breaking entertainment news.',
   openGraph: {
-    title: 'StarScoop Daily — Celebrity News & Entertainment',
-    description: 'Latest celebrity news, Bollywood, Hollywood and entertainment news.',
+    title: 'StarScoop Daily — Celebrity News, Hollywood & British Royals',
+    description: 'Latest celebrity news, Hollywood, British Royals and UK entertainment news.',
     url: 'https://www.starscoopdaily.site',
     siteName: 'StarScoop Daily',
     type: 'website',
   },
 };
 
-const CATEGORY_SECTIONS = ['Bollywood', 'Hollywood', 'TV Shows', 'Music', 'Fashion', 'Pop Culture'];
+const CATEGORY_SECTIONS = ['Hollywood', 'British Royals', 'TV Shows', 'Music', 'Fashion', 'Pop Culture'];
 
 export default function HomePage() {
   const featured = getFeaturedArticle();

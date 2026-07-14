@@ -7,15 +7,17 @@ import AdSlot from '@/components/AdSlot';
 export const metadata = {
   metadataBase: new URL('https://www.starscoopdaily.site'),
   title: {
-    default: 'StarScoop Daily — Celebrity News, Bollywood, Hollywood & More',
+    default: 'StarScoop Daily — Celebrity News, Hollywood, British Royals & Entertainment',
     template: '%s | StarScoop Daily',
   },
   description:
-    'StarScoop Daily delivers the latest celebrity news, Bollywood gossip, Hollywood scoops, TV show updates, and entertainment breaking news from around the world.',
+    'StarScoop Daily delivers the latest celebrity news, Hollywood scoops, British Royals gossip, UK celebrity news, TV show updates, and breaking entertainment news.',
   keywords: [
     'celebrity news',
-    'bollywood news',
     'hollywood news',
+    'british celebrity news',
+    'royal family news',
+    'uk celebrity gossip',
     'entertainment news',
     'celebrity gossip',
     'TV shows',
@@ -30,15 +32,15 @@ export const metadata = {
     locale: 'en_US',
     url: 'https://www.starscoopdaily.site',
     siteName: 'StarScoop Daily',
-    title: 'StarScoop Daily — Celebrity News, Bollywood, Hollywood & More',
+    title: 'StarScoop Daily — Celebrity News, Hollywood, British Royals & Entertainment',
     description:
-      'The latest celebrity news, Bollywood gossip, Hollywood scoops, and entertainment news delivered daily.',
+      'The latest celebrity news, Hollywood scoops, British Royals gossip, and UK entertainment news delivered daily.',
     images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'StarScoop Daily' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'StarScoop Daily',
-    description: 'The latest celebrity news, Bollywood, Hollywood & entertainment.',
+    description: 'The latest celebrity news, Hollywood, British Royals & UK entertainment.',
     images: ['/opengraph-image'],
   },
   robots: {
