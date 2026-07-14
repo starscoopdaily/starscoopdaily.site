@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { getCategoryConfig } from '@/lib/categories';
 
 export default function ArticleCard({ article, size = 'normal', showExcerpt = true }) {
   if (!article) return null;
 
   const isLarge = size === 'large';
+  const catSlug = article.category?.toLowerCase().replace(/\s+/g, '-') || '';
+  const { color: catColor } = getCategoryConfig(catSlug);
 
   return (
     <Link href={`/article/${article.slug}`} className="group block article-card">
@@ -29,7 +32,7 @@ export default function ArticleCard({ article, size = 'normal', showExcerpt = tr
           {/* Category Badge over image */}
           {article.category && (
             <div className="absolute top-3 left-3">
-              <span className="category-badge">{article.category}</span>
+              <span className="category-badge" style={{ background: catColor }}>{article.category}</span>
             </div>
           )}
         </div>

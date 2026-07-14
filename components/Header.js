@@ -10,7 +10,9 @@ const NAV_LINKS = [
   { label: 'Bollywood', href: '/category/bollywood' },
   { label: 'TV Shows', href: '/category/tv-shows' },
   { label: 'Music', href: '/category/music' },
-  { label: 'Relationships', href: '/category/relationships' },
+  { label: 'Fashion', href: '/category/fashion' },
+  { label: 'Fitness', href: '/category/fitness' },
+  { label: 'Pop Culture', href: '/category/pop-culture' },
 ];
 
 export default function Header() {

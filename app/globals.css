@@ -146,6 +146,10 @@ body {
 /* Mobile nav */
 .mobile-menu { transition: all 0.3s ease; }
 
+/* Hide scrollbar for trending rail */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
 /* Pulse animation for breaking badge */
 @keyframes pulse-red {
   0%, 100% { opacity: 1; }

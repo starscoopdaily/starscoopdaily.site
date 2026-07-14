@@ -2,9 +2,23 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getArticleBySlug, getAllArticles, getRelatedArticles } from '@/lib/articles';
+import { getCategoryConfig } from '@/lib/categories';
 import Sidebar from '@/components/Sidebar';
 import ArticleCard from '@/components/ArticleCard';
 import AdSlot from '@/components/AdSlot';
+import StickyArticleBar from '@/components/StickyArticleBar';
+
+function splitAtParagraph(html, n) {
+  let count = 0;
+  let i = 0;
+  while (i < html.length && count < n) {
+    const pos = html.indexOf('</p>', i);
+    if (pos === -1) break;
+    count++;
+    i = pos + 4;
+  }
+  return [html.slice(0, i), html.slice(i)];
+}
 
 export async function generateStaticParams() {
   try {
@@ -97,6 +111,12 @@ export default function ArticlePage({ params }) {
   if (!article) notFound();
 
   const related = getRelatedArticles(article.slug, article.category, 3);
+  const catSlug = article.category?.toLowerCase().replace(/\s+/g, '-') || '';
+  const { color: catColor } = getCategoryConfig(catSlug);
+
+  // Split content for in-content ads at paragraph 3 and paragraph 7
+  const [contentPart1, contentRest] = splitAtParagraph(article.content || '', 3);
+  const [contentPart2, contentPart3] = splitAtParagraph(contentRest, 4);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -124,6 +144,7 @@ export default function ArticlePage({ params }) {
 
   return (
     <>
+      <StickyArticleBar title={article.title} slug={article.slug} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -153,8 +174,9 @@ export default function ArticlePage({ params }) {
             <div className="flex items-center flex-wrap gap-2 mb-4">
               {article.category && (
                 <Link
-                  href={`/category/${article.category.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="category-badge hover:bg-[#aa0000] transition-colors"
+                  href={`/category/${catSlug}`}
+                  className="category-badge transition-colors"
+                  style={{ background: catColor }}
                 >
                   {article.category}
                 </Link>
@@ -173,7 +195,7 @@ export default function ArticlePage({ params }) {
 
             {/* Excerpt */}
             {article.excerpt && (
-              <p className="text-lg text-gray-600 leading-relaxed border-l-4 border-[#cc0000] pl-4 mb-6">
+              <p className="text-lg text-gray-600 leading-relaxed border-l-4 pl-4 mb-6" style={{ borderColor: catColor }}>
                 {article.excerpt}
               </p>
             )}
@@ -201,11 +223,7 @@ export default function ArticlePage({ params }) {
             {/* Share */}
             <ShareButtons title={article.title} slug={article.slug} />
 
-            {/* Ad after share */}
-            <AdSlot slot="article-top" />
-            <AdSlot slot="article-middle" />
-
-            {/* Article Content */}
+            {/* Article Content with in-content ads */}
             {article.articleType === 'list' ? (
               <div className="list-article-content">
                 {article.intro && (
@@ -213,33 +231,37 @@ export default function ArticlePage({ params }) {
                 )}
                 <div className="space-y-10">
                   {article.items?.map((item, idx) => (
-                    <div key={idx} className="border-b border-gray-100 pb-10 last:border-0 last:pb-0">
-                      <div className="flex items-start gap-4 mb-4">
-                        <span className="text-4xl sm:text-5xl font-black text-[#cc0000] leading-none flex-shrink-0 w-14 sm:w-16 text-center tabular-nums">
-                          {String(item.number).padStart(2, '0')}
-                        </span>
-                        <div className="pt-1">
-                          <h2 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">{item.name}</h2>
-                          {item.subtitle && (
-                            <p className="text-[#cc0000] font-semibold text-sm mt-1">{item.subtitle}</p>
-                          )}
+                    <>
+                      <div key={idx} className="border-b border-gray-100 pb-10 last:border-0 last:pb-0">
+                        <div className="flex items-start gap-4 mb-4">
+                          <span className="text-4xl sm:text-5xl font-black leading-none flex-shrink-0 w-14 sm:w-16 text-center tabular-nums" style={{ color: catColor }}>
+                            {String(item.number).padStart(2, '0')}
+                          </span>
+                          <div className="pt-1">
+                            <h2 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">{item.name}</h2>
+                            {item.subtitle && (
+                              <p className="font-semibold text-sm mt-1" style={{ color: catColor }}>{item.subtitle}</p>
+                            )}
+                          </div>
                         </div>
+                        {item.image && (
+                          <div className="relative w-full h-52 sm:h-72 rounded-xl overflow-hidden mb-5">
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 768px) 100vw, 66vw"
+                            />
+                          </div>
+                        )}
+                        {item.description && (
+                          <div className="article-content" dangerouslySetInnerHTML={{ __html: item.description }} />
+                        )}
                       </div>
-                      {item.image && (
-                        <div className="relative w-full h-52 sm:h-72 rounded-xl overflow-hidden mb-5">
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 100vw, 66vw"
-                          />
-                        </div>
-                      )}
-                      {item.description && (
-                        <div className="article-content" dangerouslySetInnerHTML={{ __html: item.description }} />
-                      )}
-                    </div>
+                      {idx === 2 && <AdSlot slot="article-top" />}
+                      {idx === 6 && <AdSlot slot="article-middle" />}
+                    </>
                   ))}
                 </div>
                 {article.conclusion && (
@@ -247,10 +269,13 @@ export default function ArticlePage({ params }) {
                 )}
               </div>
             ) : (
-              <div
-                className="article-content"
-                dangerouslySetInnerHTML={{ __html: article.content }}
-              />
+              <>
+                <div className="article-content" dangerouslySetInnerHTML={{ __html: contentPart1 }} />
+                <AdSlot slot="article-top" />
+                <div className="article-content" dangerouslySetInnerHTML={{ __html: contentPart2 }} />
+                <AdSlot slot="article-middle" />
+                <div className="article-content" dangerouslySetInnerHTML={{ __html: contentPart3 }} />
+              </>
             )}
 
             {/* Tags */}
