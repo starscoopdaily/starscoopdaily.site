@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { label: 'Celebrity', href: '/category/celebrity' },
   { label: 'Hollywood', href: '/category/hollywood' },
   { label: '👑 Royals', href: '/category/british-royals' },
+  { label: 'Bollywood', href: '/category/bollywood' },
   { label: 'TV Shows', href: '/category/tv-shows' },
   { label: 'Music', href: '/category/music' },
   { label: 'Fashion', href: '/category/fashion' },
@@ -15,7 +16,6 @@ const NAV_LINKS = [
   { label: '🤫 Gossip', href: '/category/gossip' },
   { label: '🔥 Scandals', href: '/category/scandals' },
   { label: '💋 Dating', href: '/category/dating' },
-  { label: 'Bollywood', href: '/category/bollywood' },
 ];
 
 export default function Header() {
