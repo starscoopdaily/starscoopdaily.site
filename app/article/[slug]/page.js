@@ -112,7 +112,7 @@ export default function ArticlePage({ params }) {
       name: 'StarScoop Daily',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://www.starscoopdaily.site/og-image.jpg',
+        url: 'https://www.starscoopdaily.site/opengraph-image',
       },
     },
     mainEntityOfPage: {

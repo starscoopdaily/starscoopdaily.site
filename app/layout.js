@@ -33,20 +33,13 @@ export const metadata = {
     title: 'StarScoop Daily — Celebrity News, Bollywood, Hollywood & More',
     description:
       'The latest celebrity news, Bollywood gossip, Hollywood scoops, and entertainment news delivered daily.',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'StarScoop Daily',
-      },
-    ],
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'StarScoop Daily' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'StarScoop Daily',
     description: 'The latest celebrity news, Bollywood, Hollywood & entertainment.',
-    images: ['/og-image.jpg'],
+    images: ['/opengraph-image'],
   },
   robots: {
     index: true,
