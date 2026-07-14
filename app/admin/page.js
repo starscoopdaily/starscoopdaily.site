@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 
 const ADMIN_PASSWORD = 'StarScoop@2026';
-const CATEGORIES = ['Celebrity', 'Hollywood', 'Bollywood', 'TV Shows', 'Music', 'Relationships', 'Sports', 'Fashion', 'Fitness', 'Pop Culture'];
+const CATEGORIES = ['Celebrity', 'Hollywood', 'Bollywood', 'TV Shows', 'Music', 'Relationships', 'Sports', 'Fashion', 'Fitness', 'Pop Culture', 'Gossip', 'Scandals', 'Dating'];
 const LAUNCH_DATE = new Date('2026-06-23');
 
 // ─── Utility ────────────────────────────────────────────────────
