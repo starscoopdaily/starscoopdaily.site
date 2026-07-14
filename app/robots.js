@@ -7,7 +7,7 @@ export default function robots() {
         disallow: ['/admin', '/api/'],
       },
     ],
-    sitemap: 'https://starscoopdaily.site/sitemap.xml',
-    host: 'https://starscoopdaily.site',
+    sitemap: 'https://www.starscoopdaily.site/sitemap.xml',
+    host: 'https://www.starscoopdaily.site',
   };
 }

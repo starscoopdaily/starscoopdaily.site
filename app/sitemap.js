@@ -1,7 +1,7 @@
 import { getAllArticles, getAllCategories } from '@/lib/articles';
 
 export default function sitemap() {
-  const baseUrl = 'https://starscoopdaily.site';
+  const baseUrl = 'https://www.starscoopdaily.site';
 
   const staticPages = [
     { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },

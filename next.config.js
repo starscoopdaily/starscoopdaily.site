@@ -7,6 +7,14 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // www redirect — requires both starscoopdaily.site and www.starscoopdaily.site in Vercel domains
+      {
+        source: '/(.*)',
+        has: [{ type: 'host', value: 'starscoopdaily.site' }],
+        destination: 'https://www.starscoopdaily.site/:path*',
+        permanent: true,
+      },
+      // Legacy HTML URLs
       { source: '/about.html', destination: '/about', permanent: true },
       { source: '/article.html', destination: '/', permanent: true },
       { source: '/privacy-policy.html', destination: '/privacy-policy', permanent: true },

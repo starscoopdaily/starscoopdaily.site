@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import AdSlot from '@/components/AdSlot';
 
 export const metadata = {
-  metadataBase: new URL('https://starscoopdaily.site'),
+  metadataBase: new URL('https://www.starscoopdaily.site'),
   title: {
     default: 'StarScoop Daily — Celebrity News, Bollywood, Hollywood & More',
     template: '%s | StarScoop Daily',
@@ -28,7 +28,7 @@ export const metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://starscoopdaily.site',
+    url: 'https://www.starscoopdaily.site',
     siteName: 'StarScoop Daily',
     title: 'StarScoop Daily — Celebrity News, Bollywood, Hollywood & More',
     description:
@@ -53,8 +53,8 @@ export const metadata = {
     follow: true,
     googleBot: { index: true, follow: true },
   },
-  verification: {
-    google: 'YOUR_GOOGLE_VERIFICATION_CODE',
+  alternates: {
+    canonical: 'https://www.starscoopdaily.site',
   },
   icons: {
     icon: '/favicon.svg',

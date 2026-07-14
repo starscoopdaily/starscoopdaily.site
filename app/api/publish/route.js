@@ -63,7 +63,7 @@ export async function POST(req) {
     const result = await putRes.json();
     return NextResponse.json({
       success: true,
-      url: `https://starscoopdaily.site/article/${article.slug}`,
+      url: `https://www.starscoopdaily.site/article/${article.slug}`,
       sha: result.content?.sha,
       commit: result.commit?.html_url,
     });

@@ -17,7 +17,7 @@ export const metadata = {
   openGraph: {
     title: 'StarScoop Daily — Celebrity News & Entertainment',
     description: 'Latest celebrity news, Bollywood, Hollywood and entertainment news.',
-    url: 'https://starscoopdaily.site',
+    url: 'https://www.starscoopdaily.site',
     siteName: 'StarScoop Daily',
     type: 'website',
   },

@@ -23,10 +23,13 @@ export async function generateMetadata({ params }) {
     title: article.title,
     description: article.metaDescription || article.excerpt,
     keywords: article.tags?.join(', '),
+    alternates: {
+      canonical: `https://www.starscoopdaily.site/article/${article.slug}`,
+    },
     openGraph: {
       title: article.title,
       description: article.metaDescription || article.excerpt,
-      url: `https://starscoopdaily.site/article/${article.slug}`,
+      url: `https://www.starscoopdaily.site/article/${article.slug}`,
       siteName: 'StarScoop Daily',
       images: article.image ? [{ url: article.image, alt: article.imageAlt }] : [],
       type: 'article',
@@ -44,7 +47,7 @@ export async function generateMetadata({ params }) {
 }
 
 function ShareButtons({ title, slug }) {
-  const url = `https://starscoopdaily.site/article/${slug}`;
+  const url = `https://www.starscoopdaily.site/article/${slug}`;
   const encoded = encodeURIComponent(url);
   const titleEncoded = encodeURIComponent(title);
 
@@ -109,12 +112,12 @@ export default function ArticlePage({ params }) {
       name: 'StarScoop Daily',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://starscoopdaily.site/logo.png',
+        url: 'https://www.starscoopdaily.site/og-image.jpg',
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://starscoopdaily.site/article/${article.slug}`,
+      '@id': `https://www.starscoopdaily.site/article/${article.slug}`,
     },
     keywords: article.tags?.join(', '),
   };
@@ -150,7 +153,7 @@ export default function ArticlePage({ params }) {
             <div className="flex items-center flex-wrap gap-2 mb-4">
               {article.category && (
                 <Link
-                  href={`/category/${article.category.toLowerCase().replace(' ', '-')}`}
+                  href={`/category/${article.category.toLowerCase().replace(/\s+/g, '-')}`}
                   className="category-badge hover:bg-[#aa0000] transition-colors"
                 >
                   {article.category}
