@@ -140,10 +140,21 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   const [listItems, setListItems] = useState([]);
   const [listIntro, setListIntro] = useState('');
   const [listConclusion, setListConclusion] = useState('');
+  const [todayTopics, setTodayTopics] = useState([]);
+  const [topicsLoading, setTopicsLoading] = useState(false);
 
   useEffect(() => {
     if (initialTopic) setTopic(initialTopic);
   }, [initialTopic]);
+
+  useEffect(() => {
+    setTopicsLoading(true);
+    fetch('/api/news-rss')
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data.items)) setTodayTopics(data.items.slice(0, 12)); })
+      .catch(() => {})
+      .finally(() => setTopicsLoading(false));
+  }, []);
 
   useEffect(() => {
     if (!editArticle) return;
@@ -301,7 +312,55 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   return (
     <div>
       <h2 className="text-xl font-black text-gray-900 mb-1">Article Generator</h2>
-      <p className="text-gray-500 text-sm mb-6">Generate articles with AI (Groq) or write manually</p>
+      <p className="text-gray-500 text-sm mb-4">Generate articles with AI (Groq) or write manually</p>
+
+      {/* Today's Topic Suggestions */}
+      <div className="mb-6 bg-gray-50 border border-gray-200 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-black uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+            🔥 Today&apos;s Trending Topics
+          </span>
+          <button
+            onClick={() => {
+              setTopicsLoading(true);
+              fetch('/api/news-rss')
+                .then((r) => r.json())
+                .then((data) => { if (Array.isArray(data.items)) setTodayTopics(data.items.slice(0, 12)); })
+                .catch(() => {})
+                .finally(() => setTopicsLoading(false));
+            }}
+            className="text-xs text-[#cc0000] font-semibold hover:underline flex items-center gap-1"
+          >
+            {topicsLoading ? <span className="animate-spin inline-block">⟳</span> : '↻'} Refresh
+          </button>
+        </div>
+        {topicsLoading && todayTopics.length === 0 ? (
+          <div className="flex gap-2 flex-wrap">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-7 w-32 rounded-full bg-gray-200 animate-pulse" />
+            ))}
+          </div>
+        ) : todayTopics.length === 0 ? (
+          <p className="text-xs text-gray-400">No topics loaded — click Refresh to fetch today&apos;s headlines.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {todayTopics.map((item, i) => (
+              <button
+                key={i}
+                onClick={() => setTopic(item.title)}
+                title={item.title}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors text-left ${
+                  topic === item.title
+                    ? 'bg-[#cc0000] text-white border-[#cc0000]'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-[#cc0000] hover:text-[#cc0000]'
+                }`}
+              >
+                <span className="line-clamp-1 max-w-[180px] sm:max-w-[220px]">{item.title}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Article Type Toggle */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
