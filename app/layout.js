@@ -56,6 +56,9 @@ export const metadata = {
   alternates: {
     canonical: 'https://www.starscoopdaily.site',
   },
+  verification: {
+    google: 'MkYepf3Ti69ImPKjKrfsbpNgk0ZhMG0Na_zTYLN7pzM',
+  },
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
