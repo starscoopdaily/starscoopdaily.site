@@ -102,6 +102,127 @@ function NewsFetcher({ onUseTopic }) {
   );
 }
 
+// ─── SEO Score Calculator ────────────────────────────────────────
+function stripHtml(html) {
+  return (html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function countWords(html) {
+  return stripHtml(html).split(/\s+/).filter(Boolean).length;
+}
+
+function countH2s(html) {
+  return (html || '').match(/<h2/gi)?.length || 0;
+}
+
+function calcSEOScore(article, listItems, listIntro, listConclusion, subType) {
+  const checks = [];
+
+  // Title length (ideal 60-80 chars)
+  const titleLen = (article.title || '').length;
+  const titleScore = titleLen >= 60 && titleLen <= 80 ? 15 : titleLen >= 50 && titleLen <= 100 ? 10 : titleLen > 0 ? 5 : 0;
+  checks.push({ label: 'Title length', value: `${titleLen} chars`, score: titleScore, max: 15, status: titleScore === 15 ? 'good' : titleScore >= 10 ? 'warn' : 'bad', tip: 'Ideal: 60–80 characters' });
+
+  // Meta description (ideal 150-160 chars)
+  const metaLen = (article.metaDescription || '').length;
+  const metaScore = metaLen >= 150 && metaLen <= 160 ? 15 : metaLen >= 130 && metaLen <= 170 ? 10 : metaLen > 0 ? 5 : 0;
+  checks.push({ label: 'Meta description', value: `${metaLen} chars`, score: metaScore, max: 15, status: metaScore === 15 ? 'good' : metaScore >= 10 ? 'warn' : 'bad', tip: 'Ideal: 150–160 characters' });
+
+  // Word count (ideal 1200+)
+  let wordCount = 0;
+  if (subType === 'list') {
+    wordCount += countWords(listIntro) + countWords(listConclusion);
+    listItems.forEach(item => { wordCount += countWords(item.description); });
+  } else {
+    wordCount = countWords(article.content);
+  }
+  const wordScore = wordCount >= 1200 ? 20 : wordCount >= 800 ? 14 : wordCount >= 500 ? 8 : wordCount > 0 ? 4 : 0;
+  checks.push({ label: 'Word count', value: `${wordCount.toLocaleString()} words`, score: wordScore, max: 20, status: wordScore === 20 ? 'good' : wordScore >= 14 ? 'warn' : 'bad', tip: 'Ideal: 1200+ words' });
+
+  // H2 headings (ideal 4+)
+  const h2Count = subType === 'list' ? listItems.length : countH2s(article.content);
+  const h2Score = h2Count >= 4 ? 15 : h2Count >= 2 ? 10 : h2Count >= 1 ? 5 : 0;
+  checks.push({ label: subType === 'list' ? 'List items' : 'H2 headings', value: `${h2Count}`, score: h2Score, max: 15, status: h2Score === 15 ? 'good' : h2Score >= 10 ? 'warn' : 'bad', tip: 'Ideal: 4+ headings/items' });
+
+  // Tags (ideal 5)
+  const tagCount = article.tags?.length || 0;
+  const tagScore = tagCount >= 5 ? 10 : tagCount >= 3 ? 7 : tagCount >= 1 ? 4 : 0;
+  checks.push({ label: 'Tags', value: `${tagCount} tags`, score: tagScore, max: 10, status: tagScore === 10 ? 'good' : tagScore >= 7 ? 'warn' : 'bad', tip: 'Ideal: 5 tags' });
+
+  // Slug
+  const slugOk = /^[a-z0-9-]+$/.test(article.slug || '');
+  checks.push({ label: 'URL slug', value: article.slug || '—', score: slugOk ? 10 : 0, max: 10, status: slugOk ? 'good' : 'bad', tip: 'Must be lowercase with hyphens only' });
+
+  // Image alt text (not empty, not equal to title)
+  const altOk = article.imageAlt && article.imageAlt !== article.title && article.imageAlt.length > 5;
+  checks.push({ label: 'Image alt text', value: altOk ? 'Descriptive ✓' : 'Missing or is title', score: altOk ? 10 : 0, max: 10, status: altOk ? 'good' : 'bad', tip: 'Should describe image content, not repeat title' });
+
+  // Excerpt
+  const excerptLen = (article.excerpt || '').length;
+  const excerptOk = excerptLen > 50 && excerptLen <= 300;
+  checks.push({ label: 'Excerpt', value: `${excerptLen} chars`, score: excerptOk ? 5 : excerptLen > 0 ? 3 : 0, max: 5, status: excerptOk ? 'good' : 'warn', tip: 'Keep under 300 characters for best preview' });
+
+  const total = checks.reduce((s, c) => s + c.score, 0);
+  const maxTotal = checks.reduce((s, c) => s + c.max, 0);
+  return { checks, total, maxTotal, wordCount, readingTime: Math.ceil(wordCount / 200) };
+}
+
+function SEOScorePanel({ article, listItems, listIntro, listConclusion, subType }) {
+  if (!article) return null;
+  const { checks, total, maxTotal, wordCount, readingTime } = calcSEOScore(article, listItems, listIntro, listConclusion, subType);
+  const pct = Math.round((total / maxTotal) * 100);
+  const color = pct >= 80 ? '#16a34a' : pct >= 60 ? '#d97706' : '#dc2626';
+  const label = pct >= 80 ? 'Good' : pct >= 60 ? 'Needs Work' : 'Poor';
+
+  return (
+    <div className="mt-6 bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-lg font-black" style={{ color }}>📊 SEO Score</span>
+          <span className="text-xs font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: color + '20', color }}>{label}</span>
+        </div>
+        <div className="flex items-center gap-4 text-sm text-gray-500">
+          <span>📝 {wordCount.toLocaleString()} words</span>
+          <span>⏱ {readingTime} min read</span>
+        </div>
+      </div>
+
+      {/* Score bar */}
+      <div className="px-5 pt-4 pb-2">
+        <div className="flex items-end gap-3 mb-2">
+          <span className="text-4xl font-black leading-none" style={{ color }}>{total}</span>
+          <span className="text-gray-400 text-sm mb-1">/ {maxTotal}</span>
+          <div className="flex-1 ml-2">
+            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Checks */}
+      <div className="px-5 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {checks.map((c, i) => (
+          <div key={i} className="flex items-center gap-3 py-1.5">
+            <span className="text-base flex-shrink-0">
+              {c.status === 'good' ? '✅' : c.status === 'warn' ? '⚠️' : '❌'}
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-gray-700">{c.label}</span>
+                <span className="text-xs font-bold" style={{ color: c.status === 'good' ? '#16a34a' : c.status === 'warn' ? '#d97706' : '#dc2626' }}>
+                  {c.score}/{c.max}
+                </span>
+              </div>
+              <div className="text-[11px] text-gray-400 truncate">{c.value} · {c.tip}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Tab 2: Article Generator ────────────────────────────────────
 function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   const [topic, setTopic] = useState(initialTopic);
@@ -783,6 +904,15 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
           )}
         </div>
       )}
+
+      {/* SEO Score Panel */}
+      <SEOScorePanel
+        article={article}
+        listItems={listItems}
+        listIntro={listIntro}
+        listConclusion={listConclusion}
+        subType={articleSubType}
+      />
 
       {/* Preview + Publish */}
       {article && (
