@@ -35,17 +35,17 @@ export async function generateMetadata({ params }) {
 
   return {
     title: article.title,
-    description: article.metaDescription || article.excerpt,
+    description: article.metaDescription || article.excerpt?.slice(0, 160),
     keywords: article.tags?.join(', '),
     alternates: {
       canonical: `https://www.starscoopdaily.site/article/${article.slug}`,
     },
     openGraph: {
       title: article.title,
-      description: article.metaDescription || article.excerpt,
+      description: article.metaDescription || article.excerpt?.slice(0, 160),
       url: `https://www.starscoopdaily.site/article/${article.slug}`,
       siteName: 'StarScoop Daily',
-      images: article.image ? [{ url: article.image, alt: article.imageAlt }] : [],
+      images: article.image ? [{ url: article.image, alt: article.imageAlt?.slice(0, 100) || article.title.slice(0, 100) }] : [],
       type: 'article',
       publishedTime: article.date,
       authors: [article.author],
@@ -54,7 +54,7 @@ export async function generateMetadata({ params }) {
     twitter: {
       card: 'summary_large_image',
       title: article.title,
-      description: article.metaDescription || article.excerpt,
+      description: article.metaDescription || article.excerpt?.slice(0, 160),
       images: article.image ? [article.image] : [],
     },
   };
