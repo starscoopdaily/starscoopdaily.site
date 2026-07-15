@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import AdSlotRenderer from './AdSlotRenderer';
 
 function getAdConfig() {
   try {
@@ -16,10 +17,5 @@ export default function AdSlot({ slot, className = '' }) {
 
   if (!slotConfig?.enabled || !slotConfig?.code?.trim()) return null;
 
-  return (
-    <div
-      className={`ad-slot ${className}`}
-      dangerouslySetInnerHTML={{ __html: slotConfig.code }}
-    />
-  );
+  return <AdSlotRenderer html={slotConfig.code} className={className} />;
 }
