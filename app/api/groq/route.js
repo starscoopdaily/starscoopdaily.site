@@ -11,7 +11,7 @@ WRITING STYLE:
 - Conversational and punchy — short paragraphs, dramatic sentence breaks
 - Tease and build — keep readers scrolling with cliffhangers between sections
 
-TITLE RULES: Must be 70+ characters. Use power words: Sizzling, Steamy, Exposed, Caught, Spotted, Intimate, Secret, Shocking, Exclusive, Revealed, Romance, Drama, Scandalous, Jaw-Dropping, Wild, Bold, Unbelievable, Flirty, Obsessed, Spicy, Heated.
+TITLE RULES: Must be 60–80 characters exactly. Count the characters carefully. Use power words: Sizzling, Steamy, Exposed, Caught, Spotted, Intimate, Secret, Shocking, Exclusive, Revealed, Romance, Drama, Scandalous, Jaw-Dropping, Wild, Bold, Unbelievable, Flirty, Obsessed, Spicy, Heated.
 
 CONTENT RULES: Must be 1200+ words in HTML. Structure:
 - Opening hook (~100 words) — drop the juiciest detail first to grab attention
@@ -39,8 +39,8 @@ SEO RULES:
 
 Always return a valid JSON object with these exact fields:
 {
-  "title": "70+ character spicy headline with power words",
-  "excerpt": "Spicy hook teaser max 200 characters",
+  "title": "60–80 character spicy headline — count characters, stay in range",
+  "excerpt": "Spicy hook teaser — max 200 characters, one punchy paragraph",
   "content": "Full HTML article 1200+ words with dramatic h2 sections, anonymous source quotes, fictional fan reactions, fictional expert opinions",
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
   "slug": "url-friendly-slug-lowercase-hyphens",
@@ -59,7 +59,7 @@ const LIST_SYSTEM_PROMPT = `You are a senior celebrity entertainment writer for 
 
 Generate a numbered list article. Return ONLY valid JSON with exactly these fields:
 {
-  "title": "Top [N] [Topic] — [Year] (70+ chars, use power words: Must-See, Ultimate, Best, Hottest, Shocking, Viral)",
+  "title": "Top [N] [Topic] — [Year] (60–80 chars exactly, use power words: Must-See, Ultimate, Best, Hottest, Shocking, Viral)",
   "excerpt": "Compelling 150-word engaging intro paragraph about this list",
   "metaDescription": "SEO meta description 150-160 characters",
   "category": "category name",
