@@ -1,7 +1,7 @@
 {
   "slots": {
     "header": {
-      "enabled": false,
+      "enabled": true,
       "code": "<script src=\"https://pl29877798.effectivecpmnetwork.com/d0/5e/f9/d05ef968117a93a5caaf996f5cdf01b0.js\"></script>"
     },
     "homepage-top": {
