@@ -48,7 +48,7 @@ function NewsFetcher({ onUseTopic }) {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-xl font-black text-gray-900">News Fetcher</h2>
-          <p className="text-gray-500 text-sm">Fetch latest entertainment headlines from Google News RSS</p>
+          <p className="text-gray-500 text-sm">TMZ · Page Six · Daily Mail · E! · People · RadarOnline · Bollywood — sorted by scandal score 🔥</p>
         </div>
         <button
           onClick={fetchNews}
@@ -72,7 +72,7 @@ function NewsFetcher({ onUseTopic }) {
       {headlines.length === 0 && !loading && (
         <div className="text-center py-16 text-gray-400">
           <div className="text-5xl mb-3">📰</div>
-          <p className="font-medium">Click "Fetch Headlines" to load latest entertainment news</p>
+          <p className="font-medium">Click "Fetch Headlines" to load today&apos;s hottest celebrity gossip &amp; scandals</p>
         </div>
       )}
 
@@ -151,7 +151,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setTopicsLoading(true);
     fetch('/api/news-rss')
       .then((r) => r.json())
-      .then((data) => { if (Array.isArray(data.items)) setTodayTopics(data.items.slice(0, 12)); })
+      .then((data) => { if (Array.isArray(data.items)) setTodayTopics(data.items.slice(0, 15)); })
       .catch(() => {})
       .finally(() => setTopicsLoading(false));
   }, []);
@@ -325,7 +325,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
               setTopicsLoading(true);
               fetch('/api/news-rss')
                 .then((r) => r.json())
-                .then((data) => { if (Array.isArray(data.items)) setTodayTopics(data.items.slice(0, 12)); })
+                .then((data) => { if (Array.isArray(data.items)) setTodayTopics(data.items.slice(0, 15)); })
                 .catch(() => {})
                 .finally(() => setTopicsLoading(false));
             }}
@@ -343,19 +343,25 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
         ) : todayTopics.length === 0 ? (
           <p className="text-xs text-gray-400">No topics loaded — click Refresh to fetch today&apos;s headlines.</p>
         ) : (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2">
             {todayTopics.map((item, i) => (
               <button
                 key={i}
                 onClick={() => setTopic(item.title)}
                 title={item.title}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors text-left ${
+                className={`flex items-start gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors text-left w-full ${
                   topic === item.title
                     ? 'bg-[#cc0000] text-white border-[#cc0000]'
                     : 'bg-white text-gray-700 border-gray-200 hover:border-[#cc0000] hover:text-[#cc0000]'
                 }`}
               >
-                <span className="line-clamp-1 max-w-[180px] sm:max-w-[220px]">{item.title}</span>
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 text-center text-[10px] font-black text-gray-400 flex items-center justify-center mt-0.5">
+                  {i + 1}
+                </span>
+                <span className="flex-1 leading-snug">{item.score > 2 ? '🔥 ' : ''}{item.title}</span>
+                {item.source && (
+                  <span className="flex-shrink-0 text-[10px] opacity-50 font-normal mt-0.5 ml-1">{item.source}</span>
+                )}
               </button>
             ))}
           </div>
