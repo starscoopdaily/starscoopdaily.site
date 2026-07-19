@@ -94,6 +94,7 @@ export default function RootLayout({ children }) {
           src="https://www.nexguild.in/nexguild-verify.js"
           data-site-slug="starscoopdaily"
           data-countdown="45"
+          data-scroll="0.3"
           strategy="afterInteractive"
         />
       </body>
