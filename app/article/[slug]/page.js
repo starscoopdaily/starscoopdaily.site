@@ -328,6 +328,16 @@ export default function ArticlePage({ params }) {
                       <StarRating rating={article.movieRating} />
                     </div>
                   )}
+                  {article.tmdbRating && (
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">TMDB Score</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-lg font-black text-yellow-500">★</span>
+                        <span className="font-black text-gray-800 text-base">{article.tmdbRating}</span>
+                        <span className="text-xs text-gray-400">/5</span>
+                      </div>
+                    </div>
+                  )}
                   {article.director && (
                     <div>
                       <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Director</p>
@@ -363,6 +373,20 @@ export default function ArticlePage({ params }) {
                     </div>
                   )}
                 </div>
+                {article.tmdbId && (
+                  <div className="mt-4 pt-3 border-t border-gray-200 flex items-center gap-2">
+                    <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Data from</span>
+                    <a
+                      href={`https://www.themoviedb.org/movie/${article.tmdbId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="opacity-70 hover:opacity-100 transition-opacity"
+                      title="View on TMDB"
+                    >
+                      <img src="/tmdb-logo.svg" alt="The Movie Database" className="h-3.5 w-auto" />
+                    </a>
+                  </div>
+                )}
               </div>
             )}
 

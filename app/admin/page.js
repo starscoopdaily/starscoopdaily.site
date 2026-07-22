@@ -284,6 +284,11 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   const [listConclusion, setListConclusion] = useState('');
   const [todayTopics, setTodayTopics] = useState([]);
   const [topicsLoading, setTopicsLoading] = useState(false);
+  const [tmdbLoading, setTmdbLoading] = useState(false);
+  const [tmdbError, setTmdbError] = useState('');
+  const [tmdbResults, setTmdbResults] = useState([]);
+  const [tmdbDetails, setTmdbDetails] = useState(null);
+  const [tmdbQuery, setTmdbQuery] = useState('');
 
   useEffect(() => {
     if (initialTopic) setTopic(initialTopic);
@@ -330,6 +335,63 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setSuccess('');
     setError('');
   }, [editArticle]);
+
+  const applyTmdbDetails = (details) => {
+    setTmdbDetails(details);
+    setArticle((prev) => ({
+      ...(prev || {}),
+      director: details.director || prev?.director || '',
+      runtime: details.runtime || prev?.runtime || '',
+      releaseYear: details.releaseYear || prev?.releaseYear || '',
+      genre: details.genre?.length ? details.genre : prev?.genre || [],
+      cast: details.cast?.length ? details.cast : prev?.cast || [],
+      streamingPlatforms: details.streamingPlatforms?.length ? details.streamingPlatforms : prev?.streamingPlatforms || [],
+      tmdbId: details.tmdbId,
+      tmdbRating: details.tmdbRating,
+      excerpt: prev?.excerpt || details.tagline || '',
+      metaDescription: prev?.metaDescription || (details.overview ? details.overview.slice(0, 160) : ''),
+    }));
+    if (details.poster && !manualImageUrl) {
+      setManualImageUrl(details.poster);
+      setImageMode('url');
+    }
+  };
+
+  const fetchTmdbById = async (id) => {
+    setTmdbLoading(true);
+    setTmdbError('');
+    try {
+      const r = await fetch(`/api/tmdb?id=${id}`);
+      const data = await r.json();
+      if (data.error) throw new Error(data.error);
+      if (data.details) applyTmdbDetails(data.details);
+      setTmdbResults([]);
+    } catch (e) {
+      setTmdbError(e.message);
+    } finally {
+      setTmdbLoading(false);
+    }
+  };
+
+  const fetchFromTmdb = async () => {
+    const q = tmdbQuery.trim() || topic.trim();
+    if (!q) return;
+    setTmdbLoading(true);
+    setTmdbError('');
+    setTmdbResults([]);
+    setTmdbDetails(null);
+    try {
+      const r = await fetch(`/api/tmdb?query=${encodeURIComponent(q)}`);
+      const data = await r.json();
+      if (data.error) throw new Error(data.error);
+      setTmdbResults(data.movies || []);
+      if (data.details) applyTmdbDetails(data.details);
+    } catch (e) {
+      setTmdbError(e.message);
+    } finally {
+      setTmdbLoading(false);
+    }
+  };
 
   const generateArticle = async () => {
     if (!topic.trim()) return;
@@ -680,9 +742,72 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
           {['Movies', 'Ending Explained', 'Where to Watch'].includes(article.category) && (
             <div className="border border-amber-200 bg-amber-50 rounded-xl p-4 space-y-3">
               <p className="text-xs font-black uppercase tracking-wider text-amber-700 mb-2">🎬 Movie Details</p>
+
+              {/* TMDB Auto-fill */}
+              <div className="pb-3 border-b border-amber-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <img src="/tmdb-logo.svg" alt="TMDB" className="h-3.5 w-auto opacity-80" />
+                  <span className="text-xs font-bold text-amber-800">Auto-fill from TMDB</span>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={tmdbQuery || topic}
+                    onChange={(e) => setTmdbQuery(e.target.value)}
+                    placeholder="Movie title to search..."
+                    className="flex-1 border border-amber-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                  />
+                  <button
+                    onClick={fetchFromTmdb}
+                    disabled={tmdbLoading}
+                    className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors disabled:opacity-60 whitespace-nowrap flex items-center gap-1.5"
+                  >
+                    {tmdbLoading ? <><span className="animate-spin inline-block">⟳</span> Fetching...</> : '🔍 Fetch from TMDB'}
+                  </button>
+                </div>
+                {tmdbError && <p className="text-red-600 text-xs mt-1.5">{tmdbError}</p>}
+
+                {/* Search results */}
+                {tmdbResults.length > 0 && (
+                  <div className="mt-2 space-y-1 max-h-56 overflow-y-auto rounded-lg border border-amber-200 bg-white p-1.5">
+                    <p className="text-[10px] text-amber-700 font-bold uppercase px-1 mb-1">Select the correct movie:</p>
+                    {tmdbResults.map((m) => (
+                      <button
+                        key={m.id}
+                        onClick={() => fetchTmdbById(m.id)}
+                        className="flex items-center gap-2 w-full text-left bg-amber-50 hover:bg-amber-100 border border-amber-100 hover:border-amber-300 rounded-lg px-2 py-1.5 transition-colors"
+                      >
+                        {m.poster
+                          ? <img src={m.poster} alt={m.title} className="w-7 h-10 object-cover rounded flex-shrink-0" />
+                          : <div className="w-7 h-10 bg-amber-200 rounded flex-shrink-0 flex items-center justify-center text-amber-600 text-[10px]">?</div>
+                        }
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-gray-800 truncate">{m.title}</p>
+                          <p className="text-[10px] text-gray-400">{m.year}{m.tmdbRating ? ` · ★ ${m.tmdbRating}/5` : ''}</p>
+                        </div>
+                        <span className="text-[10px] text-amber-700 font-bold flex-shrink-0">Use →</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Applied badge */}
+                {tmdbDetails && (
+                  <div className="mt-2 flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                    {tmdbDetails.poster && <img src={tmdbDetails.poster} alt="" className="w-6 h-9 object-cover rounded flex-shrink-0" />}
+                    <div>
+                      <p className="text-xs font-bold text-green-800">✓ Filled: {tmdbDetails.title} ({tmdbDetails.releaseYear})</p>
+                      {tmdbDetails.tmdbRating && (
+                        <p className="text-[10px] text-green-600">TMDB community: ★ {tmdbDetails.tmdbRating}/5 ({tmdbDetails.tmdbVotes?.toLocaleString()} votes)</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Rating (/5)</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Our Rating (/5)</label>
                   <input
                     type="number" min="0" max="5" step="0.5"
                     value={article.movieRating || ''}
