@@ -456,7 +456,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       const data = await r.json();
       if (data.error) throw new Error(data.error);
       setTvResults(data.shows || []);
-      if (data.details) applyTvDetails(data.details);
+      // Don't auto-apply first result — user must pick from list
     } catch (e) {
       setTvError(e.message);
     } finally {
@@ -511,7 +511,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       const data = await r.json();
       if (data.error) throw new Error(data.error);
       setPersonResults(data.people || []);
-      if (data.details) applyPersonDetails(data.details);
+      // Don't auto-apply first result — user must pick from list
     } catch (e) {
       setPersonError(e.message);
     } finally {
