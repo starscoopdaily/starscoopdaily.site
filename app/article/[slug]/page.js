@@ -152,7 +152,7 @@ export default function ArticlePage({ params }) {
 
       {/* Hero Image */}
       {article.image && (
-        <div className="relative w-full bg-gray-900" style={{ height: 'min(80vh, 560px)', minHeight: '320px' }}>
+        <div className="relative w-full bg-gray-900" style={{ height: 'min(60vh, 420px)', minHeight: '260px' }}>
           {/* Blur backdrop — fills dead space for portrait images */}
           <Image
             src={article.image}
