@@ -48,10 +48,16 @@ async function handleMovie(apiKey, query, id, country) {
   if (!movieId) return { movies, details: null };
 
   const r = await fetch(
-    `${BASE}/movie/${movieId}?api_key=${apiKey}&append_to_response=credits,watch%2Fproviders`,
+    `${BASE}/movie/${movieId}?api_key=${apiKey}&append_to_response=credits,watch%2Fproviders,images`,
     { next: { revalidate: 3600 } }
   );
   const d = await r.json();
+
+  // Extra backdrops for inline article images (skip duplicates of main backdrop)
+  const extraBackdrops = (d.images?.backdrops || [])
+    .filter((b) => b.file_path !== d.backdrop_path)
+    .slice(0, 2)
+    .map((b) => `${IMG}/w1280${b.file_path}`);
 
   return {
     movies,
@@ -67,6 +73,7 @@ async function handleMovie(apiKey, query, id, country) {
       cast: (d.credits?.cast || []).slice(0, 8).map((c) => c.name),
       poster: d.poster_path ? `${IMG}/w500${d.poster_path}` : null,
       backdrop: d.backdrop_path ? `${IMG}/w1280${d.backdrop_path}` : null,
+      extraBackdrops,
       tmdbRating: d.vote_average ? toFive(d.vote_average) : null,
       tmdbVotes: d.vote_count || 0,
       streamingPlatforms: getProviders(d, country),
