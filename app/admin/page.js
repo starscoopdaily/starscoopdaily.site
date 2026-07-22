@@ -405,7 +405,9 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
         `<figure><img src="${url}" alt="${alt}" style="width:100%;border-radius:8px;margin:20px 0"/><figcaption style="text-align:center;color:#666;font-size:14px;">${alt}</figcaption></figure>`;
 
       const injectInlineImages = (html) => {
-        const parts = html.split('</h2>');
+        // Strip existing inline figures first to avoid duplicates on re-publish
+        const stripped = html.replace(/<figure>[\s\S]*?<\/figure>/gi, '');
+        const parts = stripped.split('</h2>');
         return parts.map((part, i) => {
           let chunk = part;
           if (i < parts.length - 1) chunk += '</h2>';
