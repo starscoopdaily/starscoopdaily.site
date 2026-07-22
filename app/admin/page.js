@@ -634,7 +634,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       const inline2Url = inlineImage2Mode === 'upload' ? inline2UploadUrl : manualInlineImage2Url;
 
       const makeFigure = (url, alt) =>
-        `<figure><img src="${url}" alt="${alt}" style="width:100%;border-radius:8px;margin:20px 0"/><figcaption style="text-align:center;color:#666;font-size:14px;">${alt}</figcaption></figure>`;
+        `<figure><img src="${url}" alt="${alt}" style="max-width:100%;height:auto;display:block;margin:20px auto;border-radius:8px"/><figcaption style="text-align:center;color:#666;font-size:14px;">${alt}</figcaption></figure>`;
 
       const injectInlineImages = (html) => {
         // Strip existing inline figures first to avoid duplicates on re-publish
