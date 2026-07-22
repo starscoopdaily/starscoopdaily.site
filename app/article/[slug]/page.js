@@ -152,16 +152,16 @@ export default function ArticlePage({ params }) {
 
       {/* Hero Image */}
       {article.image && (
-        <div className="relative w-full h-64 sm:h-96 bg-gray-200">
+        <div className="relative w-full bg-gray-900" style={{ height: 'min(80vh, 560px)', minHeight: '320px' }}>
           <Image
             src={article.image}
             alt={article.imageAlt || article.title}
             fill
-            className="object-cover"
+            className="object-cover object-top"
             priority
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
         </div>
       )}
 
@@ -189,13 +189,13 @@ export default function ArticlePage({ params }) {
             </div>
 
             {/* Title */}
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 leading-tight mb-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-[2.6rem] font-black text-gray-900 leading-tight mb-4" style={{ letterSpacing: '-0.3px' }}>
               {article.title}
             </h1>
 
             {/* Excerpt */}
             {article.excerpt && (
-              <p className="text-lg text-gray-600 leading-relaxed border-l-4 pl-4 mb-6" style={{ borderColor: catColor }}>
+              <p className="text-lg sm:text-xl text-gray-600 leading-relaxed pl-5 mb-6" style={{ borderLeft: `4px solid ${catColor}`, fontWeight: 500 }}>
                 {article.excerpt}
               </p>
             )}
