@@ -28,7 +28,7 @@ export default function ArticleCard({ article, size = 'normal', showExcerpt = tr
                 alt=""
                 fill
                 aria-hidden="true"
-                className="object-cover scale-110 blur-xl brightness-50"
+                className="object-cover scale-110 blur-2xl brightness-90 opacity-80"
                 sizes="50vw"
               />
               {/* Main image — full portrait, no crop */}
