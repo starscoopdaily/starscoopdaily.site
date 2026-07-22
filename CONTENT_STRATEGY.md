@@ -468,6 +468,7 @@ Why [Celebrity] [Did X] — The Real Reason
 Every article must follow this exact sequence:
 
 ```
+PRE-PUBLISH
 1. Find trending topic (Google News / Trends)
 2. Research keyword (People Also Ask, long-tail)
 3. Select category in Admin panel
@@ -480,10 +481,60 @@ Every article must follow this exact sequence:
 10. Set meta description (150 chars, include keyword)
 11. Preview article → looks good on mobile?
 12. Publish
+
+POST-PUBLISH (Claude helps write all of these)
 13. Request GSC indexing (search.google.com/search-console → URL Inspection)
-14. Share on Twitter (@StarScoopDaily)
-15. Create Pinterest pin
+14. Claude writes Twitter post → copy → post on @StarScoopNews
+15. Claude writes Pinterest pin caption → make pin in Canva → upload to matching board
 ```
+
+---
+
+## 11a. Post-Publish Social Content (Claude writes after every article)
+
+**After every article is published, ask Claude:**
+> "Write me the Twitter post and Pinterest caption for [article title]"
+
+Claude will provide:
+
+### Twitter Post
+```
+Format:
+🚨 [hook line]
+
+[1-2 line teaser — the drama/hook]
+
+Full story 👇
+[article URL]
+
+#[Tag1] #[Tag2] #[Tag3] #Entertainment
+```
+- Keep under 280 characters total including the link
+- Use 3–4 hashtags max
+- Post on @StarScoopNews immediately after publishing
+
+### Pinterest Pin Caption
+```
+Format:
+[Headline — same as article title or punchier version]
+
+[2-3 sentences describing what the article covers]
+
+Click the link to read the full story 👇
+
+#[Celebrity] #[Category] #Entertainment #Hollywood #StarScoopDaily
+```
+- Use 8–10 hashtags for Pinterest (more = more discovery)
+- Pin to the matching board (British Royals → British Royal Family News board, etc.)
+- Use article hero image as pin background in Canva
+- Pin size: 1000×1500px vertical
+
+### Canva Pin Template Instructions
+1. Open Canva → search "Pinterest Pin" → choose dark/dramatic template
+2. Replace background with article hero image
+3. Add headline text (bold, white, large)
+4. Add `starscoopdaily.site` at the bottom in small text
+5. Download as PNG → upload to Pinterest → add caption → pin to board
 
 ---
 
