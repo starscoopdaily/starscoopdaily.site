@@ -21,13 +21,25 @@ export default function ArticleCard({ article, size = 'normal', showExcerpt = tr
         {/* Image */}
         <div className={`relative overflow-hidden flex-shrink-0 bg-gray-900 ${isLarge ? 'h-64 sm:h-80' : 'h-52'}`}>
           {article.image ? (
-            <Image
-              src={article.image}
-              alt={article.imageAlt || article.title}
-              fill
-              className="object-contain group-hover:scale-105 transition-transform duration-500"
-              sizes={isLarge ? '(max-width: 768px) 100vw, 50vw' : '(max-width: 768px) 100vw, 33vw'}
-            />
+            <>
+              {/* Blurred background — same image, zoomed + blurred to fill space */}
+              <Image
+                src={article.image}
+                alt=""
+                fill
+                aria-hidden="true"
+                className="object-cover scale-110 blur-xl brightness-50"
+                sizes="50vw"
+              />
+              {/* Main image — full portrait, no crop */}
+              <Image
+                src={article.image}
+                alt={article.imageAlt || article.title}
+                fill
+                className="object-contain relative z-10 group-hover:scale-105 transition-transform duration-500"
+                sizes={isLarge ? '(max-width: 768px) 100vw, 50vw' : '(max-width: 768px) 100vw, 33vw'}
+              />
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
               <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
