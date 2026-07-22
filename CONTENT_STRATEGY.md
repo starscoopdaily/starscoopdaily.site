@@ -495,46 +495,78 @@ POST-PUBLISH (Claude helps write all of these)
 **Claude generates these WITHOUT being asked — immediately after publishing an article.**
 Claude creates the article, knows the title and URL, so it provides all social content automatically.
 
-Claude will provide:
+Claude outputs EXACTLY this format every time — ready to copy-paste with zero editing:
 
-### Twitter Post
+---
+
+### X (Twitter) Post
+**Account:** @StarScoopNews
+**Steps:** Copy → paste on X → post immediately
+
 ```
-Format:
 🚨 [hook line]
 
-[1-2 line teaser — the drama/hook]
+[1-2 line teaser]
 
 Full story 👇
 [article URL]
 
 #[Tag1] #[Tag2] #[Tag3] #Entertainment
 ```
-- Keep under 280 characters total including the link
-- Use 3–4 hashtags max
-- Post on @StarScoopNews immediately after publishing
+Rules:
+- Max 280 characters including URL
+- 3–4 hashtags only
+- Emoji at start for attention
 
-### Pinterest Pin Caption
+---
+
+### Pinterest Pin
+**Account:** StarScoop Daily Pinterest
+**Steps:** Create Pin → paste URL to fetch image → fill fields below → select board → publish
+
+**Title:**
 ```
-Format:
-[Headline — same as article title or punchier version]
-
-[2-3 sentences describing what the article covers]
-
-Click the link to read the full story 👇
-
-#[Celebrity] #[Category] #Entertainment #Hollywood #StarScoopDaily
+[Punchy version of article headline — max 100 chars]
 ```
-- Use 8–10 hashtags for Pinterest (more = more discovery)
-- Pin to the matching board (British Royals → British Royal Family News board, etc.)
-- Use article hero image as pin background in Canva
-- Pin size: 1000×1500px vertical
 
-### Canva Pin Template Instructions
-1. Open Canva → search "Pinterest Pin" → choose dark/dramatic template
-2. Replace background with article hero image
-3. Add headline text (bold, white, large)
-4. Add `starscoopdaily.site` at the bottom in small text
-5. Download as PNG → upload to Pinterest → add caption → pin to board
+**Description:**
+```
+[2–3 sentences about the article — what happened, why it matters]
+
+Read the full story 👇 starscoopdaily.site
+
+#[Tag1] #[Tag2] #[Tag3] #[Tag4] #[Tag5] #[Tag6] #[Tag7] #[Tag8] #[Tag9] #StarScoopDaily
+```
+
+**Link:** `[full article URL]`
+
+**Board:** `[exact board name to pin to]`
+
+**Alt Text:**
+```
+[1 sentence describing the image for accessibility + SEO]
+```
+
+Rules:
+- 8–10 hashtags for maximum Pinterest discovery
+- Always include #StarScoopDaily as last hashtag
+- Board must match article category exactly
+- Mark as AI-Modified toggle: ON
+- Alt text: always fill in
+
+---
+
+### Pinterest Board → Category Mapping
+| Article Category | Pinterest Board |
+|---|---|
+| British Royals | British Royal Family News |
+| Celebrity | Celebrity Scandals & Drama |
+| Relationships | Celebrity Dating & ... |
+| Hollywood / Movies | Hollywood Gossip |
+| TV Shows | TV Show Updates |
+| Music / Pop Culture | Music & Pop Culture |
+| Bollywood | Bollywood Celebrities |
+| Fashion | Celebrity Scandals & Drama |
 
 ---
 
