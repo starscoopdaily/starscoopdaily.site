@@ -409,14 +409,14 @@ export default function ArticlePage({ params }) {
 
       {/* Hero Image */}
       {article.image && (
-        <div className="relative w-full bg-gray-900" style={{ height: 'min(60vh, 420px)', minHeight: '260px' }}>
+        <div className="relative w-full bg-gray-900 overflow-hidden" style={{ height: 'min(60vh, 420px)', minHeight: '260px' }}>
           {/* Blur backdrop — fills dead space for portrait images */}
           <Image
             src={article.image}
             alt=""
             fill
             aria-hidden="true"
-            className="object-cover scale-110 blur-2xl brightness-75 opacity-70"
+            className="object-cover scale-110 blur-2xl brightness-90 opacity-80"
             sizes="100vw"
           />
           {/* Main image — object-contain shows full portrait without cropping */}
@@ -424,7 +424,7 @@ export default function ArticlePage({ params }) {
             src={article.image}
             alt={article.imageAlt || article.title}
             fill
-            className="object-contain relative z-10"
+            className="object-contain z-10"
             priority
             sizes="100vw"
           />
