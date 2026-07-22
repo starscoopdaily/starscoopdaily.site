@@ -359,7 +359,7 @@ export default function ArticlePage({ params }) {
     '@context': 'https://schema.org',
     '@type': 'Review',
     name: article.title,
-    description: article.metaDescription || article.excerpt,
+    description: article.metaDescription || article.excerpt?.slice(0, 160),
     image: article.image ? [article.image] : [],
     datePublished: article.date,
     author: { '@type': 'Organization', name: 'StarScoop Daily' },
@@ -385,7 +385,7 @@ export default function ArticlePage({ params }) {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
     headline: article.title,
-    description: article.metaDescription || article.excerpt,
+    description: article.metaDescription || article.excerpt?.slice(0, 160),
     image: article.image ? [article.image] : [],
     datePublished: article.date,
     dateModified: article.date,
@@ -462,8 +462,8 @@ export default function ArticlePage({ params }) {
 
             {/* Excerpt */}
             {article.excerpt && (
-              <p className="text-lg sm:text-xl text-gray-600 leading-relaxed pl-5 mb-6" style={{ borderLeft: `4px solid ${catColor}`, fontWeight: 500 }}>
-                {article.excerpt}
+              <p className="text-lg sm:text-xl text-gray-600 leading-relaxed pl-5 mb-6 line-clamp-3" style={{ borderLeft: `4px solid ${catColor}`, fontWeight: 500 }}>
+                {article.excerpt.length > 280 ? article.excerpt.slice(0, 280).trimEnd() + '…' : article.excerpt}
               </p>
             )}
 
