@@ -6,8 +6,20 @@ import Image from 'next/image';
 export default function HeroCarousel({ articles }) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [portraits, setPortraits] = useState(() => new Array(articles.length).fill(true));
   const touchStartX = useRef(null);
   const total = articles.length;
+
+  const markOrientation = (i, imgEl) => {
+    if (!imgEl) return;
+    const isPortrait = imgEl.naturalHeight > imgEl.naturalWidth;
+    setPortraits((prev) => {
+      if (prev[i] === isPortrait) return prev;
+      const next = [...prev];
+      next[i] = isPortrait;
+      return next;
+    });
+  };
 
   const next = useCallback(() => setCurrent((c) => (c + 1) % total), [total]);
   const prev = useCallback(() => setCurrent((c) => (c - 1 + total) % total), [total]);
@@ -45,19 +57,33 @@ export default function HeroCarousel({ articles }) {
           >
             <Link href={`/article/${article.slug}`} className="group block w-full h-full">
               {article.image && (
-                <Image
-                  src={article.image}
-                  alt={article.imageAlt || article.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  priority={i === 0}
-                  sizes="100vw"
-                />
+                <>
+                  {/* Blur backdrop — always shown, fills dead space for portrait images */}
+                  <Image
+                    src={article.image}
+                    alt=""
+                    fill
+                    aria-hidden="true"
+                    className="object-cover scale-110 blur-2xl brightness-90 opacity-80"
+                    priority={i === 0}
+                    sizes="100vw"
+                  />
+                  {/* Main image — contain for portrait, cover for landscape */}
+                  <Image
+                    src={article.image}
+                    alt={article.imageAlt || article.title}
+                    fill
+                    className={`z-10 transition-transform duration-700 group-hover:scale-105 ${portraits[i] ? 'object-contain' : 'object-cover'}`}
+                    priority={i === 0}
+                    sizes="100vw"
+                    onLoad={(e) => markOrientation(i, e.target)}
+                  />
+                </>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-20" />
 
               {/* Badges */}
-              <div className="absolute top-3 left-3 sm:top-5 sm:left-5 flex items-center gap-2">
+              <div className="absolute top-3 left-3 sm:top-5 sm:left-5 z-30 flex items-center gap-2">
                 {i === 0 && (
                   <span style={{ background: '#cc0000', color: '#fff', fontWeight: 700, padding: '3px 10px', borderRadius: '4px', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     Featured
@@ -71,7 +97,7 @@ export default function HeroCarousel({ articles }) {
               </div>
 
               {/* Title + meta */}
-              <div className="absolute bottom-10 sm:bottom-12 left-0 right-0 px-4 sm:px-7">
+              <div className="absolute bottom-10 sm:bottom-12 left-0 right-0 px-4 sm:px-7 z-30">
                 <h2 className="text-white font-black text-lg sm:text-2xl lg:text-[2rem] leading-snug mb-2 max-w-3xl line-clamp-3 group-hover:text-red-100 transition-colors" style={{ textWrap: 'balance' }}>
                   {article.title}
                 </h2>
