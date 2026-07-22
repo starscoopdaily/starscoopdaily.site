@@ -25,13 +25,19 @@ function prettifyCategory(name) {
 
 export async function generateMetadata({ params }) {
   const pretty = prettifyCategory(params.name);
+  const { description: catDesc, icon } = getCategoryConfig(params.name);
+  const description = catDesc || `Latest ${pretty} news, gossip, and stories — updated daily on StarScoop Daily.`;
   return {
-    title: `${pretty} News — StarScoop Daily`,
-    description: `Latest ${pretty} news, gossip, and stories — updated daily on StarScoop Daily.`,
+    title: `${pretty} ${icon} — StarScoop Daily`,
+    description,
     openGraph: {
-      title: `${pretty} News`,
-      description: `Latest ${pretty} news and gossip on StarScoop Daily.`,
+      title: `${pretty} — StarScoop Daily`,
+      description,
       type: 'website',
+      url: `https://www.starscoopdaily.site/category/${params.name}`,
+    },
+    alternates: {
+      canonical: `https://www.starscoopdaily.site/category/${params.name}`,
     },
   };
 }

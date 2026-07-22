@@ -1,4 +1,5 @@
 import { getAllArticles, getAllCategories } from '@/lib/articles';
+import { ALL_KNOWN_CATEGORIES } from '@/lib/categories';
 
 export default function sitemap() {
   const baseUrl = 'https://www.starscoopdaily.site';
@@ -12,8 +13,16 @@ export default function sitemap() {
     { url: `${baseUrl}/disclaimer`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
   ];
 
+  // All known category pages — included even if no articles yet so Google indexes them
+  const knownCategoryPages = ALL_KNOWN_CATEGORIES.map((slug) => ({
+    url: `${baseUrl}/category/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily',
+    priority: 0.7,
+  }));
+
   let articlePages = [];
-  let categoryPages = [];
+  let extraCategoryPages = [];
 
   try {
     const articles = getAllArticles();
@@ -24,16 +33,21 @@ export default function sitemap() {
       priority: article.featured ? 0.9 : 0.8,
     }));
 
-    const categories = getAllCategories();
-    categoryPages = categories.map((cat) => ({
-      url: `${baseUrl}/category/${cat.toLowerCase().replace(/\s+/g, '-')}`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.7,
-    }));
+    // Any categories from articles not already in the known list
+    const knownSlugs = new Set(ALL_KNOWN_CATEGORIES);
+    const articleCats = getAllCategories();
+    extraCategoryPages = articleCats
+      .map((cat) => cat.toLowerCase().replace(/\s+/g, '-'))
+      .filter((slug) => !knownSlugs.has(slug))
+      .map((slug) => ({
+        url: `${baseUrl}/category/${slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.7,
+      }));
   } catch {
     // No articles yet
   }
 
-  return [...staticPages, ...articlePages, ...categoryPages];
+  return [...staticPages, ...knownCategoryPages, ...extraCategoryPages, ...articlePages];
 }
