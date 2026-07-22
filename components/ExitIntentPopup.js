@@ -6,11 +6,7 @@ export default function ExitIntentPopup({ smartlink }) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (!smartlink) return;
-    const KEY = 'ssd_popup_last';
-    const COOLDOWN = 24 * 60 * 60 * 1000; // 24 hours
-    const last = parseInt(localStorage.getItem(KEY) || '0');
-    if (Date.now() - last < COOLDOWN) return;
+    if (!smartlink || sessionStorage.getItem('exit_shown')) return;
 
     let hasScrolled = false;
 
@@ -18,7 +14,7 @@ export default function ExitIntentPopup({ smartlink }) {
     const onLeave = (e) => {
       if (e.clientY <= 0 && hasScrolled) {
         setShow(true);
-        localStorage.setItem(KEY, String(Date.now()));
+        sessionStorage.setItem('exit_shown', '1');
       }
     };
 
