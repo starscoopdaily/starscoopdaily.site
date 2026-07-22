@@ -130,6 +130,11 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Ad — between Trending Rail and main content, visible to every visitor */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-4 flex justify-center">
+        <AdSlot slot="homepage-top" />
+      </div>
+
       {/* Main Content + Sidebar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -148,13 +153,44 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Homepage Top Ad */}
-            <div className="mt-6">
+            {/* Category Sections — first 2 */}
+            {categorySections.slice(0, 2).map((section) => {
+              const slug = section.name.toLowerCase().replace(/\s+/g, '-');
+              const { color, icon } = getCategoryConfig(slug);
+              return (
+                <div key={section.name} className="mt-10">
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{icon}</span>
+                      <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">
+                        {section.name}
+                      </h2>
+                      <div className="h-px w-16" style={{ background: color }} />
+                    </div>
+                    <Link
+                      href={`/category/${slug}`}
+                      className="text-sm font-semibold hover:underline whitespace-nowrap"
+                      style={{ color }}
+                    >
+                      See All →
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {section.articles.map((article) => (
+                      <ArticleCard key={article.slug} article={article} showExcerpt={false} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Mid-page ad — between category sections */}
+            <div className="mt-10 flex justify-center">
               <AdSlot slot="homepage-top" />
             </div>
 
-            {/* Category Sections */}
-            {categorySections.map((section) => {
+            {/* Category Sections — remaining */}
+            {categorySections.slice(2).map((section) => {
               const slug = section.name.toLowerCase().replace(/\s+/g, '-');
               const { color, icon } = getCategoryConfig(slug);
               return (
