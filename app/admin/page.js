@@ -497,13 +497,13 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       personBirthday: details.birthday || prev?.personBirthday || '',
       personBirthplace: details.birthplace || prev?.personBirthplace || '',
       personBio: details.biography ? details.biography.slice(0, 500) : prev?.personBio || '',
-      personProfilePhoto: details.wikiPhoto || details.profilePhoto || prev?.personProfilePhoto || '',
+      personProfilePhoto: details.profilePhoto || prev?.personProfilePhoto || '',
+      personWikiPhoto: details.wikiPhoto || prev?.personWikiPhoto || '',
       personKnownFor: details.knownFor?.length ? details.knownFor : prev?.personKnownFor || [],
       personTmdbId: details.tmdbId,
       excerpt: prev?.excerpt || (details.biography ? details.biography.slice(0, 200) : ''),
     }));
-    const photo = details.wikiPhoto || details.profilePhoto;
-    if (photo) { setManualImageUrl(photo); setImageMode('url'); }
+    if (details.profilePhoto) { setManualImageUrl(details.profilePhoto); setImageMode('url'); }
   };
 
   const fetchPersonById = async (id) => {
