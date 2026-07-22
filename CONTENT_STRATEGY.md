@@ -490,10 +490,10 @@ POST-PUBLISH (Claude helps write all of these)
 
 ---
 
-## 11a. Post-Publish Social Content (Claude writes after every article)
+## 11a. Post-Publish Social Content (Claude writes AUTOMATICALLY after every publish)
 
-**After every article is published, ask Claude:**
-> "Write me the Twitter post and Pinterest caption for [article title]"
+**Claude generates these WITHOUT being asked — immediately after publishing an article.**
+Claude creates the article, knows the title and URL, so it provides all social content automatically.
 
 Claude will provide:
 
@@ -538,7 +538,29 @@ Click the link to read the full story 👇
 
 ---
 
-## 12. What the Site Is NOT
+## 12. API Calls — What Gets Called & When
+
+Every article generation triggers these APIs in order:
+
+| Step | API | What It Does | When |
+|---|---|---|---|
+| 1 | **Claude AI** (admin → `/api/generate`) | Generates full article HTML from topic + category | On "Generate Article" click |
+| 2 | **TMDB Search** (`/api/tmdb?type=movie/tv/person&query=`) | Searches for matching movie, TV show, or person | Auto after article generates |
+| 3 | **TMDB Details** (`/api/tmdb?type=movie/tv/person&id=`) | Fetches full details — backdrop, poster, cast, ratings | Auto after top search result found |
+| 4 | **OMDb API** (inside `/api/tmdb` server route) | Fetches IMDB rating, Rotten Tomatoes %, Metacritic score | Inside TMDB movie details call |
+| 5 | **Wikipedia REST API** (inside `/api/tmdb` server route) | Fetches person bio extract + thumbnail photo | Inside TMDB person details call |
+| 6 | **Pexels API** (`/api/pexels?query=`) | Fetches stock images if no TMDB image available | Manual — image picker fallback |
+| 7 | **GitHub API** (admin → `saveConfig` / publish) | Saves article JSON to repo → triggers Vercel rebuild | On "Publish" click |
+
+**Environment variables required:**
+- `TMDB_API_KEY` — Vercel env var (never in code)
+- `OMDB_API_KEY` — Vercel env var
+- `PEXELS_API_KEY` — Vercel env var
+- GitHub token — stored in admin localStorage (Site Controls tab)
+
+---
+
+## 13. What the Site Is NOT
 
 - Not a piracy/streaming index (no links to pirated content)
 - Not a review aggregator (original commentary only)
