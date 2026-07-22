@@ -20,8 +20,8 @@ const LEGAL_LINKS = [
   { label: 'About Us', href: '/about' },
   { label: 'Contact', href: '/contact' },
   { label: 'Privacy Policy', href: '/privacy-policy' },
-  { label: 'Terms of Service', href: '/terms' },
   { label: 'Disclaimer', href: '/disclaimer' },
+  { label: 'DMCA', href: '/dmca' },
 ];
 
 export default function Footer() {

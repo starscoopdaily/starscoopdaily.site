@@ -9,7 +9,7 @@ export default function PrivacyPolicyPage() {
       <div className="mb-10">
         <span className="category-badge mb-3 inline-block">Legal</span>
         <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-2">Privacy Policy</h1>
-        <p className="text-gray-400 text-sm">Last updated: June 23, 2026</p>
+        <p className="text-gray-400 text-sm">Last updated: July 23, 2026</p>
         <div className="h-1 w-16 bg-[#cc0000] rounded mt-4"></div>
       </div>
 
@@ -42,7 +42,7 @@ export default function PrivacyPolicyPage() {
           },
           {
             title: '4. Third-Party Services',
-            content: `We use third-party services including: Google Analytics (analytics), Adsterra (advertising),
+            content: `We use third-party services including: Google Analytics (analytics), Adsterra (advertising), Monetag (push notifications and advertising),
             and Vercel (hosting). These services may collect information independently under their own privacy policies.
             We do not sell your personal data to third parties.`,
           },
