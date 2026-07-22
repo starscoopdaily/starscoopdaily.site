@@ -4,6 +4,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdSlot from '@/components/AdSlot';
 import MonetizationScripts from '@/components/MonetizationScripts';
+import ExitIntentPopup from '@/components/ExitIntentPopup';
+import { getSmartLink } from '@/lib/adConfig';
 
 export const metadata = {
   metadataBase: new URL('https://www.starscoopdaily.site'),
@@ -65,6 +67,7 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const smartlink = getSmartLink();
   return (
     <html lang="en">
       <head>
@@ -102,6 +105,7 @@ export default function RootLayout({ children }) {
           strategy="afterInteractive"
         />
         <MonetizationScripts />
+        <ExitIntentPopup smartlink={smartlink} />
       </body>
     </html>
   );

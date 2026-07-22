@@ -3,10 +3,53 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getArticleBySlug, getAllArticles, getRelatedArticles } from '@/lib/articles';
 import { getCategoryConfig } from '@/lib/categories';
+import { getSmartLink } from '@/lib/adConfig';
 import Sidebar from '@/components/Sidebar';
 import ArticleCard from '@/components/ArticleCard';
 import AdSlot from '@/components/AdSlot';
 import StickyArticleBar from '@/components/StickyArticleBar';
+
+const CATEGORY_BTNS = {
+  celebrity:          { icon: '📸', label: 'See Exclusive Photos & More',    sub: 'Full gallery — tap to view now' },
+  hollywood:          { icon: '▶',  label: 'Watch Full Movie Now',            sub: 'Free stream — no sign-up needed' },
+  bollywood:          { icon: '🎬', label: 'Watch Full Movie Now',            sub: 'Free streaming available' },
+  'tv-shows':         { icon: '▶',  label: 'Watch Full Episode Free',         sub: 'Stream instantly on any device' },
+  music:              { icon: '🎵', label: 'Listen Free — Full Album',        sub: 'Stream the complete album now' },
+  movies:             { icon: '🎬', label: 'Watch Full Movie Free',           sub: 'Available to stream right now' },
+  'ending-explained': { icon: '🎬', label: 'Watch the Full Movie Here',       sub: 'See the ending for yourself' },
+  relationships:      { icon: '💖', label: 'See the Full Story Here',         sub: 'More shocking details inside' },
+  'british-royals':   { icon: '👑', label: 'Read Full Exclusive Royal Story', sub: 'Palace insider reveals all' },
+  fashion:            { icon: '👗', label: 'Shop This Celebrity Look Now',    sub: 'Get the exact outfit' },
+  'pop-culture':      { icon: '🔥', label: "See What Everyone's Talking About", sub: 'The viral moment explained' },
+  'where-to-watch':   { icon: '📡', label: 'Find Where to Stream Free',       sub: 'Available on multiple platforms' },
+};
+const DEFAULT_BTN = { icon: '👉', label: 'See More Exclusive Content', sub: 'Click to discover more' };
+
+function SmartLinkCTA({ smartlink, catSlug }) {
+  if (!smartlink) return null;
+  const btn = CATEGORY_BTNS[catSlug] || DEFAULT_BTN;
+  return (
+    <a
+      href={smartlink}
+      target="_blank"
+      rel="nofollow noopener noreferrer"
+      className="flex items-center gap-4 bg-gray-900 text-white rounded-2xl p-4 sm:p-5 my-6 hover:bg-gray-800 transition-all group shadow-lg border border-gray-800 cursor-pointer no-underline"
+    >
+      <div className="w-14 h-14 bg-[#cc0000] rounded-full flex items-center justify-center text-2xl flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">
+        {btn.icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-black text-base sm:text-lg text-white leading-tight">{btn.label}</p>
+        <p className="text-gray-400 text-xs sm:text-sm mt-1">{btn.sub}</p>
+      </div>
+      <div className="flex-shrink-0 w-10 h-10 bg-[#cc0000] rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform">
+        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+        </svg>
+      </div>
+    </a>
+  );
+}
 
 function splitAtParagraph(html, n) {
   let count = 0;
@@ -152,6 +195,7 @@ export default function ArticlePage({ params }) {
   const related = getRelatedArticles(article.slug, article.category, 3);
   const catSlug = article.category?.toLowerCase().replace(/\s+/g, '-') || '';
   const { color: catColor } = getCategoryConfig(catSlug);
+  const smartlink = getSmartLink();
 
   // Split content for in-content ads at paragraph 3 and paragraph 7
   const [contentPart1, contentRest] = splitAtParagraph(article.content || '', 3);
@@ -434,6 +478,7 @@ export default function ArticlePage({ params }) {
             ) : (
               <>
                 <div className="article-content" dangerouslySetInnerHTML={{ __html: contentPart1 }} />
+                <SmartLinkCTA smartlink={smartlink} catSlug={catSlug} />
                 <div className="my-4 border-t border-b border-gray-100 py-3 flex flex-col items-center gap-1">
                   <p className="text-[10px] uppercase tracking-widest text-gray-300 font-semibold">Advertisement</p>
                   <AdSlot slot="article-top" />
@@ -468,6 +513,9 @@ export default function ArticlePage({ params }) {
             <div className="mt-8 pt-6 border-t border-gray-100">
               <ShareButtons title={article.title} slug={article.slug} />
             </div>
+
+            {/* SmartLink CTA — end of article */}
+            <SmartLinkCTA smartlink={smartlink} catSlug={catSlug} />
 
             {/* Related Articles */}
             {related.length > 0 && (

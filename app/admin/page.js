@@ -1454,6 +1454,8 @@ function AdsManager() {
     }));
   };
 
+  const updateSmartLink = (val) => setConfig((prev) => ({ ...prev, smartlink: val }));
+
   const addSlot = () => {
     const name = newSlotName.trim().toLowerCase().replace(/\s+/g, '-');
     if (!name || config.slots[name]) return;
@@ -1520,6 +1522,22 @@ function AdsManager() {
           {saved}
         </div>
       )}
+
+      {/* SmartLink URL */}
+      <div className="border border-blue-200 bg-blue-50 rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-base">🔗</span>
+          <h3 className="font-black text-blue-900 text-sm">SmartLink URL</h3>
+        </div>
+        <p className="text-xs text-blue-600 mb-3">Used in article CTA buttons, exit popup, 404 page, and empty category pages. Change here to update everywhere instantly.</p>
+        <input
+          type="url"
+          value={config.smartlink || ''}
+          onChange={(e) => updateSmartLink(e.target.value)}
+          placeholder="https://your-smartlink-url.com/..."
+          className="w-full border border-blue-200 rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+        />
+      </div>
 
       {/* Slot cards */}
       {slots.map(([slotName, slot]) => {

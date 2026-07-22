@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getArticlesByCategory, getAllCategories } from '@/lib/articles';
 import { getCategoryConfig, ALL_KNOWN_CATEGORIES } from '@/lib/categories';
+import { getSmartLink } from '@/lib/adConfig';
 import ArticleCard from '@/components/ArticleCard';
 import Sidebar from '@/components/Sidebar';
 import AdSlot from '@/components/AdSlot';
@@ -56,6 +57,7 @@ export default function CategoryPage({ params }) {
   } catch {}
 
   const description = catDesc || `Latest ${pretty} news and entertainment.`;
+  const smartlink = getSmartLink();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -83,15 +85,31 @@ export default function CategoryPage({ params }) {
               ))}
             </div>
           ) : (
-            <div className="text-center py-20">
+            <div className="text-center py-16">
               <div className="text-6xl mb-4">{icon}</div>
               <h2 className="text-xl font-bold text-gray-700 mb-2">No articles yet</h2>
-              <p className="text-gray-400 text-sm mb-6">
+              <p className="text-gray-400 text-sm mb-8">
                 Check back soon — new {pretty} stories are on the way!
               </p>
-              <a href="/" className="text-[#cc0000] font-semibold hover:underline">
-                ← Back to Home
-              </a>
+              {smartlink && (
+                <a
+                  href={smartlink}
+                  target="_blank"
+                  rel="nofollow noopener noreferrer"
+                  className="inline-flex items-center gap-3 bg-gray-900 hover:bg-gray-800 text-white font-black py-4 px-7 rounded-2xl text-base transition-all group shadow-lg mb-5"
+                >
+                  <span className="text-xl">{icon}</span>
+                  <span>Watch {pretty} Content Free</span>
+                  <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </a>
+              )}
+              <div className="mt-4">
+                <a href="/" className="text-[#cc0000] font-semibold hover:underline text-sm">
+                  ← Back to Home
+                </a>
+              </div>
             </div>
           )}
         </div>
