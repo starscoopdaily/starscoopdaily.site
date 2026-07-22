@@ -69,7 +69,7 @@ export default function ArticleCard({ article, size = 'normal', showExcerpt = tr
         {/* Content */}
         <div className="p-4 flex flex-col flex-1">
           <h2
-            className={`font-black text-gray-900 group-hover:text-[#cc0000] transition-colors leading-snug mb-2 line-clamp-3 ${
+            className={`font-black text-gray-900 group-hover:text-[#cc0000] transition-colors leading-normal mb-2 line-clamp-3 ${
               isLarge ? 'text-xl sm:text-2xl' : 'text-base sm:text-[17px]'
             }`}
             style={{ textWrap: 'balance' }}

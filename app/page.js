@@ -68,7 +68,7 @@ export default function HomePage() {
 
               {/* Content — title + author only at bottom */}
               <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 z-20">
-                <h1 className="text-white font-black text-xl sm:text-3xl lg:text-4xl leading-tight mb-3 max-w-3xl line-clamp-3 group-hover:text-red-100 transition-colors" style={{ textWrap: 'balance' }}>
+                <h1 className="text-white font-black text-xl sm:text-3xl lg:text-4xl leading-snug mb-3 max-w-3xl line-clamp-3 group-hover:text-red-100 transition-colors" style={{ textWrap: 'balance' }}>
                   {featured.title}
                 </h1>
                 <div className="flex items-center gap-3 text-gray-300 text-xs">
