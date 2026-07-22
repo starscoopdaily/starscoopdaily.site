@@ -50,7 +50,7 @@ export default function ArticleCard({ article, size = 'normal', showExcerpt = tr
 
           {/* Category badge */}
           {article.category && (
-            <div className="absolute top-3 left-3">
+            <div className="absolute top-3 left-3 z-20">
               <span className="category-badge" style={{ background: catColor }}>
                 {article.category}
               </span>
