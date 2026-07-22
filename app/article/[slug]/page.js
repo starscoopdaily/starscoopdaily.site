@@ -60,6 +60,45 @@ export async function generateMetadata({ params }) {
   };
 }
 
+function StarRating({ rating, max = 5 }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: max }, (_, i) => {
+        const starVal = i + 1;
+        const full = starVal <= rating;
+        const half = !full && starVal - 0.5 <= rating;
+        return (
+          <span key={i} style={{ position: 'relative', display: 'inline-block', fontSize: '22px', lineHeight: 1, color: '#e5e7eb' }}>
+            ★
+            {(full || half) && (
+              <span style={{ position: 'absolute', left: 0, top: 0, width: full ? '100%' : '50%', overflow: 'hidden', color: '#facc15' }}>★</span>
+            )}
+          </span>
+        );
+      })}
+      <span className="ml-2 text-base font-black text-gray-800">{rating}</span>
+      <span className="text-xs text-gray-500 ml-0.5">/5</span>
+    </div>
+  );
+}
+
+const STREAMING_COLORS = {
+  'Netflix': '#E50914',
+  'Amazon Prime': '#00A8E0',
+  'Prime Video': '#00A8E0',
+  'Disney+': '#113CCF',
+  'HBO Max': '#5822b0',
+  'Max': '#5822b0',
+  'Hulu': '#1db954',
+  'Apple TV+': '#1c1c1e',
+  'Peacock': '#f47521',
+  'Paramount+': '#0064ff',
+  'Mubi': '#292929',
+  'Zee5': '#8b2be2',
+  'JioHotstar': '#1a73e8',
+  'SonyLIV': '#e63946',
+};
+
 function ShareButtons({ title, slug }) {
   const url = `https://www.starscoopdaily.site/article/${slug}`;
   const encoded = encodeURIComponent(url);
@@ -118,7 +157,34 @@ export default function ArticlePage({ params }) {
   const [contentPart1, contentRest] = splitAtParagraph(article.content || '', 3);
   const [contentPart2, contentPart3] = splitAtParagraph(contentRest, 4);
 
-  const jsonLd = {
+  const isMovieReview = !!article.movieRating;
+  const jsonLd = isMovieReview ? {
+    '@context': 'https://schema.org',
+    '@type': 'Review',
+    name: article.title,
+    description: article.metaDescription || article.excerpt,
+    image: article.image ? [article.image] : [],
+    datePublished: article.date,
+    author: { '@type': 'Organization', name: 'StarScoop Daily' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'StarScoop Daily',
+      logo: { '@type': 'ImageObject', url: 'https://www.starscoopdaily.site/opengraph-image' },
+    },
+    reviewRating: {
+      '@type': 'Rating',
+      ratingValue: article.movieRating,
+      bestRating: 5,
+      worstRating: 1,
+    },
+    itemReviewed: {
+      '@type': 'Movie',
+      name: article.movieTitle || article.title,
+      ...(article.director ? { director: { '@type': 'Person', name: article.director } } : {}),
+      ...(article.releaseYear ? { dateCreated: String(article.releaseYear) } : {}),
+    },
+    url: `https://www.starscoopdaily.site/article/${article.slug}`,
+  } : {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
     headline: article.title,
@@ -130,15 +196,9 @@ export default function ArticlePage({ params }) {
     publisher: {
       '@type': 'Organization',
       name: 'StarScoop Daily',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://www.starscoopdaily.site/opengraph-image',
-      },
+      logo: { '@type': 'ImageObject', url: 'https://www.starscoopdaily.site/opengraph-image' },
     },
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': `https://www.starscoopdaily.site/article/${article.slug}`,
-    },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://www.starscoopdaily.site/article/${article.slug}` },
     keywords: article.tags?.join(', '),
   };
 
@@ -208,6 +268,89 @@ export default function ArticlePage({ params }) {
               <p className="text-lg sm:text-xl text-gray-600 leading-relaxed pl-5 mb-6" style={{ borderLeft: `4px solid ${catColor}`, fontWeight: 500 }}>
                 {article.excerpt}
               </p>
+            )}
+
+            {/* Movie Info Box — shows for review/movie articles */}
+            {(article.movieRating || article.director || article.runtime || article.releaseYear || article.genre?.length || article.cast?.length) && (
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-lg">🎬</span>
+                  <h2 className="font-black text-base text-gray-900 uppercase tracking-wide">Movie Details</h2>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {article.movieRating && (
+                    <div className="col-span-2 sm:col-span-1">
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Our Rating</p>
+                      <StarRating rating={article.movieRating} />
+                    </div>
+                  )}
+                  {article.director && (
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Director</p>
+                      <p className="font-semibold text-sm text-gray-800">{article.director}</p>
+                    </div>
+                  )}
+                  {article.runtime && (
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Runtime</p>
+                      <p className="font-semibold text-sm text-gray-800">{article.runtime}</p>
+                    </div>
+                  )}
+                  {article.releaseYear && (
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Released</p>
+                      <p className="font-semibold text-sm text-gray-800">{article.releaseYear}</p>
+                    </div>
+                  )}
+                  {article.genre?.length > 0 && (
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Genre</p>
+                      <div className="flex flex-wrap gap-1">
+                        {article.genre.map((g) => (
+                          <span key={g} className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-medium">{g}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {article.cast?.length > 0 && (
+                    <div className="col-span-2 sm:col-span-3">
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Cast</p>
+                      <p className="text-sm text-gray-700">{article.cast.slice(0, 5).join(', ')}{article.cast.length > 5 ? ' & more' : ''}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Streaming Platforms — for Where to Watch articles */}
+            {article.streamingPlatforms?.length > 0 && (
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
+                <p className="text-xs font-black uppercase tracking-wider text-gray-400 mb-3">📡 Available On</p>
+                <div className="flex flex-wrap gap-2">
+                  {article.streamingPlatforms.map((platform) => (
+                    <span
+                      key={platform}
+                      className="px-4 py-2 rounded-lg text-sm font-bold text-white shadow-sm"
+                      style={{ background: STREAMING_COLORS[platform] || '#374151' }}
+                    >
+                      {platform}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Spoiler Warning — for Ending Explained articles */}
+            {catSlug === 'ending-explained' && (
+              <div className="bg-yellow-50 border border-yellow-300 rounded-xl p-4 mb-6 flex items-start gap-3">
+                <span className="text-2xl flex-shrink-0">⚠️</span>
+                <div>
+                  <p className="font-black text-yellow-800 text-sm">Spoiler Warning</p>
+                  <p className="text-yellow-700 text-xs mt-0.5 leading-relaxed">
+                    This article contains major plot spoilers. Read only if you have already watched the movie.
+                  </p>
+                </div>
+              </div>
             )}
 
             {/* Meta */}

@@ -56,6 +56,14 @@ export default function ArticleCard({ article, size = 'normal', showExcerpt = tr
               </span>
             </div>
           )}
+
+          {/* Star rating badge — movie reviews */}
+          {article.movieRating && (
+            <div className="absolute bottom-3 right-3 z-20 bg-black/75 text-yellow-400 text-xs font-black px-2 py-1 rounded flex items-center gap-1 backdrop-blur-sm">
+              <span>★</span>
+              <span>{article.movieRating}/5</span>
+            </div>
+          )}
         </div>
 
         {/* Content */}

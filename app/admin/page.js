@@ -676,6 +676,85 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
             />
           </div>
 
+          {/* Movie Fields — shown for movie-type categories */}
+          {['Movies', 'Ending Explained', 'Where to Watch'].includes(article.category) && (
+            <div className="border border-amber-200 bg-amber-50 rounded-xl p-4 space-y-3">
+              <p className="text-xs font-black uppercase tracking-wider text-amber-700 mb-2">🎬 Movie Details</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Rating (/5)</label>
+                  <input
+                    type="number" min="0" max="5" step="0.5"
+                    value={article.movieRating || ''}
+                    onChange={(e) => setArticle((p) => ({ ...p, movieRating: e.target.value ? parseFloat(e.target.value) : undefined }))}
+                    placeholder="e.g. 4.5"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Director</label>
+                  <input
+                    type="text"
+                    value={article.director || ''}
+                    onChange={(e) => setArticle((p) => ({ ...p, director: e.target.value }))}
+                    placeholder="e.g. Christopher Nolan"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Runtime</label>
+                  <input
+                    type="text"
+                    value={article.runtime || ''}
+                    onChange={(e) => setArticle((p) => ({ ...p, runtime: e.target.value }))}
+                    placeholder="e.g. 2h 28m"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Release Year</label>
+                  <input
+                    type="text"
+                    value={article.releaseYear || ''}
+                    onChange={(e) => setArticle((p) => ({ ...p, releaseYear: e.target.value }))}
+                    placeholder="e.g. 2025"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Genre</label>
+                  <input
+                    type="text"
+                    value={Array.isArray(article.genre) ? article.genre.join(', ') : ''}
+                    onChange={(e) => setArticle((p) => ({ ...p, genre: e.target.value.split(',').map((t) => t.trim()).filter(Boolean) }))}
+                    placeholder="Action, Thriller"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Cast</label>
+                  <input
+                    type="text"
+                    value={Array.isArray(article.cast) ? article.cast.join(', ') : ''}
+                    onChange={(e) => setArticle((p) => ({ ...p, cast: e.target.value.split(',').map((t) => t.trim()).filter(Boolean) }))}
+                    placeholder="Actor 1, Actor 2"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Streaming Platforms</label>
+                <input
+                  type="text"
+                  value={Array.isArray(article.streamingPlatforms) ? article.streamingPlatforms.join(', ') : ''}
+                  onChange={(e) => setArticle((p) => ({ ...p, streamingPlatforms: e.target.value.split(',').map((t) => t.trim()).filter(Boolean) }))}
+                  placeholder="Netflix, Amazon Prime, Disney+"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                />
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
