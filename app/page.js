@@ -130,11 +130,6 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Ad — between Trending Rail and main content, visible to every visitor */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-4 flex justify-center">
-        <AdSlot slot="homepage-top" />
-      </div>
-
       {/* Main Content + Sidebar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -185,7 +180,8 @@ export default function HomePage() {
             })}
 
             {/* Mid-page ad — between category sections */}
-            <div className="mt-10 flex justify-center">
+            <div className="mt-10 border-t border-b border-gray-100 py-4 flex flex-col items-center gap-1">
+              <p className="text-[10px] uppercase tracking-widest text-gray-300 font-semibold">Advertisement</p>
               <AdSlot slot="homepage-top" />
             </div>
 

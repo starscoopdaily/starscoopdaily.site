@@ -412,8 +412,18 @@ export default function ArticlePage({ params }) {
                           <div className="article-content" dangerouslySetInnerHTML={{ __html: item.description }} />
                         )}
                       </div>
-                      {idx === 2 && <AdSlot slot="article-top" />}
-                      {idx === 6 && <AdSlot slot="article-middle" />}
+                      {idx === 2 && (
+                        <div className="my-4 border-t border-b border-gray-100 py-3 flex flex-col items-center gap-1">
+                          <p className="text-[10px] uppercase tracking-widest text-gray-300 font-semibold">Advertisement</p>
+                          <AdSlot slot="article-top" />
+                        </div>
+                      )}
+                      {idx === 6 && (
+                        <div className="my-4 border-t border-b border-gray-100 py-3 flex flex-col items-center gap-1">
+                          <p className="text-[10px] uppercase tracking-widest text-gray-300 font-semibold">Advertisement</p>
+                          <AdSlot slot="article-middle" />
+                        </div>
+                      )}
                     </>
                   ))}
                 </div>
@@ -424,9 +434,15 @@ export default function ArticlePage({ params }) {
             ) : (
               <>
                 <div className="article-content" dangerouslySetInnerHTML={{ __html: contentPart1 }} />
-                <AdSlot slot="article-top" />
+                <div className="my-4 border-t border-b border-gray-100 py-3 flex flex-col items-center gap-1">
+                  <p className="text-[10px] uppercase tracking-widest text-gray-300 font-semibold">Advertisement</p>
+                  <AdSlot slot="article-top" />
+                </div>
                 <div className="article-content" dangerouslySetInnerHTML={{ __html: contentPart2 }} />
-                <AdSlot slot="article-middle" />
+                <div className="my-4 border-t border-b border-gray-100 py-3 flex flex-col items-center gap-1">
+                  <p className="text-[10px] uppercase tracking-widest text-gray-300 font-semibold">Advertisement</p>
+                  <AdSlot slot="article-middle" />
+                </div>
                 <div className="article-content" dangerouslySetInnerHTML={{ __html: contentPart3 }} />
               </>
             )}
