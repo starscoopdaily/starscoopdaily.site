@@ -25,11 +25,15 @@ function SectionHeading({ name, slug, color, icon }) {
   return (
     <div className="flex items-center justify-between mb-5">
       <div className="flex items-center gap-3">
-        {icon && <span className="text-xl">{icon}</span>}
-        <h2 className="text-lg font-black text-gray-900 uppercase tracking-tight">{name}</h2>
-        <div className="h-0.5 w-12" style={{ background: color }} />
+        <div className="w-1 h-7 rounded-full flex-shrink-0" style={{ background: color }} />
+        {icon && <span className="text-lg leading-none">{icon}</span>}
+        <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">{name}</h2>
       </div>
-      <Link href={`/category/${slug}`} className="text-xs font-bold uppercase tracking-wider hover:underline" style={{ color }}>
+      <Link
+        href={`/category/${slug}`}
+        className="text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full transition-colors"
+        style={{ color, border: `1.5px solid ${color}` }}
+      >
         See All →
       </Link>
     </div>
@@ -109,8 +113,9 @@ export default function HomePage() {
       {latest.length > 0 && (
         <section className="py-8">
           <div className="flex items-center gap-3 mb-6">
+            <div className="w-1 h-7 rounded-full bg-[#cc0000] flex-shrink-0" />
             <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Latest News</h2>
-            <div className="flex-1 h-0.5 bg-[#cc0000]" />
+            <div className="flex-1 h-px bg-gray-200" />
           </div>
 
           {/* 4-column portrait grid — cards are tall with full portrait images */}
