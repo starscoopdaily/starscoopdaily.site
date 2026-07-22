@@ -62,11 +62,14 @@ async function handleMovie(apiKey, query, id, country) {
   // OMDb — IMDB rating, Rotten Tomatoes %, Metacritic (optional, graceful if key missing)
   let imdbRating = null, rtScore = null, metacritic = null, omdbPoster = null;
   const omdbKey = process.env.OMDB_API_KEY;
-  if (omdbKey && d.title) {
+  if (omdbKey && (d.imdb_id || d.title)) {
     try {
-      const yr = d.release_date?.slice(0, 4) || '';
+      // Prefer IMDB ID (exact match) over title search
+      const omdbQ = d.imdb_id
+        ? `i=${d.imdb_id}`
+        : `t=${encodeURIComponent(d.title)}&y=${d.release_date?.slice(0, 4) || ''}`;
       const or = await fetch(
-        `https://www.omdbapi.com/?t=${encodeURIComponent(d.title)}&y=${yr}&apikey=${omdbKey}`,
+        `https://www.omdbapi.com/?${omdbQ}&plot=short&apikey=${omdbKey}`,
         { next: { revalidate: 3600 } }
       );
       const od = await or.json();
