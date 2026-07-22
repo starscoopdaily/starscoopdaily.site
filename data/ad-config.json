@@ -2,27 +2,27 @@
   "smartlink": "https://examinerashtrayquizmaster.com/mma92jf5x?key=9c2696f805e932e8b8a98d658ca2dc4d",
   "slots": {
     "header": {
-      "enabled": false,
+      "enabled": true,
       "code": "<script src=\"https://pl29877798.effectivecpmnetwork.com/d0/5e/f9/d05ef968117a93a5caaf996f5cdf01b0.js\"></script>"
     },
     "homepage-top": {
-      "enabled": false,
+      "enabled": true,
       "code": "<script>atOptions = {'key' : '5bea192b3e5e5e4e87c680f4e50bfb74','format' : 'iframe','height' : 250,'width' : 300,'params' : {}};</script><script src=\"https://examinerashtrayquizmaster.com/5bea192b3e5e5e4e87c680f4e50bfb74/invoke.js\"></script>"
     },
     "article-top": {
-      "enabled": false,
+      "enabled": true,
       "code": "<script>atOptions = {'key' : '5bea192b3e5e5e4e87c680f4e50bfb74','format' : 'iframe','height' : 250,'width' : 300,'params' : {}};</script><script src=\"https://examinerashtrayquizmaster.com/5bea192b3e5e5e4e87c680f4e50bfb74/invoke.js\"></script>"
     },
     "article-middle": {
-      "enabled": false,
+      "enabled": true,
       "code": "<script async=\"async\" data-cfasync=\"false\" src=\"https://pl29878174.effectivecpmnetwork.com/3cad9852f5b47b92edea689177a42e75/invoke.js\"></script><div id=\"container-3cad9852f5b47b92edea689177a42e75\"></div>"
     },
     "sidebar": {
-      "enabled": false,
+      "enabled": true,
       "code": "<script>atOptions = {'key' : '5bea192b3e5e5e4e87c680f4e50bfb74','format' : 'iframe','height' : 250,'width' : 300,'params' : {}};</script><script src=\"https://examinerashtrayquizmaster.com/5bea192b3e5e5e4e87c680f4e50bfb74/invoke.js\"></script>"
     },
     "footer": {
-      "enabled": false,
+      "enabled": true,
       "code": "<script>atOptions = {'key' : '5bea192b3e5e5e4e87c680f4e50bfb74','format' : 'iframe','height' : 250,'width' : 300,'params' : {}};</script><script src=\"https://examinerashtrayquizmaster.com/5bea192b3e5e5e4e87c680f4e50bfb74/invoke.js\"></script>"
     }
   }
