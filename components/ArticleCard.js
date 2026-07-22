@@ -19,13 +19,13 @@ export default function ArticleCard({ article, size = 'normal', showExcerpt = tr
         <div style={{ height: '3px', background: catColor, flexShrink: 0 }} />
 
         {/* Image */}
-        <div className={`relative overflow-hidden flex-shrink-0 ${isLarge ? 'h-64 sm:h-80' : 'h-52'} bg-gray-100`}>
+        <div className={`relative overflow-hidden flex-shrink-0 bg-gray-900 ${isLarge ? 'h-64 sm:h-80' : 'h-52'}`}>
           {article.image ? (
             <Image
               src={article.image}
               alt={article.imageAlt || article.title}
               fill
-              className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+              className="object-contain group-hover:scale-105 transition-transform duration-500"
               sizes={isLarge ? '(max-width: 768px) 100vw, 50vw' : '(max-width: 768px) 100vw, 33vw'}
             />
           ) : (
