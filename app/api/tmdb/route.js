@@ -59,6 +59,28 @@ async function handleMovie(apiKey, query, id, country) {
     .slice(0, 2)
     .map((b) => `${IMG}/w1280${b.file_path}`);
 
+  // OMDb — IMDB rating, Rotten Tomatoes %, Metacritic (optional, graceful if key missing)
+  let imdbRating = null, rtScore = null, metacritic = null, omdbPoster = null;
+  const omdbKey = process.env.OMDB_API_KEY;
+  if (omdbKey && d.title) {
+    try {
+      const yr = d.release_date?.slice(0, 4) || '';
+      const or = await fetch(
+        `https://www.omdbapi.com/?t=${encodeURIComponent(d.title)}&y=${yr}&apikey=${omdbKey}`,
+        { next: { revalidate: 3600 } }
+      );
+      const od = await or.json();
+      if (od.Response === 'True') {
+        if (od.imdbRating && od.imdbRating !== 'N/A') imdbRating = od.imdbRating;
+        if (od.Poster && od.Poster !== 'N/A') omdbPoster = od.Poster;
+        for (const rating of (od.Ratings || [])) {
+          if (rating.Source === 'Rotten Tomatoes') rtScore = rating.Value;
+          if (rating.Source === 'Metacritic') metacritic = rating.Value;
+        }
+      }
+    } catch {}
+  }
+
   return {
     movies,
     details: {
@@ -77,6 +99,10 @@ async function handleMovie(apiKey, query, id, country) {
       tmdbRating: d.vote_average ? toFive(d.vote_average) : null,
       tmdbVotes: d.vote_count || 0,
       streamingPlatforms: getProviders(d, country),
+      imdbRating,
+      rtScore,
+      metacritic,
+      omdbPoster,
     },
   };
 }
@@ -175,18 +201,34 @@ async function handlePerson(apiKey, query, id) {
       type: w.media_type,
     }));
 
+  // Wikipedia — higher-res celebrity photo + bio supplement
+  let wikiPhoto = null, wikiExtract = '';
+  try {
+    const wn = encodeURIComponent((d.name || '').replace(/ /g, '_'));
+    const wr = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${wn}`,
+      { next: { revalidate: 3600 } }
+    );
+    if (wr.ok) {
+      const wd = await wr.json();
+      if (wd.thumbnail?.source) wikiPhoto = wd.thumbnail.source;
+      if (wd.extract) wikiExtract = wd.extract.slice(0, 400);
+    }
+  } catch {}
+
   return {
     people,
     details: {
       tmdbId: d.id,
       name: d.name,
-      biography: d.biography || '',
+      biography: d.biography || wikiExtract || '',
       birthday: d.birthday || '',
       deathday: d.deathday || '',
       birthplace: d.place_of_birth || '',
       department: d.known_for_department || '',
       alsoKnownAs: (d.also_known_as || []).slice(0, 3),
       profilePhoto: d.profile_path ? `${IMG}/w500${d.profile_path}` : null,
+      wikiPhoto,
       photos: (d.images?.profiles || []).slice(0, 3).map((i) => `${IMG}/w500${i.file_path}`),
       knownFor,
     },

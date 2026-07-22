@@ -382,10 +382,13 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       streamingPlatforms: details.streamingPlatforms?.length ? details.streamingPlatforms : prev?.streamingPlatforms || [],
       tmdbId: details.tmdbId,
       tmdbRating: details.tmdbRating,
+      imdbRating: details.imdbRating || prev?.imdbRating || null,
+      rtScore: details.rtScore || prev?.rtScore || null,
+      metacritic: details.metacritic || prev?.metacritic || null,
       excerpt: prev?.excerpt || details.tagline || '',
       metaDescription: prev?.metaDescription || (details.overview ? details.overview.slice(0, 160) : ''),
     }));
-    const heroImg = details.backdrop || details.poster;
+    const heroImg = details.backdrop || details.omdbPoster || details.poster;
     if (heroImg) { setManualImageUrl(heroImg); setImageMode('url'); }
   };
 
@@ -494,12 +497,13 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       personBirthday: details.birthday || prev?.personBirthday || '',
       personBirthplace: details.birthplace || prev?.personBirthplace || '',
       personBio: details.biography ? details.biography.slice(0, 500) : prev?.personBio || '',
-      personProfilePhoto: details.profilePhoto || prev?.personProfilePhoto || '',
+      personProfilePhoto: details.wikiPhoto || details.profilePhoto || prev?.personProfilePhoto || '',
       personKnownFor: details.knownFor?.length ? details.knownFor : prev?.personKnownFor || [],
       personTmdbId: details.tmdbId,
       excerpt: prev?.excerpt || (details.biography ? details.biography.slice(0, 200) : ''),
     }));
-    if (details.profilePhoto) { setManualImageUrl(details.profilePhoto); setImageMode('url'); }
+    const photo = details.wikiPhoto || details.profilePhoto;
+    if (photo) { setManualImageUrl(photo); setImageMode('url'); }
   };
 
   const fetchPersonById = async (id) => {

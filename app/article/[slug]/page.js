@@ -481,9 +481,28 @@ export default function ArticlePage({ params }) {
                       <StarRating rating={article.movieRating} />
                     </div>
                   )}
+                  {article.imdbRating && (
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">IMDB</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-lg font-black text-yellow-400">⭐</span>
+                        <span className="font-black text-gray-800 text-base">{article.imdbRating}</span>
+                        <span className="text-xs text-gray-400">/10</span>
+                      </div>
+                    </div>
+                  )}
+                  {article.rtScore && (
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Rotten Tomatoes</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-base">🍅</span>
+                        <span className="font-black text-gray-800 text-base">{article.rtScore}</span>
+                      </div>
+                    </div>
+                  )}
                   {article.tmdbRating && (
                     <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">TMDB Score</p>
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">TMDB</p>
                       <div className="flex items-baseline gap-1">
                         <span className="text-lg font-black text-yellow-500">★</span>
                         <span className="font-black text-gray-800 text-base">{article.tmdbRating}</span>
