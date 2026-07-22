@@ -384,7 +384,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   };
 
   const fetchFromTmdb = async () => {
-    const q = tmdbQuery.trim() || topic.trim();
+    const q = tmdbQuery.trim();
     if (!q) return;
     setTmdbLoading(true);
     setTmdbError('');
@@ -445,7 +445,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   };
 
   const fetchFromTmdbTv = async () => {
-    const q = tvQuery.trim() || topic.trim();
+    const q = tvQuery.trim();
     if (!q) return;
     setTvLoading(true);
     setTvError('');
@@ -500,7 +500,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   };
 
   const fetchFromTmdbPerson = async () => {
-    const q = personQuery.trim() || topic.trim();
+    const q = personQuery.trim();
     if (!q) return;
     setPersonLoading(true);
     setPersonError('');
@@ -878,9 +878,9 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    value={tmdbQuery || topic}
+                    value={tmdbQuery}
                     onChange={(e) => setTmdbQuery(e.target.value)}
-                    placeholder="Movie title to search..."
+                    placeholder={`e.g. ${topic.split(':')[0].replace(/[''']/g, '').trim() || 'Movie title...'}`}
                     className="flex-1 border border-amber-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
                   />
                   <button
@@ -1018,8 +1018,8 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
                   <span className="text-xs font-bold text-sky-800">Auto-fill from TMDB</span>
                 </div>
                 <div className="flex gap-2">
-                  <input type="text" value={tvQuery || topic} onChange={(e) => setTvQuery(e.target.value)}
-                    placeholder="TV show title..." className="flex-1 border border-sky-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
+                  <input type="text" value={tvQuery} onChange={(e) => setTvQuery(e.target.value)}
+                    placeholder={`e.g. ${topic.split(':')[0].trim() || 'Show title...'}`} className="flex-1 border border-sky-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
                   <button onClick={fetchFromTmdbTv} disabled={tvLoading}
                     className="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors disabled:opacity-60 whitespace-nowrap flex items-center gap-1.5">
                     {tvLoading ? <><span className="animate-spin inline-block">⟳</span> Fetching...</> : '🔍 Fetch from TMDB'}
@@ -1126,8 +1126,8 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
                   <span className="text-xs font-bold text-purple-800">Auto-fill from TMDB</span>
                 </div>
                 <div className="flex gap-2">
-                  <input type="text" value={personQuery || topic} onChange={(e) => setPersonQuery(e.target.value)}
-                    placeholder="Celebrity / actor name..." className="flex-1 border border-purple-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" />
+                  <input type="text" value={personQuery} onChange={(e) => setPersonQuery(e.target.value)}
+                    placeholder={`e.g. ${topic.split(':')[0].trim() || 'Person name...'}`} className="flex-1 border border-purple-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" />
                   <button onClick={fetchFromTmdbPerson} disabled={personLoading}
                     className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors disabled:opacity-60 whitespace-nowrap flex items-center gap-1.5">
                     {personLoading ? <><span className="animate-spin inline-block">⟳</span> Fetching...</> : '🔍 Fetch from TMDB'}
