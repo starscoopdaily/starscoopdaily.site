@@ -142,6 +142,159 @@ const STREAMING_COLORS = {
   'SonyLIV': '#e63946',
 };
 
+function TVInfoBox({ article }) {
+  if (!article.showStatus && !article.networkName && !article.seasonCount && !article.creators?.length && !article.firstAirYear) return null;
+  return (
+    <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-lg">📺</span>
+        <h2 className="font-black text-base text-gray-900 uppercase tracking-wide">Show Details</h2>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        {article.showStatus && (
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Status</p>
+            <span className={`text-xs font-bold px-2 py-1 rounded-full ${article.showStatus === 'Returning Series' ? 'bg-green-100 text-green-700' : article.showStatus === 'Ended' ? 'bg-gray-200 text-gray-600' : 'bg-red-100 text-red-600'}`}>
+              {article.showStatus}
+            </span>
+          </div>
+        )}
+        {article.networkName && (
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Network</p>
+            <p className="font-semibold text-sm text-gray-800">{article.networkName}</p>
+          </div>
+        )}
+        {article.firstAirYear && (
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">First Aired</p>
+            <p className="font-semibold text-sm text-gray-800">{article.firstAirYear}</p>
+          </div>
+        )}
+        {article.seasonCount > 0 && (
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Seasons</p>
+            <p className="font-semibold text-sm text-gray-800">{article.seasonCount}</p>
+          </div>
+        )}
+        {article.episodeCount > 0 && (
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Episodes</p>
+            <p className="font-semibold text-sm text-gray-800">{article.episodeCount}</p>
+          </div>
+        )}
+        {article.tvTmdbRating && (
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">TMDB Score</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-black text-yellow-500">★</span>
+              <span className="font-black text-gray-800 text-base">{article.tvTmdbRating}</span>
+              <span className="text-xs text-gray-400">/5</span>
+            </div>
+          </div>
+        )}
+        {article.creators?.length > 0 && (
+          <div className="col-span-2 sm:col-span-3">
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Created By</p>
+            <p className="text-sm text-gray-700">{article.creators.join(', ')}</p>
+          </div>
+        )}
+        {article.cast?.length > 0 && (
+          <div className="col-span-2 sm:col-span-3">
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Starring</p>
+            <p className="text-sm text-gray-700">{article.cast.slice(0, 5).join(', ')}{article.cast.length > 5 ? ' & more' : ''}</p>
+          </div>
+        )}
+        {article.genre?.length > 0 && (
+          <div className="col-span-2 sm:col-span-3">
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Genre</p>
+            <div className="flex flex-wrap gap-1">
+              {article.genre.map((g) => (
+                <span key={g} className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-medium">{g}</span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      {article.tvTmdbId && (
+        <div className="mt-4 pt-3 border-t border-gray-200 flex items-center gap-2">
+          <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Data from</span>
+          <a href={`https://www.themoviedb.org/tv/${article.tvTmdbId}`} target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity" title="View on TMDB">
+            <img src="/tmdb-logo.svg" alt="The Movie Database" className="h-3.5 w-auto" />
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PersonInfoBox({ article }) {
+  if (!article.personBirthday && !article.personBirthplace && !article.personBio && !article.personKnownFor?.length) return null;
+  return (
+    <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
+      <div className="flex gap-4">
+        {article.personProfilePhoto && (
+          <div className="flex-shrink-0">
+            <div className="relative w-20 h-28 sm:w-24 sm:h-32 rounded-xl overflow-hidden shadow-md">
+              <Image src={article.personProfilePhoto} alt={article.title} fill className="object-cover" sizes="96px" />
+            </div>
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">⭐</span>
+            <h2 className="font-black text-base text-gray-900 uppercase tracking-wide">About</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {article.personBirthday && (
+              <div>
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-bold">Born</p>
+                <p className="font-semibold text-sm text-gray-800">
+                  {(() => { try { return new Date(article.personBirthday + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); } catch { return article.personBirthday; } })()}
+                </p>
+              </div>
+            )}
+            {article.personBirthplace && (
+              <div>
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-bold">Birthplace</p>
+                <p className="font-semibold text-sm text-gray-800 leading-snug">{article.personBirthplace}</p>
+              </div>
+            )}
+          </div>
+          {article.personBio && (
+            <p className="text-sm text-gray-600 mt-3 leading-relaxed line-clamp-3">{article.personBio}</p>
+          )}
+        </div>
+      </div>
+      {article.personKnownFor?.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-3 font-bold">Known For</p>
+          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+            {article.personKnownFor.map((w, i) => (
+              <div key={i} className="flex-shrink-0 w-16 text-center">
+                {w.poster
+                  ? <div className="relative w-16 h-24 rounded-lg overflow-hidden mb-1.5 shadow-sm"><Image src={w.poster} alt={w.title} fill className="object-cover" sizes="64px" /></div>
+                  : <div className="w-16 h-24 bg-gray-200 rounded-lg mb-1.5 flex items-center justify-center text-gray-400 text-xs">?</div>
+                }
+                <p className="text-[10px] text-gray-700 font-semibold leading-tight line-clamp-2">{w.title}</p>
+                {w.year && <p className="text-[10px] text-gray-400 mt-0.5">{w.year}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {article.personTmdbId && (
+        <div className="mt-4 pt-3 border-t border-gray-200 flex items-center gap-2">
+          <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Data from</span>
+          <a href={`https://www.themoviedb.org/person/${article.personTmdbId}`} target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity" title="View on TMDB">
+            <img src="/tmdb-logo.svg" alt="The Movie Database" className="h-3.5 w-auto" />
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ShareButtons({ title, slug }) {
   const url = `https://www.starscoopdaily.site/article/${slug}`;
   const encoded = encodeURIComponent(url);
@@ -407,6 +560,12 @@ export default function ArticlePage({ params }) {
                 </div>
               </div>
             )}
+
+            {/* TV Show Info Box */}
+            <TVInfoBox article={article} />
+
+            {/* Person / Celebrity Info Box */}
+            <PersonInfoBox article={article} />
 
             {/* Spoiler Warning — for Ending Explained articles */}
             {catSlug === 'ending-explained' && (

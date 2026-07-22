@@ -289,6 +289,16 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   const [tmdbResults, setTmdbResults] = useState([]);
   const [tmdbDetails, setTmdbDetails] = useState(null);
   const [tmdbQuery, setTmdbQuery] = useState('');
+  const [tvLoading, setTvLoading] = useState(false);
+  const [tvError, setTvError] = useState('');
+  const [tvResults, setTvResults] = useState([]);
+  const [tvDetails, setTvDetails] = useState(null);
+  const [tvQuery, setTvQuery] = useState('');
+  const [personLoading, setPersonLoading] = useState(false);
+  const [personError, setPersonError] = useState('');
+  const [personResults, setPersonResults] = useState([]);
+  const [personDetails, setPersonDetails] = useState(null);
+  const [personQuery, setPersonQuery] = useState('');
 
   useEffect(() => {
     if (initialTopic) setTopic(initialTopic);
@@ -390,6 +400,122 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       setTmdbError(e.message);
     } finally {
       setTmdbLoading(false);
+    }
+  };
+
+  // ── TV Show TMDB ──
+  const applyTvDetails = (details) => {
+    setTvDetails(details);
+    setArticle((prev) => ({
+      ...(prev || {}),
+      showStatus: details.status || prev?.showStatus || '',
+      networkName: details.networkName || prev?.networkName || '',
+      seasonCount: details.seasonCount || prev?.seasonCount || '',
+      episodeCount: details.episodeCount || prev?.episodeCount || '',
+      firstAirYear: details.firstAirYear || prev?.firstAirYear || '',
+      creators: details.creators?.length ? details.creators : prev?.creators || [],
+      cast: details.cast?.length ? details.cast : prev?.cast || [],
+      genre: details.genre?.length ? details.genre : prev?.genre || [],
+      streamingPlatforms: details.streamingPlatforms?.length ? details.streamingPlatforms : prev?.streamingPlatforms || [],
+      tvTmdbId: details.tmdbId,
+      tvTmdbRating: details.tmdbRating,
+      excerpt: prev?.excerpt || details.tagline || '',
+      metaDescription: prev?.metaDescription || (details.overview ? details.overview.slice(0, 160) : ''),
+    }));
+    if (details.poster && !manualImageUrl) {
+      setManualImageUrl(details.poster);
+      setImageMode('url');
+    }
+  };
+
+  const fetchTvById = async (id) => {
+    setTvLoading(true);
+    setTvError('');
+    try {
+      const r = await fetch(`/api/tmdb?type=tv&id=${id}`);
+      const data = await r.json();
+      if (data.error) throw new Error(data.error);
+      if (data.details) applyTvDetails(data.details);
+      setTvResults([]);
+    } catch (e) {
+      setTvError(e.message);
+    } finally {
+      setTvLoading(false);
+    }
+  };
+
+  const fetchFromTmdbTv = async () => {
+    const q = tvQuery.trim() || topic.trim();
+    if (!q) return;
+    setTvLoading(true);
+    setTvError('');
+    setTvResults([]);
+    setTvDetails(null);
+    try {
+      const r = await fetch(`/api/tmdb?type=tv&query=${encodeURIComponent(q)}`);
+      const data = await r.json();
+      if (data.error) throw new Error(data.error);
+      setTvResults(data.shows || []);
+      if (data.details) applyTvDetails(data.details);
+    } catch (e) {
+      setTvError(e.message);
+    } finally {
+      setTvLoading(false);
+    }
+  };
+
+  // ── Person TMDB ──
+  const applyPersonDetails = (details) => {
+    setPersonDetails(details);
+    setArticle((prev) => ({
+      ...(prev || {}),
+      personBirthday: details.birthday || prev?.personBirthday || '',
+      personBirthplace: details.birthplace || prev?.personBirthplace || '',
+      personBio: details.biography ? details.biography.slice(0, 500) : prev?.personBio || '',
+      personProfilePhoto: details.profilePhoto || prev?.personProfilePhoto || '',
+      personKnownFor: details.knownFor?.length ? details.knownFor : prev?.personKnownFor || [],
+      personTmdbId: details.tmdbId,
+      excerpt: prev?.excerpt || (details.biography ? details.biography.slice(0, 200) : ''),
+    }));
+    if (details.profilePhoto && !manualImageUrl) {
+      setManualImageUrl(details.profilePhoto);
+      setImageMode('url');
+    }
+  };
+
+  const fetchPersonById = async (id) => {
+    setPersonLoading(true);
+    setPersonError('');
+    try {
+      const r = await fetch(`/api/tmdb?type=person&id=${id}`);
+      const data = await r.json();
+      if (data.error) throw new Error(data.error);
+      if (data.details) applyPersonDetails(data.details);
+      setPersonResults([]);
+    } catch (e) {
+      setPersonError(e.message);
+    } finally {
+      setPersonLoading(false);
+    }
+  };
+
+  const fetchFromTmdbPerson = async () => {
+    const q = personQuery.trim() || topic.trim();
+    if (!q) return;
+    setPersonLoading(true);
+    setPersonError('');
+    setPersonResults([]);
+    setPersonDetails(null);
+    try {
+      const r = await fetch(`/api/tmdb?type=person&query=${encodeURIComponent(q)}`);
+      const data = await r.json();
+      if (data.error) throw new Error(data.error);
+      setPersonResults(data.people || []);
+      if (data.details) applyPersonDetails(data.details);
+    } catch (e) {
+      setPersonError(e.message);
+    } finally {
+      setPersonLoading(false);
     }
   };
 
@@ -738,8 +864,8 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
             />
           </div>
 
-          {/* Movie Fields — shown for movie-type categories */}
-          {['Movies', 'Ending Explained', 'Where to Watch'].includes(article.category) && (
+          {/* Movie Fields — shown for movie/Hollywood/Bollywood categories */}
+          {['Movies', 'Ending Explained', 'Where to Watch', 'Hollywood', 'Bollywood'].includes(article.category) && (
             <div className="border border-amber-200 bg-amber-50 rounded-xl p-4 space-y-3">
               <p className="text-xs font-black uppercase tracking-wider text-amber-700 mb-2">🎬 Movie Details</p>
 
@@ -876,6 +1002,190 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
                   placeholder="Netflix, Amazon Prime, Disney+"
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
                 />
+              </div>
+            </div>
+          )}
+
+          {/* TV Show Details */}
+          {article.category === 'TV Shows' && (
+            <div className="border border-sky-200 bg-sky-50 rounded-xl p-4 space-y-3">
+              <p className="text-xs font-black uppercase tracking-wider text-sky-700 mb-2">📺 TV Show Details</p>
+
+              {/* TMDB Auto-fill */}
+              <div className="pb-3 border-b border-sky-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <img src="/tmdb-logo.svg" alt="TMDB" className="h-3.5 w-auto opacity-80" />
+                  <span className="text-xs font-bold text-sky-800">Auto-fill from TMDB</span>
+                </div>
+                <div className="flex gap-2">
+                  <input type="text" value={tvQuery || topic} onChange={(e) => setTvQuery(e.target.value)}
+                    placeholder="TV show title..." className="flex-1 border border-sky-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
+                  <button onClick={fetchFromTmdbTv} disabled={tvLoading}
+                    className="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors disabled:opacity-60 whitespace-nowrap flex items-center gap-1.5">
+                    {tvLoading ? <><span className="animate-spin inline-block">⟳</span> Fetching...</> : '🔍 Fetch from TMDB'}
+                  </button>
+                </div>
+                {tvError && <p className="text-red-600 text-xs mt-1.5">{tvError}</p>}
+                {tvResults.length > 0 && (
+                  <div className="mt-2 space-y-1 max-h-56 overflow-y-auto rounded-lg border border-sky-200 bg-white p-1.5">
+                    <p className="text-[10px] text-sky-700 font-bold uppercase px-1 mb-1">Select the correct show:</p>
+                    {tvResults.map((s) => (
+                      <button key={s.id} onClick={() => fetchTvById(s.id)}
+                        className="flex items-center gap-2 w-full text-left bg-sky-50 hover:bg-sky-100 border border-sky-100 hover:border-sky-300 rounded-lg px-2 py-1.5 transition-colors">
+                        {s.poster
+                          ? <img src={s.poster} alt={s.title} className="w-7 h-10 object-cover rounded flex-shrink-0" />
+                          : <div className="w-7 h-10 bg-sky-200 rounded flex-shrink-0 flex items-center justify-center text-sky-600 text-[10px]">?</div>}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-gray-800 truncate">{s.title}</p>
+                          <p className="text-[10px] text-gray-400">{s.year}{s.tmdbRating ? ` · ★ ${s.tmdbRating}/5` : ''}</p>
+                        </div>
+                        <span className="text-[10px] text-sky-700 font-bold flex-shrink-0">Use →</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {tvDetails && (
+                  <div className="mt-2 flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                    {tvDetails.poster && <img src={tvDetails.poster} alt="" className="w-6 h-9 object-cover rounded flex-shrink-0" />}
+                    <div>
+                      <p className="text-xs font-bold text-green-800">✓ Filled: {tvDetails.title}</p>
+                      {tvDetails.tmdbRating && <p className="text-[10px] text-green-600">TMDB: ★ {tvDetails.tmdbRating}/5 · {tvDetails.seasonCount} seasons · {tvDetails.episodeCount} eps</p>}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Status</label>
+                  <input type="text" value={article.showStatus || ''} onChange={(e) => setArticle((p) => ({ ...p, showStatus: e.target.value }))}
+                    placeholder="Returning Series" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Network</label>
+                  <input type="text" value={article.networkName || ''} onChange={(e) => setArticle((p) => ({ ...p, networkName: e.target.value }))}
+                    placeholder="HBO, Netflix" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">First Aired</label>
+                  <input type="text" value={article.firstAirYear || ''} onChange={(e) => setArticle((p) => ({ ...p, firstAirYear: e.target.value }))}
+                    placeholder="2019" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Seasons</label>
+                  <input type="number" value={article.seasonCount || ''} onChange={(e) => setArticle((p) => ({ ...p, seasonCount: e.target.value ? Number(e.target.value) : '' }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Episodes</label>
+                  <input type="number" value={article.episodeCount || ''} onChange={(e) => setArticle((p) => ({ ...p, episodeCount: e.target.value ? Number(e.target.value) : '' }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">TMDB Rating</label>
+                  <input type="number" min="0" max="5" step="0.1" value={article.tvTmdbRating || ''} onChange={(e) => setArticle((p) => ({ ...p, tvTmdbRating: e.target.value ? parseFloat(e.target.value) : '' }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Creators</label>
+                <input type="text" value={Array.isArray(article.creators) ? article.creators.join(', ') : ''}
+                  onChange={(e) => setArticle((p) => ({ ...p, creators: e.target.value.split(',').map((t) => t.trim()).filter(Boolean) }))}
+                  placeholder="Creator 1, Creator 2" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Main Cast</label>
+                <input type="text" value={Array.isArray(article.cast) ? article.cast.join(', ') : ''}
+                  onChange={(e) => setArticle((p) => ({ ...p, cast: e.target.value.split(',').map((t) => t.trim()).filter(Boolean) }))}
+                  placeholder="Actor 1, Actor 2" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Genre</label>
+                <input type="text" value={Array.isArray(article.genre) ? article.genre.join(', ') : ''}
+                  onChange={(e) => setArticle((p) => ({ ...p, genre: e.target.value.split(',').map((t) => t.trim()).filter(Boolean) }))}
+                  placeholder="Drama, Thriller" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Streaming Platforms</label>
+                <input type="text" value={Array.isArray(article.streamingPlatforms) ? article.streamingPlatforms.join(', ') : ''}
+                  onChange={(e) => setArticle((p) => ({ ...p, streamingPlatforms: e.target.value.split(',').map((t) => t.trim()).filter(Boolean) }))}
+                  placeholder="Netflix, HBO Max" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white" />
+              </div>
+            </div>
+          )}
+
+          {/* Person / Celebrity Details */}
+          {['Celebrity', 'Hollywood', 'Bollywood', 'British Royals'].includes(article.category) && (
+            <div className="border border-purple-200 bg-purple-50 rounded-xl p-4 space-y-3">
+              <p className="text-xs font-black uppercase tracking-wider text-purple-700 mb-2">⭐ Person Details <span className="font-normal text-purple-400 normal-case tracking-normal">(optional — fill if article is about a specific person)</span></p>
+
+              {/* TMDB Auto-fill */}
+              <div className="pb-3 border-b border-purple-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <img src="/tmdb-logo.svg" alt="TMDB" className="h-3.5 w-auto opacity-80" />
+                  <span className="text-xs font-bold text-purple-800">Auto-fill from TMDB</span>
+                </div>
+                <div className="flex gap-2">
+                  <input type="text" value={personQuery || topic} onChange={(e) => setPersonQuery(e.target.value)}
+                    placeholder="Celebrity / actor name..." className="flex-1 border border-purple-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" />
+                  <button onClick={fetchFromTmdbPerson} disabled={personLoading}
+                    className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors disabled:opacity-60 whitespace-nowrap flex items-center gap-1.5">
+                    {personLoading ? <><span className="animate-spin inline-block">⟳</span> Fetching...</> : '🔍 Fetch from TMDB'}
+                  </button>
+                </div>
+                {personError && <p className="text-red-600 text-xs mt-1.5">{personError}</p>}
+                {personResults.length > 0 && (
+                  <div className="mt-2 space-y-1 max-h-56 overflow-y-auto rounded-lg border border-purple-200 bg-white p-1.5">
+                    <p className="text-[10px] text-purple-700 font-bold uppercase px-1 mb-1">Select the correct person:</p>
+                    {personResults.map((p) => (
+                      <button key={p.id} onClick={() => fetchPersonById(p.id)}
+                        className="flex items-center gap-2 w-full text-left bg-purple-50 hover:bg-purple-100 border border-purple-100 hover:border-purple-300 rounded-lg px-2 py-1.5 transition-colors">
+                        {p.photo
+                          ? <img src={p.photo} alt={p.name} className="w-7 h-10 object-cover rounded-full flex-shrink-0" />
+                          : <div className="w-7 h-7 bg-purple-200 rounded-full flex-shrink-0 flex items-center justify-center text-purple-600 text-[10px]">?</div>}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-gray-800 truncate">{p.name}</p>
+                          <p className="text-[10px] text-gray-400">{p.department}{p.topWork ? ` · ${p.topWork}` : ''}</p>
+                        </div>
+                        <span className="text-[10px] text-purple-700 font-bold flex-shrink-0">Use →</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {personDetails && (
+                  <div className="mt-2 flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                    {personDetails.profilePhoto && <img src={personDetails.profilePhoto} alt="" className="w-6 h-9 object-cover rounded-full flex-shrink-0" />}
+                    <div>
+                      <p className="text-xs font-bold text-green-800">✓ Filled: {personDetails.name}</p>
+                      {personDetails.birthday && <p className="text-[10px] text-green-600">Born: {personDetails.birthday}{personDetails.birthplace ? ` · ${personDetails.birthplace}` : ''}</p>}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Birthday</label>
+                  <input type="text" value={article.personBirthday || ''} onChange={(e) => setArticle((p) => ({ ...p, personBirthday: e.target.value }))}
+                    placeholder="1989-12-13" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Birthplace</label>
+                  <input type="text" value={article.personBirthplace || ''} onChange={(e) => setArticle((p) => ({ ...p, personBirthplace: e.target.value }))}
+                    placeholder="Los Angeles, CA, USA" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Bio Snippet</label>
+                <textarea rows={3} value={article.personBio || ''} onChange={(e) => setArticle((p) => ({ ...p, personBio: e.target.value }))}
+                  placeholder="Short biography..."
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Profile Photo URL</label>
+                <input type="url" value={article.personProfilePhoto || ''} onChange={(e) => setArticle((p) => ({ ...p, personProfilePhoto: e.target.value }))}
+                  placeholder="https://..." className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white" />
+                {article.personProfilePhoto && <img src={article.personProfilePhoto} alt="Profile" className="mt-2 h-28 w-auto object-cover rounded-lg" />}
               </div>
             </div>
           )}
