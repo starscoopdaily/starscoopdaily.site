@@ -115,6 +115,17 @@ function countH2s(html) {
   return (html || '').match(/<h2/gi)?.length || 0;
 }
 
+function countInternalLinks(html) {
+  return (html || '').match(/href="\/category\//gi)?.length || 0 +
+    ((html || '').match(/href="\/article\//gi)?.length || 0);
+}
+
+function keywordInOpening(html, title) {
+  const firstWords = stripHtml(html).split(/\s+/).slice(0, 30).join(' ').toLowerCase();
+  const mainWord = (title || '').split(/\s+/).find(w => w.length > 4)?.toLowerCase() || '';
+  return mainWord && firstWords.includes(mainWord);
+}
+
 function calcSEOScore(article, listItems, listIntro, listConclusion, subType) {
   const checks = [];
 
@@ -161,6 +172,16 @@ function calcSEOScore(article, listItems, listIntro, listConclusion, subType) {
   const excerptLen = (article.excerpt || '').length;
   const excerptOk = excerptLen > 50 && excerptLen <= 300;
   checks.push({ label: 'Excerpt', value: `${excerptLen} chars`, score: excerptOk ? 5 : excerptLen > 0 ? 3 : 0, max: 5, status: excerptOk ? 'good' : 'warn', tip: 'Keep under 300 characters for best preview' });
+
+  // Internal links (ideal 1-2 links to /category/ pages)
+  const fullContent = subType === 'list' ? (listIntro + listConclusion + listItems.map(i => i.description).join('')) : (article.content || '');
+  const internalLinks = countInternalLinks(fullContent);
+  const linkScore = internalLinks >= 1 ? 10 : 0;
+  checks.push({ label: 'Internal links', value: internalLinks === 0 ? 'None found' : `${internalLinks} link${internalLinks > 1 ? 's' : ''} to /category/`, score: linkScore, max: 10, status: internalLinks >= 1 ? 'good' : 'bad', tip: 'Add 1-2 links to relevant /category/ pages' });
+
+  // Keyword in opening (first ~150 words)
+  const kwOk = keywordInOpening(fullContent, article.title);
+  checks.push({ label: 'Keyword in opening', value: kwOk ? 'Found in first 150 words ✓' : 'Not in opening paragraph', score: kwOk ? 5 : 0, max: 5, status: kwOk ? 'good' : 'bad', tip: 'Main keyword must appear in first 150 words' });
 
   const total = checks.reduce((s, c) => s + c.score, 0);
   const maxTotal = checks.reduce((s, c) => s + c.max, 0);

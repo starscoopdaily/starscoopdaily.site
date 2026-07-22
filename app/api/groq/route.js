@@ -13,15 +13,21 @@ WRITING STYLE:
 
 TITLE RULES: Must be 60–80 characters exactly. Count the characters carefully. Use power words: Sizzling, Steamy, Exposed, Caught, Spotted, Intimate, Secret, Shocking, Exclusive, Revealed, Romance, Drama, Scandalous, Jaw-Dropping, Wild, Bold, Unbelievable, Flirty, Obsessed, Spicy, Heated.
 
-CONTENT RULES: Must be 1200+ words in HTML. Structure:
-- Opening hook (~100 words) — drop the juiciest detail first to grab attention
-- 5-6 sections each with a dramatic <h2> subheading (e.g., "The Secret Rendezvous", "What Sources Are Saying", "Body Language Experts Reveal All", "Fans Go Wild", "The Surprising Twist")
-- Each section minimum 150 words
+CONTENT RULES: Must be 1200+ words minimum — count carefully, do not stop early. Structure:
+- Opening hook (150+ words) — drop the juiciest detail first, include the celebrity name and main topic keyword naturally within the first 150 words
+- 6-8 sections each with a dramatic <h2> subheading — include the celebrity name or main keyword in at least 2 of the headings
+- Each section minimum 150-200 words — do not cut sections short
 - Include 2-3 source quotes per article: <p><em>"Quote here,"</em> a source close to [name] exclusively told StarScoop Daily.</p>
 - Include a Fan Reactions section with spicy/dramatic social media fan comments (use fictional fan names like @CelebObsessed, @HollywoodTea — NOT real celebrities)
 - Include a Body Language / Relationship Expert quote section — attribute to fictional expert names (e.g., "relationship expert Dr. Sarah Mills says...") NOT real named experts
 - Strong, teasing conclusion that hints at what happens next
 - Use <h2>, <p>, <strong>, <em>, <blockquote> tags throughout
+- Add 1-2 natural internal links to relevant StarScoop Daily category pages where they genuinely fit the sentence — use format: <a href="/category/celebrity">celebrity gossip</a>, <a href="/category/hollywood">Hollywood news</a>, <a href="/category/british-royals">Royal Family drama</a>, <a href="/category/scandals">celebrity scandals</a>, <a href="/category/dating">celebrity dating</a>, <a href="/category/music">music news</a>, <a href="/category/bollywood">Bollywood news</a> — only link where it reads naturally, never forced
+
+KEYWORD SEO RULES:
+- Place the main celebrity name + topic keyword in the opening paragraph (first 150 words)
+- Mention the main keyword 3-6 times across the body naturally — never stuffed
+- Include the main celebrity name in at least 2 H2 headings
 
 QUOTE RULES — CRITICAL:
 - NEVER put fabricated quotes in real named celebrities' mouths
@@ -120,13 +126,17 @@ Return only valid JSON as described.`
 Category: ${category}
 Today's date: ${new Date().toISOString().split('T')[0]}
 
-Requirements:
-- Title: 70+ characters — spicy, dramatic, TMZ/Page Six style
-- Excerpt: 150-word hook paragraph that teases the juiciest details
-- Content: 1200+ words HTML — dramatic h2 sections, insider source quotes, fan reactions, expert opinions, teasing conclusion
-- Use "sources say", "reportedly", "allegedly", "insiders reveal", "exclusively told StarScoop Daily"
-- Tags: 5 relevant gossip/celebrity tags
-- inline_image_queries: 2 specific search terms for dramatic/glamorous images
+CRITICAL REQUIREMENTS — check each before responding:
+- Title: exactly 60-80 characters with power words
+- Content: MINIMUM 1200 words — write all 6-8 sections in full, do not cut short
+- First 150 words must include the main celebrity name and topic keyword naturally
+- Celebrity name must appear in at least 2 H2 headings
+- Keyword mentioned 3-6 times across content naturally
+- Add 1-2 internal links to relevant /category/ pages where they fit naturally
+- Excerpt: max 200 characters, one punchy sentence
+- metaDescription: exactly 150-160 characters
+- Tags: exactly 5 relevant tags
+- inline_image_queries: 2 specific dramatic/glamorous image search terms
 
 Return only valid JSON as described.`;
 
