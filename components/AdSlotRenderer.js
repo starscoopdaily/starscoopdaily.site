@@ -1,17 +1,18 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function AdSlotRenderer({ html, className = '' }) {
   const ref = useRef(null);
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith('/admin');
 
   useEffect(() => {
-    if (!ref.current || !html) return;
+    if (!ref.current || !html || isAdmin) return;
 
-    // Clear previous content
     ref.current.innerHTML = '';
 
-    // Parse the ad HTML and re-create script nodes so browsers actually execute them
     const temp = document.createElement('div');
     temp.innerHTML = html;
 
@@ -27,7 +28,9 @@ export default function AdSlotRenderer({ html, className = '' }) {
         ref.current.appendChild(node.cloneNode(true));
       }
     });
-  }, [html]);
+  }, [html, isAdmin]);
+
+  if (isAdmin) return null;
 
   return <div ref={ref} className={`ad-slot ${className}`} />;
 }

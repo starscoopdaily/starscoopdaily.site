@@ -3,6 +3,7 @@ import Script from 'next/script';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdSlot from '@/components/AdSlot';
+import MonetizationScripts from '@/components/MonetizationScripts';
 
 export const metadata = {
   metadataBase: new URL('https://www.starscoopdaily.site'),
@@ -100,20 +101,7 @@ export default function RootLayout({ children }) {
           data-scroll="0.3"
           strategy="afterInteractive"
         />
-        {/* Monetag — Push Notifications */}
-        <Script
-          src="https://5gvci.com/act/files/tag.min.js?z=11371947"
-          data-cfasync="false"
-          strategy="afterInteractive"
-        />
-        {/* Monetag — In-Page Push Banner */}
-        <Script id="monetag-inpage-push" strategy="afterInteractive">
-          {`(function(s){s.dataset.zone='11371954',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`}
-        </Script>
-        {/* Monetag — Vignette Banner */}
-        <Script id="monetag-vignette" strategy="afterInteractive">
-          {`(function(s){s.dataset.zone='11371955',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`}
-        </Script>
+        <MonetizationScripts />
       </body>
     </html>
   );
