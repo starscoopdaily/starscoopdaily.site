@@ -385,10 +385,8 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       excerpt: prev?.excerpt || details.tagline || '',
       metaDescription: prev?.metaDescription || (details.overview ? details.overview.slice(0, 160) : ''),
     }));
-    if (details.poster && !manualImageUrl) {
-      setManualImageUrl(details.poster);
-      setImageMode('url');
-    }
+    const heroImg = details.backdrop || details.poster;
+    if (heroImg) { setManualImageUrl(heroImg); setImageMode('url'); }
   };
 
   const fetchTmdbById = async (id) => {
@@ -447,10 +445,8 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       excerpt: prev?.excerpt || details.tagline || '',
       metaDescription: prev?.metaDescription || (details.overview ? details.overview.slice(0, 160) : ''),
     }));
-    if (details.poster && !manualImageUrl) {
-      setManualImageUrl(details.poster);
-      setImageMode('url');
-    }
+    const heroImgTv = details.backdrop || details.poster;
+    if (heroImgTv) { setManualImageUrl(heroImgTv); setImageMode('url'); }
   };
 
   const fetchTvById = async (id) => {
@@ -503,10 +499,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       personTmdbId: details.tmdbId,
       excerpt: prev?.excerpt || (details.biography ? details.biography.slice(0, 200) : ''),
     }));
-    if (details.profilePhoto && !manualImageUrl) {
-      setManualImageUrl(details.profilePhoto);
-      setImageMode('url');
-    }
+    if (details.profilePhoto) { setManualImageUrl(details.profilePhoto); setImageMode('url'); }
   };
 
   const fetchPersonById = async (id) => {
@@ -556,6 +549,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setTmdbDetails(null); setTmdbResults([]); setTmdbQuery('');
     setTvDetails(null); setTvResults([]); setTvQuery('');
     setPersonDetails(null); setPersonResults([]); setPersonQuery('');
+    setManualImageUrl(''); setSelectedImage(null); setImageMode('pexels');
     try {
       const groqKey = localStorage.getItem('ss_groq_key') || '';
       const body = { topic, category, apiKey: groqKey };
