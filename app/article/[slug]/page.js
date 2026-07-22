@@ -7,6 +7,7 @@ import { getSmartLink } from '@/lib/adConfig';
 import Sidebar from '@/components/Sidebar';
 import ArticleCard from '@/components/ArticleCard';
 import HeroImage from '@/components/HeroImage';
+import ArticleBody from '@/components/ArticleBody';
 import AdSlot from '@/components/AdSlot';
 import StickyArticleBar from '@/components/StickyArticleBar';
 
@@ -607,7 +608,7 @@ export default function ArticlePage({ params }) {
             {article.articleType === 'list' ? (
               <div className="list-article-content">
                 {article.intro && (
-                  <div className="article-content mb-8" dangerouslySetInnerHTML={{ __html: article.intro }} />
+                  <ArticleBody html={article.intro} className="mb-8" />
                 )}
                 <div className="space-y-10">
                   {article.items?.map((item, idx) => (
@@ -636,7 +637,7 @@ export default function ArticlePage({ params }) {
                           </div>
                         )}
                         {item.description && (
-                          <div className="article-content" dangerouslySetInnerHTML={{ __html: item.description }} />
+                          <ArticleBody html={item.description} />
                         )}
                       </div>
                       {idx === 2 && (
@@ -655,23 +656,23 @@ export default function ArticlePage({ params }) {
                   ))}
                 </div>
                 {article.conclusion && (
-                  <div className="article-content mt-8 pt-8 border-t border-gray-100" dangerouslySetInnerHTML={{ __html: article.conclusion }} />
+                  <ArticleBody html={article.conclusion} className="mt-8 pt-8 border-t border-gray-100" />
                 )}
               </div>
             ) : (
               <>
-                <div className="article-content" dangerouslySetInnerHTML={{ __html: contentPart1 }} />
+                <ArticleBody html={contentPart1} />
                 <SmartLinkCTA smartlink={smartlink} catSlug={catSlug} />
                 <div className="my-4 border-t border-b border-gray-100 py-3 flex flex-col items-center gap-1">
                   <p className="text-[10px] uppercase tracking-widest text-gray-300 font-semibold">Advertisement</p>
                   <AdSlot slot="article-top" />
                 </div>
-                <div className="article-content" dangerouslySetInnerHTML={{ __html: contentPart2 }} />
+                <ArticleBody html={contentPart2} />
                 <div className="my-4 border-t border-b border-gray-100 py-3 flex flex-col items-center gap-1">
                   <p className="text-[10px] uppercase tracking-widest text-gray-300 font-semibold">Advertisement</p>
                   <AdSlot slot="article-middle" />
                 </div>
-                <div className="article-content" dangerouslySetInnerHTML={{ __html: contentPart3 }} />
+                <ArticleBody html={contentPart3} />
               </>
             )}
 
