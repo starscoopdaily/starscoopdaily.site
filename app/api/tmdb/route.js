@@ -70,7 +70,7 @@ async function handleMovie(apiKey, query, id, country) {
         : `t=${encodeURIComponent(d.title)}&y=${d.release_date?.slice(0, 4) || ''}`;
       const or = await fetch(
         `https://www.omdbapi.com/?${omdbQ}&plot=short&apikey=${omdbKey}`,
-        { next: { revalidate: 3600 } }
+        { cache: 'no-store' }
       );
       const od = await or.json();
       if (od.Response === 'True') {
