@@ -72,6 +72,7 @@ export default function ArticleCard({ article, size = 'normal', showExcerpt = tr
             className={`font-black text-gray-900 group-hover:text-[#cc0000] transition-colors leading-snug mb-2 line-clamp-3 ${
               isLarge ? 'text-xl sm:text-2xl' : 'text-base sm:text-[17px]'
             }`}
+            style={{ textWrap: 'balance' }}
           >
             {article.title}
           </h2>
