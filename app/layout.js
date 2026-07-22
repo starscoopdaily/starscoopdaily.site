@@ -53,6 +53,9 @@ export const metadata = {
   },
   verification: {
     google: 'MkYepf3Ti69ImPKjKrfsbpNgk0ZhMG0Na_zTYLN7pzM',
+    other: {
+      'p:domain_verify': ['04c87b0a65edbe8487063d198b334c7a'],
+    },
   },
   icons: {
     icon: '/favicon.svg',
