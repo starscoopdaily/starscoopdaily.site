@@ -3,7 +3,6 @@ import Script from 'next/script';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdSlot from '@/components/AdSlot';
-import AdConditional from '@/components/AdConditional';
 
 export const metadata = {
   metadataBase: new URL('https://www.starscoopdaily.site'),
@@ -91,7 +90,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className="bg-white text-gray-900 font-inter">
         <Header />
-        <AdConditional><AdSlot slot="header" /></AdConditional>
+        <AdSlot slot="header" />
         <main className="min-h-screen">{children}</main>
         <Footer />
         <Script
