@@ -60,11 +60,14 @@ async function handleMovie(apiKey, query, id, country) {
     .map((b) => `${IMG}/w1280${b.file_path}`);
 
   // OMDb — IMDB rating, Rotten Tomatoes %, Metacritic (optional, graceful if key missing)
-  let imdbRating = null, rtScore = null, metacritic = null, omdbPoster = null;
+  let imdbRating = null, rtScore = null, metacritic = null, omdbPoster = null, _omdbDebug = '';
   const omdbKey = process.env.OMDB_API_KEY;
-  if (omdbKey && (d.imdb_id || d.title)) {
+  if (!omdbKey) {
+    _omdbDebug = 'no_key';
+  } else if (!d.imdb_id && !d.title) {
+    _omdbDebug = 'no_id_or_title';
+  } else {
     try {
-      // Prefer IMDB ID (exact match) over title search
       const omdbQ = d.imdb_id
         ? `i=${d.imdb_id}`
         : `t=${encodeURIComponent(d.title)}&y=${d.release_date?.slice(0, 4) || ''}`;
@@ -73,6 +76,7 @@ async function handleMovie(apiKey, query, id, country) {
         { cache: 'no-store' }
       );
       const od = await or.json();
+      _omdbDebug = od.Response === 'True' ? 'ok' : (od.Error || 'false');
       if (od.Response === 'True') {
         if (od.imdbRating && od.imdbRating !== 'N/A') imdbRating = od.imdbRating;
         if (od.Poster && od.Poster !== 'N/A') omdbPoster = od.Poster;
@@ -81,7 +85,7 @@ async function handleMovie(apiKey, query, id, country) {
           if (rating.Source === 'Metacritic') metacritic = rating.Value;
         }
       }
-    } catch {}
+    } catch (e) { _omdbDebug = 'error:' + e.message; }
   }
 
   return {
@@ -106,6 +110,7 @@ async function handleMovie(apiKey, query, id, country) {
       rtScore,
       metacritic,
       omdbPoster,
+      _omdbDebug,
     },
   };
 }
