@@ -7,21 +7,25 @@ const NAV_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'Celebrity', href: '/category/celebrity' },
   { label: 'Hollywood', href: '/category/hollywood' },
-  { label: '👑 Royals', href: '/category/british-royals' },
   { label: 'Bollywood', href: '/category/bollywood' },
-  { label: 'TV Shows', href: '/category/tv-shows' },
+  { label: '👑 Royals', href: '/category/british-royals' },
+  { label: 'TV & Streaming', href: '/category/tv-shows' },
   { label: 'Music', href: '/category/music' },
+  {
+    label: '🎥 Movies', href: '/category/movies',
+    children: [
+      { label: '🎥 Movie Reviews', href: '/category/movies' },
+      { label: '🔍 Ending Explained', href: '/category/ending-explained' },
+      { label: '📡 Where to Watch', href: '/category/where-to-watch' },
+    ],
+  },
   { label: 'Fashion', href: '/category/fashion' },
   { label: 'Pop Culture', href: '/category/pop-culture' },
-  { label: '🤫 Gossip', href: '/category/gossip' },
-  { label: '🔥 Scandals', href: '/category/scandals' },
-  { label: '💋 Dating', href: '/category/dating' },
 ];
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [ticker, setTicker] = useState([]);
-  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     fetch('/api/site-config')
@@ -32,15 +36,9 @@ export default function Header() {
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const tickerText = ticker.length
     ? ticker.join('   •   ')
-    : 'Welcome to StarScoop Daily — Your #1 Source for Celebrity News';
+    : 'Welcome to StarScoop Daily — Your #1 Source for Celebrity News & Entertainment';
 
   return (
     <header className="sticky top-0 z-50 shadow-md">
@@ -81,18 +79,46 @@ export default function Header() {
 
             {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center gap-0.5">
-              {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-white hover:bg-white/20 px-2 py-1 rounded text-[14px] font-semibold transition-colors whitespace-nowrap"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {NAV_LINKS.map((link) =>
+                link.children ? (
+                  <div key={link.label} className="relative group">
+                    <Link
+                      href={link.href}
+                      className="flex items-center gap-0.5 text-white hover:bg-white/20 px-2 py-1 rounded text-[14px] font-semibold transition-colors whitespace-nowrap"
+                    >
+                      {link.label}
+                      <svg className="w-3 h-3 opacity-80 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                      </svg>
+                    </Link>
+                    {/* Dropdown */}
+                    <div className="absolute left-0 top-full pt-2 w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                      <div className="bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden py-1">
+                        {link.children.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-[#cc0000] font-medium transition-colors"
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="text-white hover:bg-white/20 px-2 py-1 rounded text-[14px] font-semibold transition-colors whitespace-nowrap"
+                  >
+                    {link.label}
+                  </Link>
+                )
+              )}
             </nav>
 
-            {/* Search + Mobile Toggle */}
+            {/* Admin + Mobile Toggle */}
             <div className="flex items-center gap-2">
               <Link
                 href="/admin"
@@ -121,22 +147,37 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {menuOpen && (
-          <div className="lg:hidden bg-[#aa0000] border-t border-red-800 mobile-menu">
-            <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">
+          <div className="lg:hidden bg-[#aa0000] border-t border-red-800">
+            <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-0.5">
               {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="text-white hover:bg-white/20 px-3 py-2.5 rounded text-sm font-semibold transition-colors"
-                >
-                  {link.label}
-                </Link>
+                <div key={link.href || link.label}>
+                  <Link
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="text-white hover:bg-white/20 px-3 py-2.5 rounded text-sm font-semibold transition-colors flex items-center justify-between"
+                  >
+                    {link.label}
+                  </Link>
+                  {link.children && (
+                    <div className="ml-4 mb-1 border-l-2 border-red-700 pl-3 space-y-0.5">
+                      {link.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={() => setMenuOpen(false)}
+                          className="block text-red-200 hover:text-white px-2 py-1.5 rounded text-xs font-medium transition-colors"
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
               <Link
                 href="/admin"
                 onClick={() => setMenuOpen(false)}
-                className="text-red-200 hover:text-white px-3 py-2.5 rounded text-sm font-medium mt-1 transition-colors"
+                className="text-red-200 hover:text-white px-3 py-2.5 rounded text-sm font-medium mt-1 transition-colors border-t border-red-700 pt-3"
               >
                 Admin Panel
               </Link>

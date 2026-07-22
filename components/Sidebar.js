@@ -7,10 +7,15 @@ const CATEGORIES = [
   { label: 'Celebrity', href: '/category/celebrity', icon: '⭐' },
   { label: 'Hollywood', href: '/category/hollywood', icon: '🎬' },
   { label: 'Bollywood', href: '/category/bollywood', icon: '🎭' },
-  { label: 'TV Shows', href: '/category/tv-shows', icon: '📺' },
+  { label: '👑 British Royals', href: '/category/british-royals', icon: '' },
+  { label: 'TV & Streaming', href: '/category/tv-shows', icon: '📺' },
   { label: 'Music', href: '/category/music', icon: '🎵' },
+  { label: 'Movies', href: '/category/movies', icon: '🎥' },
+  { label: 'Ending Explained', href: '/category/ending-explained', icon: '🔍' },
+  { label: 'Where to Watch', href: '/category/where-to-watch', icon: '📡' },
   { label: 'Relationships', href: '/category/relationships', icon: '💖' },
-  { label: 'Sports', href: '/category/sports', icon: '🏆' },
+  { label: 'Fashion', href: '/category/fashion', icon: '👗' },
+  { label: 'Pop Culture', href: '/category/pop-culture', icon: '🎯' },
 ];
 
 export default function Sidebar({ adContent = null }) {

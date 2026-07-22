@@ -5,9 +5,15 @@ const CATEGORIES = [
   { label: 'Celebrity', href: '/category/celebrity' },
   { label: 'Hollywood', href: '/category/hollywood' },
   { label: 'Bollywood', href: '/category/bollywood' },
-  { label: 'TV Shows', href: '/category/tv-shows' },
+  { label: 'British Royals', href: '/category/british-royals' },
+  { label: 'TV & Streaming', href: '/category/tv-shows' },
   { label: 'Music', href: '/category/music' },
+  { label: 'Movies', href: '/category/movies' },
+  { label: 'Ending Explained', href: '/category/ending-explained' },
+  { label: 'Where to Watch', href: '/category/where-to-watch' },
   { label: 'Relationships', href: '/category/relationships' },
+  { label: 'Fashion', href: '/category/fashion' },
+  { label: 'Pop Culture', href: '/category/pop-culture' },
 ];
 
 const LEGAL_LINKS = [

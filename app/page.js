@@ -24,7 +24,7 @@ export const metadata = {
   },
 };
 
-const CATEGORY_SECTIONS = ['Hollywood', 'British Royals', 'Bollywood', 'TV Shows', 'Music', 'Fashion', 'Pop Culture'];
+const CATEGORY_SECTIONS = ['Hollywood', 'British Royals', 'Bollywood', 'TV Shows', 'Music', 'Movies', 'Ending Explained', 'Where to Watch', 'Relationships', 'Fashion', 'Pop Culture'];
 
 export default function HomePage() {
   const featured = getFeaturedArticle();
