@@ -22,6 +22,30 @@ function daysSinceLaunch() {
   return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
 }
 
+function extractQueryFromTopic(topic, type) {
+  if (!topic) return '';
+  let s = topic.replace(/[‘’]/g, "'").replace(/[“”]/g, '"').trim();
+  // Strip leading label like "Box Office: " or "Review: "
+  const stripped = s.replace(/^[A-Za-z][a-z\s]{1,18}:\s*/, '').trim();
+  // Quoted text is almost always the title (for movies/TV)
+  if (type !== 'person') {
+    const q = (stripped || s).match(/['"]([^'"]{2,50})['"]/);
+    if (q) return q[1].trim();
+  }
+  // Person: grab first 2–3 consecutive Title-Case words from the original topic
+  if (type === 'person') {
+    const words = s.split(/\s+/);
+    const name = [];
+    for (const w of words) {
+      if (/^[A-Z][a-z]/.test(w)) name.push(w.replace(/[^a-zA-Z'.-]/g, ''));
+      else if (name.length > 0) break;
+    }
+    if (name.length >= 1) return name.slice(0, 3).join(' ');
+  }
+  // Fallback: first 4 words of stripped or original
+  return (stripped || s).split(/\s+/).slice(0, 4).join(' ');
+}
+
 // ─── Tab 1: News Fetcher ────────────────────────────────────────
 function NewsFetcher({ onUseTopic }) {
   const [headlines, setHeadlines] = useState([]);
@@ -383,9 +407,10 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     }
   };
 
-  const fetchFromTmdb = async () => {
-    const q = tmdbQuery.trim();
+  const fetchFromTmdb = async (overrideQuery) => {
+    const q = (overrideQuery || tmdbQuery).trim();
     if (!q) return;
+    if (overrideQuery) setTmdbQuery(overrideQuery);
     setTmdbLoading(true);
     setTmdbError('');
     setTmdbResults([]);
@@ -444,9 +469,10 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     }
   };
 
-  const fetchFromTmdbTv = async () => {
-    const q = tvQuery.trim();
+  const fetchFromTmdbTv = async (overrideQuery) => {
+    const q = (overrideQuery || tvQuery).trim();
     if (!q) return;
+    if (overrideQuery) setTvQuery(overrideQuery);
     setTvLoading(true);
     setTvError('');
     setTvResults([]);
@@ -456,7 +482,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       const data = await r.json();
       if (data.error) throw new Error(data.error);
       setTvResults(data.shows || []);
-      // Don't auto-apply first result — user must pick from list
+      if (data.details) applyTvDetails(data.details);
     } catch (e) {
       setTvError(e.message);
     } finally {
@@ -499,9 +525,10 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     }
   };
 
-  const fetchFromTmdbPerson = async () => {
-    const q = personQuery.trim();
+  const fetchFromTmdbPerson = async (overrideQuery) => {
+    const q = (overrideQuery || personQuery).trim();
     if (!q) return;
+    if (overrideQuery) setPersonQuery(overrideQuery);
     setPersonLoading(true);
     setPersonError('');
     setPersonResults([]);
@@ -511,7 +538,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       const data = await r.json();
       if (data.error) throw new Error(data.error);
       setPersonResults(data.people || []);
-      // Don't auto-apply first result — user must pick from list
+      if (data.details) applyPersonDetails(data.details);
     } catch (e) {
       setPersonError(e.message);
     } finally {
@@ -526,6 +553,9 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setArticle(null);
     setListItems([]);
     setPreview(false);
+    setTmdbDetails(null); setTmdbResults([]); setTmdbQuery('');
+    setTvDetails(null); setTvResults([]); setTvQuery('');
+    setPersonDetails(null); setPersonResults([]); setPersonQuery('');
     try {
       const groqKey = localStorage.getItem('ss_groq_key') || '';
       const body = { topic, category, apiKey: groqKey };
@@ -540,6 +570,22 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       const a = { ...data.article, category, author: 'StarScoop Daily Staff', date: new Date().toISOString().split('T')[0] };
       setArticle(a);
       setImageQuery(a.hero_image_query || a.title || '');
+      // Auto-fetch TMDB metadata for relevant categories
+      const _movieCats = ['Movies', 'Ending Explained', 'Where to Watch', 'Hollywood', 'Bollywood'];
+      const _tvCats = ['TV Shows'];
+      const _personCats = ['Celebrity', 'Hollywood', 'Bollywood', 'British Royals'];
+      if (_movieCats.includes(category)) {
+        const tq = extractQueryFromTopic(topic, 'movie');
+        if (tq) fetchFromTmdb(tq);
+      }
+      if (_tvCats.includes(category)) {
+        const tq = extractQueryFromTopic(topic, 'tv');
+        if (tq) fetchFromTmdbTv(tq);
+      }
+      if (_personCats.includes(category)) {
+        const tq = extractQueryFromTopic(topic, 'person');
+        if (tq) fetchFromTmdbPerson(tq);
+      }
       if (articleSubType === 'list' && a.items) {
         setListItems(a.items.map((item) => ({ ...item, imageMode: 'google', imageUrl: '', uploadUrl: '' })));
         setListIntro(a.intro || '');
