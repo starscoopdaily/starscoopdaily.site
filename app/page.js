@@ -2,14 +2,11 @@
 import Image from 'next/image';
 import ArticleCard from '@/components/ArticleCard';
 import Sidebar from '@/components/Sidebar';
+import HeroCarousel from '@/components/HeroCarousel';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import AdSlot from '@/components/AdSlot';
 import { getCategoryConfig } from '@/lib/categories';
-import {
-  getFeaturedArticle,
-  getLatestArticles,
-  getArticlesByCategory,
-} from '@/lib/articles';
+import { getLatestArticles, getArticlesByCategory } from '@/lib/articles';
 
 export const metadata = {
   title: 'StarScoop Daily — Celebrity News, Hollywood, British Royals & Entertainment',
@@ -27,8 +24,8 @@ export const metadata = {
 const CATEGORY_SECTIONS = ['Hollywood', 'British Royals', 'Bollywood', 'TV Shows', 'Music', 'Movies', 'Ending Explained', 'Where to Watch', 'Relationships', 'Fashion', 'Pop Culture'];
 
 export default function HomePage() {
-  const featured = getFeaturedArticle();
   const latest = getLatestArticles(6);
+  const heroArticles = getLatestArticles(12).filter((a) => a.image).slice(0, 5);
   const categorySections = CATEGORY_SECTIONS.map((cat) => ({
     name: cat,
     articles: getArticlesByCategory(cat).slice(0, 3),
@@ -36,58 +33,8 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Hero Featured Article */}
-      {featured && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-8">
-          <Link href={`/article/${featured.slug}`} className="group block">
-            <div className="relative rounded-xl overflow-hidden h-80 sm:h-[28rem] bg-gray-200 shadow-xl isolate">
-              {featured.image && (
-                <Image
-                  src={featured.image}
-                  alt={featured.imageAlt || featured.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  priority
-                  sizes="100vw"
-                />
-              )}
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent z-10" />
-
-              {/* Badges — anchored top-left so they're never pushed out by long text */}
-              <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-30 flex items-center gap-2">
-                <span style={{ background: '#cc0000', color: '#fff', fontWeight: 700, padding: '4px 12px', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Featured
-                </span>
-                {featured.category && (
-                  <span style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', fontWeight: 700, padding: '4px 12px', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {featured.category}
-                  </span>
-                )}
-              </div>
-
-              {/* Content — title + author only at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 z-20">
-                <h1 className="text-white font-black text-xl sm:text-3xl lg:text-4xl leading-snug mb-3 max-w-3xl line-clamp-3 group-hover:text-red-100 transition-colors" style={{ textWrap: 'balance' }}>
-                  {featured.title}
-                </h1>
-                <div className="flex items-center gap-3 text-gray-300 text-xs">
-                  <span>{featured.author}</span>
-                  <span>•</span>
-                  <span>
-                    {featured.date &&
-                      new Date(featured.date).toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Link>
-        </section>
-      )}
+      {/* Hero Carousel */}
+      {heroArticles.length > 0 && <HeroCarousel articles={heroArticles} />}
 
       {/* Trending Now Rail */}
       {latest.length > 0 && (
