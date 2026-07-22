@@ -456,7 +456,7 @@ export default function ArticlePage({ params }) {
             </div>
 
             {/* Title */}
-            <h1 className="text-2xl sm:text-3xl lg:text-[2.6rem] font-black text-gray-900 mb-4" style={{ letterSpacing: '-0.3px', textWrap: 'balance', lineHeight: 1.5 }}>
+            <h1 className="text-2xl sm:text-3xl lg:text-[2.6rem] font-black text-gray-900 mb-4" style={{ letterSpacing: '-0.3px', textWrap: 'balance', lineHeight: 1.3 }}>
               {article.title}
             </h1>
 
