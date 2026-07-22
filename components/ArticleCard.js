@@ -13,7 +13,7 @@ function HorizontalCard({ article, catColor }) {
     <Link href={`/article/${article.slug}`} className="group block article-card">
       <div className="article-hcard flex bg-white rounded-xl overflow-hidden">
         {/* Portrait image — fixed width */}
-        <div className="relative flex-shrink-0 bg-gray-100 overflow-hidden" style={{ width: '160px', aspectRatio: '2/3' }}>
+        <div className="relative flex-shrink-0 bg-gray-100 overflow-hidden" style={{ width: '160px', minHeight: '140px' }}>
           {article.image ? (
             <Image
               src={article.image}
@@ -60,8 +60,8 @@ export default function ArticleCard({ article, size = 'normal', layout = 'vertic
         {/* Category colour top accent */}
         <div style={{ height: '3px', background: catColor, flexShrink: 0 }} />
 
-        {/* Portrait image — shows full height without cropping */}
-        <div className="relative overflow-hidden flex-shrink-0 bg-gray-100" style={{ aspectRatio: '2/3', width: '100%' }}>
+        {/* Landscape image — fixed height, face shown via object-top */}
+        <div className="relative overflow-hidden flex-shrink-0 bg-gray-100" style={{ height: '200px', width: '100%' }}>
           {article.image ? (
             <Image
               src={article.image}
