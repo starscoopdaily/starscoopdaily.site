@@ -390,6 +390,8 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     }));
     const heroImg = details.backdrop || details.omdbPoster || details.poster;
     if (heroImg) { setManualImageUrl(heroImg); setImageMode('url'); }
+    // Auto-set inline image 1 to poster (portrait) for Pinterest compatibility
+    if (details.poster) { setManualInlineImage1Url(details.poster); setInlineImage1Mode('url'); }
   };
 
   const fetchTmdbById = async (id) => {
@@ -450,6 +452,8 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     }));
     const heroImgTv = details.backdrop || details.poster;
     if (heroImgTv) { setManualImageUrl(heroImgTv); setImageMode('url'); }
+    // Auto-set inline image 1 to poster (portrait) for Pinterest compatibility
+    if (details.poster) { setManualInlineImage1Url(details.poster); setInlineImage1Mode('url'); }
   };
 
   const fetchTvById = async (id) => {
@@ -504,6 +508,8 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       excerpt: prev?.excerpt || (details.biography ? details.biography.slice(0, 200) : ''),
     }));
     if (details.profilePhoto) { setManualImageUrl(details.profilePhoto); setImageMode('url'); }
+    // Auto-set inline image 1 to profile photo (portrait) for Pinterest compatibility
+    if (details.profilePhoto) { setManualInlineImage1Url(details.profilePhoto); setInlineImage1Mode('url'); }
   };
 
   const fetchPersonById = async (id) => {
@@ -554,6 +560,8 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setTvDetails(null); setTvResults([]); setTvQuery('');
     setPersonDetails(null); setPersonResults([]); setPersonQuery('');
     setManualImageUrl(''); setSelectedImage(null); setImageMode('pexels');
+    setManualInlineImage1Url(''); setInlineImage1Mode('pexels');
+    setManualInlineImage2Url(''); setInlineImage2Mode('pexels');
     try {
       const groqKey = localStorage.getItem('ss_groq_key') || '';
       const body = { topic, category, apiKey: groqKey };
