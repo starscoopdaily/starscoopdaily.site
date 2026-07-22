@@ -6,6 +6,7 @@ import { getCategoryConfig } from '@/lib/categories';
 import { getSmartLink } from '@/lib/adConfig';
 import Sidebar from '@/components/Sidebar';
 import ArticleCard from '@/components/ArticleCard';
+import HeroImage from '@/components/HeroImage';
 import AdSlot from '@/components/AdSlot';
 import StickyArticleBar from '@/components/StickyArticleBar';
 
@@ -409,27 +410,7 @@ export default function ArticlePage({ params }) {
 
       {/* Hero Image */}
       {article.image && (
-        <div className="relative w-full bg-gray-900 overflow-hidden" style={{ height: 'min(60vh, 420px)', minHeight: '260px' }}>
-          {/* Blur backdrop — fills dead space for portrait images */}
-          <Image
-            src={article.image}
-            alt=""
-            fill
-            aria-hidden="true"
-            className="object-cover scale-110 blur-2xl brightness-90 opacity-80"
-            sizes="100vw"
-          />
-          {/* Main image — object-contain shows full portrait without cropping */}
-          <Image
-            src={article.image}
-            alt={article.imageAlt || article.title}
-            fill
-            className="object-contain z-10"
-            priority
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-20" />
-        </div>
+        <HeroImage src={article.image} alt={article.imageAlt || article.title} />
       )}
 
       {/* Article + Sidebar */}
