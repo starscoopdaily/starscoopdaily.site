@@ -2270,6 +2270,10 @@ function ImageFixer() {
                         {tmdbLoading[slot] ? '⟳' : l}
                       </button>
                     ))}
+                    <button onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(tmdbQueries[slot] || alt)}&tbm=isch`, '_blank')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                      🌐 Google Images
+                    </button>
                   </div>
                   {(tmdbResults[slot] || []).length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
