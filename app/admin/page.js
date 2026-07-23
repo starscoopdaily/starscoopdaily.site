@@ -2085,11 +2085,232 @@ function AdsManager() {
   );
 }
 
+// ─── Tab 7: Image Fixer ─────────────────────────────────────────
+function ImageFixer() {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null);
+  const [images, setImages] = useState([]);
+  const [tmdbQueries, setTmdbQueries] = useState({});
+  const [tmdbResults, setTmdbResults] = useState({});
+  const [tmdbLoading, setTmdbLoading] = useState({});
+  const [newImages, setNewImages] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [savedMsg, setSavedMsg] = useState('');
+
+  useEffect(() => {
+    fetch('/api/articles')
+      .then(r => r.json())
+      .then(data => { setArticles(Array.isArray(data) ? data : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const selectArticle = (a) => {
+    setSelected(a);
+    setSavedMsg('');
+    setNewImages({});
+    setTmdbResults({});
+    setTmdbQueries({});
+    const imgs = [];
+    if (a.image) imgs.push({ slot: 'hero', src: a.image, alt: a.imageAlt || a.title });
+    const matches = [...(a.content || '').matchAll(/<img[^>]+src="([^"]+)"[^>]*alt="([^"]*)"[^>]*/gi)];
+    matches.forEach((m, i) => imgs.push({ slot: `inline-${i}`, src: m[1], alt: m[2] }));
+    (a.items || []).forEach((item, i) => { if (item.image) imgs.push({ slot: `item-${i}`, src: item.image, alt: item.name }); });
+    setImages(imgs);
+  };
+
+  const searchTmdb = async (slot, type) => {
+    const q = (tmdbQueries[slot] || '').trim();
+    if (!q) return;
+    setTmdbLoading(p => ({ ...p, [slot]: true }));
+    setTmdbResults(p => ({ ...p, [slot]: [] }));
+    try {
+      const r = await fetch(`/api/tmdb?query=${encodeURIComponent(q)}&type=${type}`);
+      const data = await r.json();
+      const imgs = [];
+      const add = (src, label) => { if (src) imgs.push({ src, label }); };
+      if (type === 'person') {
+        (data.people || []).slice(0, 8).forEach(p => add(p.photo, p.name));
+        if (data.details?.profilePhoto) add(data.details.profilePhoto, data.details.name);
+      } else if (type === 'tv') {
+        (data.shows || []).slice(0, 5).forEach(s => { add(s.poster, `${s.title} poster`); add(s.backdrop, `${s.title} backdrop`); });
+        if (data.details) { add(data.details.poster, 'Poster'); add(data.details.backdrop, 'Backdrop'); }
+      } else {
+        (data.movies || []).slice(0, 5).forEach(m => { add(m.poster, `${m.title} poster`); add(m.backdrop, `${m.title} backdrop`); });
+        if (data.details) { add(data.details.poster, 'Poster'); add(data.details.backdrop, 'Backdrop'); }
+      }
+      setTmdbResults(p => ({ ...p, [slot]: imgs }));
+    } catch {}
+    finally { setTmdbLoading(p => ({ ...p, [slot]: false })); }
+  };
+
+  const save = async () => {
+    if (!selected || Object.keys(newImages).length === 0) return;
+    const githubToken = localStorage.getItem('ssd_gh_token');
+    const githubUser = localStorage.getItem('ssd_gh_user');
+    const githubRepo = localStorage.getItem('ssd_gh_repo');
+    if (!githubToken || !githubUser || !githubRepo) {
+      setSavedMsg('❌ GitHub credentials missing. Set them in Site Controls tab.');
+      return;
+    }
+    setSaving(true);
+    setSavedMsg('');
+    try {
+      let updated = { ...selected };
+      if (newImages['hero']) updated.image = newImages['hero'];
+      let imgIdx = 0;
+      updated.content = (updated.content || '').replace(/<img([^>]+?)src="([^"]+)"([^>]*?)>/gi, (match, pre, oldSrc, post) => {
+        const key = `inline-${imgIdx++}`;
+        return newImages[key] ? `<img${pre}src="${newImages[key]}"${post}>` : match;
+      });
+      if (updated.items) {
+        updated.items = updated.items.map((item, i) => newImages[`item-${i}`] ? { ...item, image: newImages[`item-${i}`] } : item);
+      }
+      const res = await fetch('/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ article: updated, githubToken, githubUser, githubRepo }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setSavedMsg(`✅ Updated! Site rebuilding in ~30 seconds.`);
+      setSelected(updated);
+      setNewImages({});
+      setTmdbResults({});
+    } catch (e) {
+      setSavedMsg(`❌ ${e.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <div className="text-center py-16 text-gray-400"><div className="text-4xl animate-pulse mb-3">🖼️</div><p>Loading articles...</p></div>;
+
+  return (
+    <div>
+      <h2 className="text-xl font-black text-gray-900 mb-1">Image Fixer</h2>
+      <p className="text-gray-500 text-sm mb-6">Select an article, view all its images, search TMDB to replace broken or wrong ones.</p>
+
+      {!selected ? (
+        <div className="space-y-2">
+          {articles.map(a => (
+            <button key={a.slug} onClick={() => selectArticle(a)}
+              className="w-full flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 hover:border-[#cc0000] hover:bg-red-50 transition-colors text-left group">
+              <div className="w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                {a.image
+                  ? <img src={a.image} alt="" className="w-full h-full object-cover" onError={e => { e.target.style.display='none'; e.target.parentNode.innerHTML='<span style="font-size:20px;display:flex;align-items:center;justify-content:center;height:100%;color:#ef4444">❌</span>'; }} />
+                  : <span className="flex items-center justify-center h-full text-gray-300 text-xl">🖼️</span>}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-800 leading-snug line-clamp-2">{a.title}</p>
+                <p className="text-xs text-gray-400 font-mono mt-0.5">{a.slug}</p>
+              </div>
+              <span className="text-[#cc0000] text-xs font-bold flex-shrink-0 group-hover:underline">Fix Images →</span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div>
+          <button onClick={() => setSelected(null)} className="mb-5 text-sm text-gray-500 hover:text-gray-800 font-medium flex items-center gap-1">
+            ← Back to Articles
+          </button>
+          <div className="mb-4 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
+            <p className="text-sm font-semibold text-gray-700 truncate">{selected.title}</p>
+            <p className="text-xs text-gray-400 font-mono">{selected.slug}</p>
+          </div>
+
+          {savedMsg && (
+            <div className={`px-4 py-3 rounded-lg text-sm mb-5 ${savedMsg.startsWith('✅') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+              {savedMsg}
+            </div>
+          )}
+
+          <div className="space-y-5">
+            {images.map(({ slot, src, alt }) => (
+              <div key={slot} className={`border rounded-xl p-5 space-y-3 ${newImages[slot] ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded">
+                    {slot === 'hero' ? '🖼️ Hero' : slot.startsWith('inline') ? `📷 Inline ${parseInt(slot.split('-')[1]) + 1}` : `📋 List Item ${parseInt(slot.split('-')[1]) + 1}`}
+                  </span>
+                  {newImages[slot] && <span className="text-xs font-bold text-green-600">✓ Changed</span>}
+                </div>
+
+                <div className="flex gap-4 items-start">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase text-gray-400 mb-1">Current</p>
+                    <img src={src} alt={alt} className="w-20 h-20 object-cover rounded-lg border border-gray-200 bg-gray-100"
+                      onError={e => { e.target.style.background='#fee2e2'; e.target.style.outline='2px solid #ef4444'; }} />
+                  </div>
+                  {newImages[slot] && (
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-green-600 mb-1">New ✓</p>
+                      <img src={newImages[slot]} alt="new" className="w-20 h-20 object-cover rounded-lg border-2 border-green-400" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-gray-400 mb-1.5 truncate">{alt}</p>
+                    <input type="url" value={newImages[slot] || ''}
+                      onChange={e => setNewImages(p => ({ ...p, [slot]: e.target.value }))}
+                      placeholder="Paste any image URL directly..."
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#cc0000] bg-white" />
+                  </div>
+                </div>
+
+                <div className="bg-white border border-gray-100 rounded-lg p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Search TMDB to Replace</p>
+                  <div className="flex gap-2 mb-2 flex-wrap">
+                    <input type="text" value={tmdbQueries[slot] || ''}
+                      onChange={e => setTmdbQueries(p => ({ ...p, [slot]: e.target.value }))}
+                      onKeyDown={e => { if (e.key === 'Enter') searchTmdb(slot, 'person'); }}
+                      placeholder="Actor, movie, or show name..."
+                      className="flex-1 min-w-[140px] border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#cc0000] bg-white" />
+                    {[{ t: 'person', l: '👤 Person' }, { t: 'movie', l: '🎬 Movie' }, { t: 'tv', l: '📺 TV' }].map(({ t, l }) => (
+                      <button key={t} onClick={() => searchTmdb(slot, t)} disabled={tmdbLoading[slot]}
+                        className="bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap disabled:opacity-50">
+                        {tmdbLoading[slot] ? '⟳' : l}
+                      </button>
+                    ))}
+                  </div>
+                  {(tmdbResults[slot] || []).length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {(tmdbResults[slot] || []).map((img, i) => (
+                        <button key={i} onClick={() => setNewImages(p => ({ ...p, [slot]: img.src }))} title={img.label}
+                          className={`relative rounded-lg overflow-hidden border-2 transition-all ${newImages[slot] === img.src ? 'border-green-400 ring-2 ring-green-300' : 'border-gray-200 hover:border-[#cc0000]'}`}>
+                          <img src={img.src} alt={img.label} className="w-16 h-20 object-cover" />
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[8px] px-1 py-0.5 text-center truncate leading-tight">{img.label}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {Object.keys(newImages).length > 0 && (
+            <div className="mt-6 flex items-center gap-3">
+              <button onClick={save} disabled={saving}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold text-sm transition-colors disabled:opacity-60 flex items-center gap-2">
+                {saving ? <><span className="animate-spin inline-block">⟳</span> Saving...</> : `💾 Save ${Object.keys(newImages).length} Image Change${Object.keys(newImages).length > 1 ? 's' : ''}`}
+              </button>
+              <button onClick={() => { setNewImages({}); setTmdbResults({}); }}
+                className="text-gray-500 text-sm font-semibold hover:text-gray-800 transition-colors">
+                Reset
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Admin Panel ────────────────────────────────────────────
 const TABS = [
   { id: 'fetcher', icon: '📡', label: 'News Fetcher' },
   { id: 'generator', icon: '✍️', label: 'Article Generator' },
   { id: 'articles', icon: '📋', label: 'Published Articles' },
+  { id: 'imgfixer', icon: '🖼️', label: 'Image Fixer' },
   { id: 'controls', icon: '⚙️', label: 'Site Controls' },
   { id: 'stats', icon: '📊', label: 'Quick Stats' },
   { id: 'ads', icon: '📢', label: 'Ads Manager' },
@@ -2228,6 +2449,7 @@ export default function AdminPage() {
               {activeTab === 'fetcher' && <NewsFetcher onUseTopic={handleUseTopic} />}
               {activeTab === 'generator' && <ArticleGenerator initialTopic={topicFromFetcher} editArticle={editArticleData} />}
               {activeTab === 'articles' && <PublishedArticles onEdit={(a) => { setEditArticleData(a); setActiveTab('generator'); }} />}
+              {activeTab === 'imgfixer' && <ImageFixer />}
               {activeTab === 'controls' && <SiteControls />}
               {activeTab === 'stats' && <QuickStats />}
               {activeTab === 'ads' && <AdsManager />}
