@@ -2187,6 +2187,7 @@ function ImageFixer() {
   const [tmdbQueries, setTmdbQueries] = useState({});
   const [tmdbResults, setTmdbResults] = useState({});
   const [tmdbLoading, setTmdbLoading] = useState({});
+  const [wikiImgResults, setWikiImgResults] = useState({});
   const [newImages, setNewImages] = useState({});
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState('');
@@ -2198,12 +2199,35 @@ function ImageFixer() {
       .catch(() => setLoading(false));
   }, []);
 
+  const searchWikiImg = async (slot, query) => {
+    const q = (query || tmdbQueries[slot] || '').trim();
+    if (!q) return;
+    setTmdbLoading(p => ({ ...p, [slot]: true }));
+    setWikiImgResults(p => ({ ...p, [slot]: [] }));
+    try {
+      const r = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&origin=*&srlimit=5`);
+      const data = await r.json();
+      const results = data.query?.search || [];
+      const imgs = [];
+      await Promise.all(results.slice(0, 5).map(async (res) => {
+        try {
+          const s = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(res.title)}`);
+          const sd = await s.json();
+          if (sd.thumbnail?.source) imgs.push({ src: sd.thumbnail.source, label: sd.title });
+        } catch {}
+      }));
+      setWikiImgResults(p => ({ ...p, [slot]: imgs }));
+    } catch {}
+    finally { setTmdbLoading(p => ({ ...p, [slot]: false })); }
+  };
+
   const selectArticle = (a) => {
     setSelected(a);
     setSavedMsg('');
     setNewImages({});
     setTmdbResults({});
     setTmdbQueries({});
+    setWikiImgResults({});
     const imgs = [];
     if (a.image) imgs.push({ slot: 'hero', src: a.image, alt: a.imageAlt || a.title });
     const matches = [...(a.content || '').matchAll(/<img[^>]+src="([^"]+)"[^>]*alt="([^"]*)"[^>]*/gi)];
@@ -2363,14 +2387,18 @@ function ImageFixer() {
                         {tmdbLoading[slot] ? '⟳' : l}
                       </button>
                     ))}
+                    <button onClick={() => searchWikiImg(slot, tmdbQueries[slot] || alt)} disabled={tmdbLoading[slot]}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap disabled:opacity-50">
+                      {tmdbLoading[slot] ? '⟳' : '📖 Wikipedia'}
+                    </button>
                     <button onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(tmdbQueries[slot] || alt)}&tbm=isch`, '_blank')}
                       className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
-                      🌐 Google Images
+                      🌐 Google
                     </button>
                   </div>
-                  {(tmdbResults[slot] || []).length > 0 && (
+                  {((tmdbResults[slot] || []).length > 0 || (wikiImgResults[slot] || []).length > 0) && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {(tmdbResults[slot] || []).map((img, i) => (
+                      {[...(tmdbResults[slot] || []), ...(wikiImgResults[slot] || [])].map((img, i) => (
                         <button key={i} onClick={() => setNewImages(p => ({ ...p, [slot]: img.src }))} title={img.label}
                           className={`relative rounded-lg overflow-hidden border-2 transition-all ${newImages[slot] === img.src ? 'border-green-400 ring-2 ring-green-300' : 'border-gray-200 hover:border-[#cc0000]'}`}>
                           <img src={img.src} alt={img.label} className="w-16 h-20 object-cover" />
@@ -2390,7 +2418,7 @@ function ImageFixer() {
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold text-sm transition-colors disabled:opacity-60 flex items-center gap-2">
                 {saving ? <><span className="animate-spin inline-block">⟳</span> Saving...</> : `💾 Save ${Object.keys(newImages).length} Image Change${Object.keys(newImages).length > 1 ? 's' : ''}`}
               </button>
-              <button onClick={() => { setNewImages({}); setTmdbResults({}); }}
+              <button onClick={() => { setNewImages({}); setTmdbResults({}); setWikiImgResults({}); }}
                 className="text-gray-500 text-sm font-semibold hover:text-gray-800 transition-colors">
                 Reset
               </button>
