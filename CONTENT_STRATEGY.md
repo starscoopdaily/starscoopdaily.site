@@ -284,6 +284,13 @@ Why [Celebrity] [Did X] — The Real Reason
 - **Portrait images:** 85% width, centered, max-width 560px
 - Use `makeFigure` in admin to inject — never manually paste base64
 
+### Image Rules (mandatory — apply to every article)
+- Every article must have **exactly 3 images minimum**: hero image + 2 inline body images
+- **First inline image MUST be portrait** (2:3 ratio) — TMDB poster or person profile photo — so Pinterest can fetch it from the article URL
+- **Always verify images are not broken (404)** before publishing — test every URL with a HEAD request
+- For **list/roundup articles** (e.g. "Top 10 Bollywood Movies", "Best Actresses"): add **one image per section/entry** — each numbered section gets its own figure immediately after the description text
+- For **standard articles**: place portrait figure 1 early (after 2nd or 3rd paragraph), landscape figure 2 in the middle section
+
 ### Image Sources (priority order)
 1. TMDB API (movie backdrops, posters, person profile photos) — always first
 2. OMDb poster (fallback for movies)

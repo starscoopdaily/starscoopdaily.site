@@ -36,12 +36,6 @@ export default function HomePage() {
       {/* Hero Carousel */}
       {heroArticles.length > 0 && <HeroCarousel articles={heroArticles} />}
 
-      {/* Mobile-only ad — below hero, above trending */}
-      <div className="lg:hidden max-w-7xl mx-auto px-4 sm:px-6 mt-4 flex flex-col items-center gap-1">
-        <p className="text-[10px] uppercase tracking-widest text-gray-300 font-semibold">Advertisement</p>
-        <AdSlot slot="homepage-top" />
-      </div>
-
       {/* Trending Now Rail */}
       {latest.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 mt-6">
