@@ -522,7 +522,13 @@ Rules:
 
 ### Pinterest Pin
 **Account:** StarScoop Daily Pinterest
-**Steps:** Create Pin → paste URL to fetch image → fill fields below → select board → publish
+**Steps:** Create Pin → paste article URL → fetch image → fill all fields → select board → Mark as AI-Modified ON → publish
+
+**Exact format Claude outputs every time:**
+
+---
+
+Paste this URL: `[full article URL]`
 
 **Title:**
 ```
@@ -540,12 +546,14 @@ Read the full story 👇 starscoopdaily.site
 
 **Link:** `[full article URL]`
 
-**Board:** `[exact board name to pin to]`
+**Board:** `[exact board name]`
 
 **Alt Text:**
 ```
 [1 sentence describing the image for accessibility + SEO]
 ```
+
+---
 
 Rules:
 - 8–10 hashtags for maximum Pinterest discovery
