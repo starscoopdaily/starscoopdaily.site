@@ -323,6 +323,10 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   const [personResults, setPersonResults] = useState([]);
   const [personDetails, setPersonDetails] = useState(null);
   const [personQuery, setPersonQuery] = useState('');
+  const [wikiQuery, setWikiQuery] = useState('');
+  const [wikiResults, setWikiResults] = useState([]);
+  const [wikiSummary, setWikiSummary] = useState(null);
+  const [wikiLoading, setWikiLoading] = useState(false);
 
   useEffect(() => {
     if (initialTopic) setTopic(initialTopic);
@@ -549,6 +553,39 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     }
   };
 
+  const searchWiki = async (overrideQuery) => {
+    const q = (overrideQuery || wikiQuery).trim();
+    if (!q) return;
+    if (overrideQuery) setWikiQuery(overrideQuery);
+    setWikiLoading(true);
+    setWikiResults([]);
+    setWikiSummary(null);
+    try {
+      const r = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&origin=*&srlimit=6`);
+      const data = await r.json();
+      setWikiResults(data.query?.search || []);
+    } catch {}
+    finally { setWikiLoading(false); }
+  };
+
+  const fetchWikiSummary = async (title) => {
+    setWikiLoading(true);
+    try {
+      const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+      const data = await r.json();
+      setWikiSummary(data);
+      if (data.extract) {
+        setArticle(prev => ({
+          ...(prev || {}),
+          personBio: prev?.personBio || data.extract.slice(0, 500),
+          excerpt: prev?.excerpt || data.extract.slice(0, 200),
+          metaDescription: prev?.metaDescription || data.extract.slice(0, 160),
+        }));
+      }
+    } catch {}
+    finally { setWikiLoading(false); }
+  };
+
   const generateArticle = async () => {
     if (!topic.trim()) return;
     setLoading(true);
@@ -559,6 +596,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setTmdbDetails(null); setTmdbResults([]); setTmdbQuery('');
     setTvDetails(null); setTvResults([]); setTvQuery('');
     setPersonDetails(null); setPersonResults([]); setPersonQuery('');
+    setWikiSummary(null); setWikiResults([]); setWikiQuery(topic);
     setManualImageUrl(''); setSelectedImage(null); setImageMode('pexels');
     setManualInlineImage1Url(''); setInlineImage1Mode('pexels');
     setManualInlineImage2Url(''); setInlineImage2Mode('pexels');
@@ -1241,6 +1279,61 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
               </div>
             </div>
           )}
+
+          {/* Wikipedia Lookup */}
+          <div className="border border-emerald-200 bg-emerald-50 rounded-xl p-4 space-y-3">
+            <p className="text-xs font-black uppercase tracking-wider text-emerald-700 mb-2">📖 Wikipedia Lookup <span className="font-normal normal-case tracking-normal text-emerald-500">— auto-fills bio, excerpt &amp; meta description</span></p>
+            <div className="flex gap-2">
+              <input type="text" value={wikiQuery} onChange={e => setWikiQuery(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && searchWiki()}
+                placeholder={`e.g. ${topic.split(' ').slice(0, 3).join(' ') || 'Person or movie name...'}`}
+                className="flex-1 border border-emerald-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white" />
+              <button onClick={() => searchWiki()} disabled={wikiLoading}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors disabled:opacity-60 flex items-center gap-1.5 whitespace-nowrap">
+                {wikiLoading ? <><span className="animate-spin inline-block">⟳</span> Searching...</> : '🔍 Search Wikipedia'}
+              </button>
+            </div>
+            {wikiResults.length > 0 && !wikiSummary && (
+              <div className="space-y-1 max-h-52 overflow-y-auto rounded-lg border border-emerald-200 bg-white p-1.5">
+                <p className="text-[10px] text-emerald-700 font-bold uppercase px-1 mb-1">Select the correct page:</p>
+                {wikiResults.map(r => (
+                  <button key={r.pageid} onClick={() => fetchWikiSummary(r.title)}
+                    className="w-full text-left bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 hover:border-emerald-300 rounded-lg px-3 py-2 transition-colors">
+                    <p className="text-xs font-bold text-gray-800">{r.title}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1" dangerouslySetInnerHTML={{ __html: r.snippet.replace(/<[^>]+>/g, '') }} />
+                  </button>
+                ))}
+              </div>
+            )}
+            {wikiSummary && (
+              <div className="bg-white border border-emerald-200 rounded-lg p-3">
+                <div className="flex items-start gap-3">
+                  {wikiSummary.thumbnail?.source && (
+                    <img src={wikiSummary.thumbnail.source} alt="" className="w-14 h-18 object-cover rounded flex-shrink-0" style={{ height: '72px' }} />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-emerald-800 mb-1">{wikiSummary.title}</p>
+                    <p className="text-[11px] text-gray-600 leading-relaxed line-clamp-4">{wikiSummary.extract}</p>
+                    <div className="flex gap-2 mt-2 flex-wrap">
+                      <button onClick={() => navigator.clipboard?.writeText(wikiSummary.extract || '')}
+                        className="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold px-2 py-1 rounded transition-colors">
+                        📋 Copy Full Text
+                      </button>
+                      <a href={wikiSummary.content_urls?.desktop?.page} target="_blank" rel="noopener noreferrer"
+                        className="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold px-2 py-1 rounded transition-colors">
+                        🔗 Open Wikipedia
+                      </a>
+                      <button onClick={() => { setWikiSummary(null); setWikiResults([]); }}
+                        className="text-[10px] text-gray-400 hover:text-gray-600 font-semibold">
+                        ← Back
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[10px] text-emerald-600 mt-2 bg-emerald-50 rounded px-2 py-1">✓ Bio, excerpt &amp; meta description auto-filled from Wikipedia</p>
+              </div>
+            )}
+          </div>
 
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 cursor-pointer">
