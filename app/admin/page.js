@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 
 const ADMIN_PASSWORD = 'StarScoop@2026';
-const CATEGORIES = ['Celebrity', 'Hollywood', 'British Royals', 'Bollywood', 'TV Shows', 'Music', 'Movies', 'Ending Explained', 'Where to Watch', 'Relationships', 'Fashion', 'Pop Culture'];
+const CATEGORIES = ['Celebrity', 'Hollywood', 'British Royals', 'Bollywood', 'TV Shows', 'Web Series', 'Music', 'Movies', 'Ending Explained', 'Where to Watch', 'Relationships', 'Fashion', 'Pop Culture'];
 const LAUNCH_DATE = new Date('2026-06-23');
 
 // ─── Utility ────────────────────────────────────────────────────
@@ -578,7 +578,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       setImageQuery(a.hero_image_query || a.title || '');
       // Auto-fetch TMDB metadata for relevant categories
       const _movieCats = ['Movies', 'Ending Explained', 'Where to Watch', 'Hollywood', 'Bollywood'];
-      const _tvCats = ['TV Shows'];
+      const _tvCats = ['TV Shows', 'Web Series'];
       const _personCats = ['Celebrity', 'Hollywood', 'Bollywood', 'British Royals'];
       if (_movieCats.includes(category)) {
         const tq = extractQueryFromTopic(topic, 'movie');

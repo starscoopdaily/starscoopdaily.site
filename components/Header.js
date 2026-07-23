@@ -9,7 +9,13 @@ const NAV_LINKS = [
   { label: 'Hollywood', href: '/category/hollywood' },
   { label: 'Bollywood', href: '/category/bollywood' },
   { label: '👑 Royals', href: '/category/british-royals' },
-  { label: 'TV & Streaming', href: '/category/tv-shows' },
+  {
+    label: '📺 Streaming', href: '/category/tv-shows',
+    children: [
+      { label: '📺 TV Shows', href: '/category/tv-shows' },
+      { label: '🎞️ Web Series', href: '/category/web-series' },
+    ],
+  },
   { label: 'Music', href: '/category/music' },
   {
     label: '🎥 Movies', href: '/category/movies',
