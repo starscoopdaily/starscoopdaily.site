@@ -449,6 +449,12 @@ export default function ArticlePage({ params }) {
               </p>
             )}
 
+            {/* Mobile-only ad — below title, before content */}
+            <div className="lg:hidden my-4 border-t border-b border-gray-100 py-3 flex flex-col items-center gap-1">
+              <p className="text-[10px] uppercase tracking-widest text-gray-300 font-semibold">Advertisement</p>
+              <AdSlot slot="article-top" />
+            </div>
+
             {/* Movie Info Box — shows for review/movie articles */}
             {(article.movieRating || article.director || article.runtime || article.releaseYear || article.genre?.length || article.cast?.length) && (
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">

@@ -1904,12 +1904,12 @@ function QuickStats() {
 
 // ─── Tab 6: Ads Manager ─────────────────────────────────────────
 const SLOT_LABELS = {
-  'header': { label: 'Header', desc: 'Social bar / sticky header ad (loads on every page)' },
-  'homepage-top': { label: 'Homepage Top', desc: 'Below latest news section on the homepage' },
-  'article-top': { label: 'Article Top', desc: 'Above article content (after share buttons)' },
-  'article-middle': { label: 'Article Middle', desc: 'Native banner injected within article' },
-  'sidebar': { label: 'Sidebar', desc: 'Sidebar ad widget (homepage & article pages)' },
-  'footer': { label: 'Footer', desc: 'Above the footer section' },
+  'header': { label: 'Header (Push/Social Bar)', desc: '⚠️ Disabled — conflicts with Monetag push ads. Only re-enable if Monetag is removed.' },
+  'homepage-top': { label: 'Homepage Top', desc: 'Shows on homepage (desktop: between category sections · mobile: below hero carousel)' },
+  'article-top': { label: 'Article Top', desc: 'Shows in every article (desktop: mid-content · mobile: below article title)' },
+  'article-middle': { label: 'Article Middle', desc: 'Native banner injected mid-article body (desktop & mobile)' },
+  'sidebar': { label: 'Sidebar', desc: 'Sidebar widget — desktop & tablet only (sidebar stacks below content on mobile)' },
+  'footer': { label: 'Footer', desc: 'Above the footer section — all devices' },
 };
 
 function Toggle({ enabled, onChange }) {
