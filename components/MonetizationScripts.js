@@ -3,6 +3,10 @@
 import { usePathname } from 'next/navigation';
 import Script from 'next/script';
 
+// Set to true to re-enable the full-screen vignette ad between page views.
+// Disabled because Google's interstitial policy can suppress mobile rankings.
+const VIGNETTE_ENABLED = false;
+
 export default function MonetizationScripts() {
   const pathname = usePathname();
   if (pathname?.startsWith('/admin')) return null;
@@ -17,9 +21,11 @@ export default function MonetizationScripts() {
       <Script id="monetag-inpage-push" strategy="afterInteractive">
         {`(function(s){s.dataset.zone='11371954',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`}
       </Script>
-      <Script id="monetag-vignette" strategy="afterInteractive">
-        {`(function(s){s.dataset.zone='11371955',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`}
-      </Script>
+      {VIGNETTE_ENABLED && (
+        <Script id="monetag-vignette" strategy="afterInteractive">
+          {`(function(s){s.dataset.zone='11371955',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`}
+        </Script>
+      )}
     </>
   );
 }
