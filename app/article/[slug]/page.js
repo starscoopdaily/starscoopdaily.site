@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getArticleBySlug, getAllArticles, getRelatedArticles } from '@/lib/articles';
-import { getCategoryConfig } from '@/lib/categories';
+import { getCategoryConfig, prettifyCategory } from '@/lib/categories';
 import { getSmartLink } from '@/lib/adConfig';
 import Sidebar from '@/components/Sidebar';
 import ArticleCard from '@/components/ArticleCard';
@@ -418,7 +418,7 @@ export default function ArticlePage({ params }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Article */}
-          <article className="lg:col-span-2">
+          <article className="lg:col-span-2 pb-20 sm:pb-0">
             {/* Category + Date */}
             <div className="flex items-center flex-wrap gap-2 mb-4">
               {article.category && (
@@ -427,7 +427,7 @@ export default function ArticlePage({ params }) {
                   className="category-badge transition-colors"
                   style={{ background: catColor }}
                 >
-                  {article.category}
+                  {prettifyCategory(catSlug)}
                 </Link>
               )}
               {article.tags?.slice(0, 3).map((tag) => (

@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { prettifyCategory } from '@/lib/categories';
 
 export default function HeroCarousel({ articles }) {
   const [current, setCurrent] = useState(0);
@@ -91,7 +92,7 @@ export default function HeroCarousel({ articles }) {
                 )}
                 {article.category && (
                   <span style={{ background: 'rgba(0,0,0,0.65)', color: '#fff', fontWeight: 700, padding: '3px 10px', borderRadius: '4px', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                    {article.category}
+                    {prettifyCategory(article.category)}
                   </span>
                 )}
               </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { prettifyCategory } from '@/lib/categories';
 
 const CATEGORIES = [
   { label: 'Celebrity', href: '/category/celebrity', icon: '⭐' },
@@ -63,7 +64,7 @@ export default function Sidebar({ adContent = null }) {
                   <p className="text-sm font-semibold text-gray-800 group-hover:text-[#cc0000] transition-colors leading-snug line-clamp-2">
                     {article.title}
                   </p>
-                  <span className="text-xs text-gray-400 mt-0.5 block">{article.category}</span>
+                  <span className="text-xs text-gray-400 mt-0.5 block">{prettifyCategory(article.category)}</span>
                 </div>
               </Link>
             ))

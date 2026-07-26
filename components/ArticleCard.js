@@ -1,6 +1,6 @@
 ﻿import Link from 'next/link';
 import Image from 'next/image';
-import { getCategoryConfig } from '@/lib/categories';
+import { getCategoryConfig, prettifyCategory } from '@/lib/categories';
 
 export default function ArticleCard({ article, size = 'normal', showExcerpt = true }) {
   if (!article) return null;
@@ -52,7 +52,7 @@ export default function ArticleCard({ article, size = 'normal', showExcerpt = tr
           {article.category && (
             <div className="absolute top-3 left-3 z-20">
               <span className="category-badge" style={{ background: catColor }}>
-                {article.category}
+                {prettifyCategory(catSlug)}
               </span>
             </div>
           )}
