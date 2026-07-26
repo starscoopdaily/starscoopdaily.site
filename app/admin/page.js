@@ -381,7 +381,9 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setMode('manual');
     setArticle(editArticle);
     setTopic(editArticle.title || '');
-    setCategory(editArticle.category || 'Celebrity');
+    // Reverse-map slug → display name so the category dropdown shows the right value
+    const displayName = Object.entries(CATEGORY_SLUGS).find(([, v]) => v === editArticle.category)?.[0] || 'Celebrity';
+    setCategory(displayName);
     setImageQuery(editArticle.title || '');
     if (editArticle.image) {
       setImageMode('url');
@@ -391,10 +393,12 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       setManualImageUrl('');
       setSelectedImage(null);
     }
-    setSelectedInlineImage1(null);
-    setManualInlineImage1Url('');
-    setSelectedInlineImage2(null);
-    setManualInlineImage2Url('');
+    // Extract existing inline images from content so they are preserved on re-publish
+    const figMatches = [...(editArticle.content || '').matchAll(/<figure>[\s\S]*?<img[^>]+src="([^"]+)"/gi)];
+    if (figMatches[0]) { setManualInlineImage1Url(figMatches[0][1]); setInlineImage1Mode('url'); }
+    else { setManualInlineImage1Url(''); setInlineImage1Mode('pexels'); setSelectedInlineImage1(null); }
+    if (figMatches[1]) { setManualInlineImage2Url(figMatches[1][1]); setInlineImage2Mode('url'); }
+    else { setManualInlineImage2Url(''); setInlineImage2Mode('pexels'); setSelectedInlineImage2(null); }
     setPexelsImages([]);
     setHeroUploadUrl('');
     setInline1UploadUrl('');
@@ -404,7 +408,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setListConclusion('');
     setArticleSubType('standard');
     setPreview(false);
-    setSuccess('');
+    setPublishedInfo(null);
     setError('');
   }, [editArticle]);
 
