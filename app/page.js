@@ -21,7 +21,7 @@ export const metadata = {
   },
 };
 
-const CATEGORY_SECTIONS = ['Hollywood', 'British Royals', 'Bollywood', 'TV Shows', 'Web Series', 'Music', 'Movies', 'Ending Explained', 'Where to Watch', 'Relationships', 'Fashion', 'Pop Culture'];
+const CATEGORY_SECTIONS = ['Celebrity', 'Hollywood', 'Bollywood', 'British Royals', 'TV Shows', 'Relationships', 'Music', 'Movies', 'Where to Watch', 'Ending Explained', 'Fashion', 'Web Series', 'Pop Culture'];
 
 export default function HomePage() {
   const latest = getLatestArticles(6);

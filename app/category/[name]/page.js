@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getArticlesByCategory, getAllCategories } from '@/lib/articles';
-import { getCategoryConfig, ALL_KNOWN_CATEGORIES } from '@/lib/categories';
+import { getCategoryConfig, ALL_KNOWN_CATEGORIES, prettifyCategory } from '@/lib/categories';
 import { getSmartLink } from '@/lib/adConfig';
 import ArticleCard from '@/components/ArticleCard';
 import Sidebar from '@/components/Sidebar';
@@ -15,13 +15,6 @@ export async function generateStaticParams() {
   } catch {
     return KNOWN_CATEGORIES.map((name) => ({ name }));
   }
-}
-
-function prettifyCategory(name) {
-  return name
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
 }
 
 export async function generateMetadata({ params }) {
@@ -48,12 +41,9 @@ export default function CategoryPage({ params }) {
   const pretty = prettifyCategory(name);
   const { color, icon, description: catDesc } = getCategoryConfig(name);
 
-  // Normalize category name for matching
-  const normalized = pretty.replace(/-/g, ' ');
   let articles = [];
   try {
-    articles = getArticlesByCategory(normalized);
-    if (articles.length === 0) articles = getArticlesByCategory(pretty);
+    articles = getArticlesByCategory(name);
   } catch {}
 
   const description = catDesc || `Latest ${pretty} news and entertainment.`;
