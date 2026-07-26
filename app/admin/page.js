@@ -5,6 +5,24 @@ import Image from 'next/image';
 
 const ADMIN_PASSWORD = 'StarScoop@2026';
 const CATEGORIES = ['Celebrity', 'Hollywood', 'British Royals', 'Bollywood', 'TV Shows', 'Web Series', 'Music', 'Movies', 'Ending Explained', 'Where to Watch', 'Relationships', 'Fashion', 'Pop Culture'];
+const CATEGORY_SLUGS = {
+  'Celebrity': 'celebrity', 'Hollywood': 'hollywood', 'British Royals': 'british-royals',
+  'Bollywood': 'bollywood', 'TV Shows': 'tv-shows', 'Web Series': 'web-series',
+  'Music': 'music', 'Movies': 'movies', 'Ending Explained': 'ending-explained',
+  'Where to Watch': 'where-to-watch', 'Relationships': 'relationships',
+  'Fashion': 'fashion', 'Pop Culture': 'pop-culture',
+};
+const PINTEREST_BOARDS = {
+  'british-royals': 'British Royal Family News',
+  'celebrity': 'Celebrity Scandals & Drama',
+  'relationships': 'Celebrity Dating & Relationships',
+  'hollywood': 'Hollywood Gossip', 'movies': 'Hollywood Gossip',
+  'ending-explained': 'Hollywood Gossip', 'where-to-watch': 'Hollywood Gossip',
+  'tv-shows': 'TV Show Updates', 'web-series': 'TV Show Updates',
+  'music': 'Music & Pop Culture', 'pop-culture': 'Music & Pop Culture',
+  'bollywood': 'Bollywood Celebrities',
+  'fashion': 'Celebrity Style & Fashion',
+};
 const LAUNCH_DATE = new Date('2026-06-23');
 
 // ─── Utility ────────────────────────────────────────────────────
@@ -268,6 +286,21 @@ function SEOScorePanel({ article, listItems, listIntro, listConclusion, subType 
   );
 }
 
+function buildTwitterPost(title, slug, tags) {
+  const url = `https://www.starscoopdaily.site/article/${slug}`;
+  const hook = title.length > 70 ? title.slice(0, 67) + '...' : title;
+  const ht = (tags || []).slice(0, 3).map(t => `#${t.replace(/\s+/g, '')}`).join(' ');
+  const post = `🚨 ${hook}\n\n${url}\n\n${ht} #Entertainment`;
+  return post.length > 280 ? post.slice(0, 277) + '...' : post;
+}
+
+function buildPinterestCaption(title, slug, categorySlug, excerpt, tags) {
+  const url = `https://www.starscoopdaily.site/article/${slug}`;
+  const board = PINTEREST_BOARDS[categorySlug] || 'Hollywood Gossip';
+  const ht = (tags || []).slice(0, 7).map(t => `#${t.replace(/\s+/g, '')}`).join(' ') + ' #StarScoopDaily';
+  return `Paste URL: ${url}\n\nTitle:\n${title}\n\nDescription:\n${excerpt || ''}\nRead the full story 👇 starscoopdaily.site\n${ht}\n\nLink: ${url}\nBoard: ${board}\nAlt Text: ${title}\nMark as AI-Modified: ON`;
+}
+
 // ─── Tab 2: Article Generator ────────────────────────────────────
 function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   const [topic, setTopic] = useState(initialTopic);
@@ -327,6 +360,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   const [wikiResults, setWikiResults] = useState([]);
   const [wikiSummary, setWikiSummary] = useState(null);
   const [wikiLoading, setWikiLoading] = useState(false);
+  const [publishedInfo, setPublishedInfo] = useState(null);
 
   useEffect(() => {
     if (initialTopic) setTopic(initialTopic);
@@ -593,6 +627,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setArticle(null);
     setListItems([]);
     setPreview(false);
+    setPublishedInfo(null);
     setTmdbDetails(null); setTmdbResults([]); setTmdbQuery('');
     setTvDetails(null); setTvResults([]); setTvQuery('');
     setPersonDetails(null); setPersonResults([]); setPersonQuery('');
@@ -611,7 +646,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      const a = { ...data.article, category, author: 'StarScoop Daily Staff', date: new Date().toISOString().split('T')[0] };
+      const a = { ...data.article, category: CATEGORY_SLUGS[category] || category.toLowerCase().replace(/\s+/g, '-'), author: 'StarScoop Daily Staff', date: new Date().toISOString().split('T')[0] };
       setArticle(a);
       setImageQuery(a.hero_image_query || a.title || '');
       // Auto-fetch TMDB metadata for relevant categories
@@ -660,6 +695,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     if (articleSubType === 'list') {
       finalArticle = {
         ...article,
+        category: CATEGORY_SLUGS[category] || article.category || category.toLowerCase().replace(/\s+/g, '-'),
         articleType: 'list',
         image: heroImage || '',
         imageAlt: article.title,
@@ -697,6 +733,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
 
       finalArticle = {
         ...article,
+        category: CATEGORY_SLUGS[category] || article.category || category.toLowerCase().replace(/\s+/g, '-'),
         image: heroImage || '',
         imageAlt: article.title,
         content: injectInlineImages(article.content || ''),
@@ -707,6 +744,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
     setPublishing(true);
     setError('');
     setSuccess('');
+    setPublishedInfo(null);
     try {
       const githubToken = localStorage.getItem('ssd_gh_token');
       const githubUser = localStorage.getItem('ssd_gh_user');
@@ -723,7 +761,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setSuccess(`✅ Article ${isEditing ? 'updated' : 'published'}! Vercel will rebuild in 30-60 seconds. View at: ${data.url}`);
+      setPublishedInfo({ slug: finalArticle.slug, title: finalArticle.title, category: finalArticle.category || '', excerpt: finalArticle.excerpt || '', tags: finalArticle.tags || [] });
     } catch (e) {
       setError(e.message);
     } finally {
@@ -862,13 +900,13 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
           <textarea
             rows={12}
             value={article?.content || ''}
-            onChange={(e) => setArticle((prev) => ({ ...(prev || { slug: toSlug(topic), title: topic, category, author: 'StarScoop Daily Staff', date: new Date().toISOString().split('T')[0] }), content: e.target.value }))}
+            onChange={(e) => setArticle((prev) => ({ ...(prev || { slug: toSlug(topic), title: topic, category: CATEGORY_SLUGS[category] || category.toLowerCase().replace(/\s+/g, '-'), author: 'StarScoop Daily Staff', date: new Date().toISOString().split('T')[0] }), content: e.target.value }))}
             placeholder="<p>Write your article content here...</p>"
             className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#cc0000]"
           />
           {!article && (
             <button
-              onClick={() => setArticle({ slug: toSlug(topic), title: topic, excerpt: '', content: '', category, author: 'StarScoop Daily Staff', date: new Date().toISOString().split('T')[0], tags: [], metaDescription: '' })}
+              onClick={() => setArticle({ slug: toSlug(topic), title: topic, excerpt: '', content: '', category: CATEGORY_SLUGS[category] || category.toLowerCase().replace(/\s+/g, '-'), author: 'StarScoop Daily Staff', date: new Date().toISOString().split('T')[0], tags: [], metaDescription: '' })}
               className="mt-2 bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-colors"
             >
               Start Writing
@@ -882,11 +920,70 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
           {error}
         </div>
       )}
-      {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm mb-4 break-all">
-          {success}
-        </div>
-      )}
+      {publishedInfo && (() => {
+        const tweetText = buildTwitterPost(publishedInfo.title, publishedInfo.slug, publishedInfo.tags);
+        const pinText = buildPinterestCaption(publishedInfo.title, publishedInfo.slug, publishedInfo.category, publishedInfo.excerpt, publishedInfo.tags);
+        const articleUrl = `https://www.starscoopdaily.site/article/${publishedInfo.slug}`;
+        return (
+          <div className="border-2 border-green-300 bg-green-50 rounded-xl p-5 space-y-4 mb-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-green-500 rounded-full flex items-center justify-center text-white font-black text-base flex-shrink-0">✓</div>
+                <div>
+                  <p className="font-black text-green-800 text-sm">{isEditing ? 'Article updated!' : 'Article published!'} Vercel rebuilds in ~30-60s</p>
+                  <a href={articleUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-green-600 hover:underline font-mono">{articleUrl}</a>
+                </div>
+              </div>
+              <button onClick={() => setPublishedInfo(null)} className="text-xs text-gray-400 hover:text-gray-600">✕ Dismiss</button>
+            </div>
+
+            {/* GSC */}
+            <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">STEP 1</span>
+                <p className="text-xs font-black text-gray-800">Google Search Console — Request Indexing</p>
+              </div>
+              <p className="text-[11px] text-gray-500">GSC → URL Inspection → paste URL → Request Indexing (do within 30 min)</p>
+              <div className="flex gap-2 flex-wrap">
+                <code className="flex-1 min-w-0 text-[11px] bg-gray-50 border border-gray-200 rounded px-3 py-2 font-mono truncate">{articleUrl}</code>
+                <button onClick={() => navigator.clipboard?.writeText(articleUrl)} className="flex-shrink-0 bg-blue-600 text-white text-xs font-bold px-3 py-2 rounded hover:bg-blue-700 transition-colors">Copy</button>
+                <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="flex-shrink-0 bg-gray-800 text-white text-xs font-bold px-3 py-2 rounded hover:bg-gray-700 transition-colors whitespace-nowrap">Open GSC ↗</a>
+              </div>
+            </div>
+
+            {/* Twitter/X */}
+            <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="bg-sky-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">STEP 2</span>
+                  <p className="text-xs font-black text-gray-800">Twitter/X — @StarScoop_Daily</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-gray-400">{tweetText.length}/280</span>
+                  <button onClick={() => navigator.clipboard?.writeText(tweetText)} className="text-xs bg-sky-500 text-white font-bold px-3 py-1.5 rounded hover:bg-sky-600 transition-colors">Copy</button>
+                  <a href="https://x.com/compose/post" target="_blank" rel="noopener noreferrer" className="text-xs bg-gray-800 text-white font-bold px-3 py-1.5 rounded hover:bg-gray-700 transition-colors">Post ↗</a>
+                </div>
+              </div>
+              <pre className="text-xs bg-gray-50 border border-gray-200 rounded p-3 whitespace-pre-wrap font-sans leading-relaxed">{tweetText}</pre>
+            </div>
+
+            {/* Pinterest */}
+            <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">STEP 3</span>
+                  <p className="text-xs font-black text-gray-800">Pinterest — StarScoop Daily</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => navigator.clipboard?.writeText(pinText)} className="text-xs bg-red-500 text-white font-bold px-3 py-1.5 rounded hover:bg-red-600 transition-colors">Copy</button>
+                  <a href="https://in.pinterest.com/StarScoopDaily/" target="_blank" rel="noopener noreferrer" className="text-xs bg-gray-800 text-white font-bold px-3 py-1.5 rounded hover:bg-gray-700 transition-colors">Open ↗</a>
+                </div>
+              </div>
+              <pre className="text-xs bg-gray-50 border border-gray-200 rounded p-3 whitespace-pre-wrap font-sans leading-relaxed">{pinText}</pre>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Generated Article Edit Fields */}
       {article && (
