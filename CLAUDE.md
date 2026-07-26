@@ -399,6 +399,59 @@ SmartLink ad URL: stored only in `data/ad-config.json` — not in source.
 
 ## 15. Key File Locations
 
+---
+
+## 16. Google Indexing & Quality Rules
+
+### 16a. Critical Indexing Blockers
+
+**nexguild.js countdown gate (`app/layout.js`)** — The site loads a script from `nexguild.in` with `data-countdown="45"`. This appears to gate access to content behind a 45-second countdown timer. **Googlebot will see a blank page instead of your article content.** This is the single most likely cause of non-indexing. Investigation required: verify whether the script blocks the DOM and remove or replace it if it does.
+
+**Category slug mismatch** — All article JSON files must use lowercase hyphenated slugs in the `category` field (e.g. `"category": "tv-shows"`), not display names (`"TV Shows"`). Wrong slugs prevent articles from appearing on category pages and send incorrect signals to Google's category crawl. The admin panel now enforces correct slugs automatically.
+
+**Thin content** — Google's Helpful Content system ignores pages under ~300 words or with low information density. Minimum 400 words per article. Every H2 must have real content.
+
+### 16b. EEAT Requirements (Google's Quality Criteria)
+
+EEAT = **E**xpertise · **E**xperiencce · **A**uthoritativeness · **T**rustworthiness. Google's quality raters use these to assess pages before ranking.
+
+**What harms EEAT:**
+- Fictional named experts with professional titles (e.g. "body language expert Dr. Sarah Mills") — Google's raters flag fake expertise as a trust signal failure. The Groq prompts no longer include this.
+- Fabricated celebrity quotes attributed to real people — Google's Helpful Content system detects unverifiable claims.
+- Deceptive CTAs: "Watch Full Movie Now" / "Free stream — no sign-up" on SmartLink buttons mislead users about what they're clicking. Use neutral labels like "Stream Now" or "See Where to Watch."
+- Unattributed claims presented as fact — always add "reportedly", "sources say", "according to X" for unverified information.
+
+**What helps EEAT:**
+- Consistent author byline on all articles (currently "StarScoop Daily Staff" — acceptable for a new site)
+- Linking to authoritative external sources where natural (IMDB, Wikipedia, official press releases)
+- Internal linking between related articles — signals topical depth
+- Publishing Ending Explained articles within 24 hours of release — demonstrates editorial speed
+
+### 16c. Content Quality Signals
+
+**Freshness:** Google Discover rewards recency heavily for entertainment news. Target:
+- Breaking news: publish within 2 hours or skip entirely
+- Ending Explained: publish on release day or the next morning
+- Evergreen (Where to Watch, rankings): update every 2–3 months, increment the title year
+
+**Duplicate content:** Never re-write the same celebrity/film topic with minimal changes. Google de-indexes thin rewrites. Pick a new angle or wait 30+ days before returning to the same subject.
+
+**SmartLink labels:** The CTAs on article pages that read "Watch Full Movie Now" or "Free stream — no sign-up" are potentially deceptive because SmartLink destinations are not actually free streaming. Change these to neutral labels like "Stream Now →" or "Find Where to Watch" to reduce deceptive content risk.
+
+### 16d. Sitemap & Robots
+
+- `app/robots.js` is correctly configured: allows `/`, disallows `/admin` and `/api/`
+- `app/sitemap.js` correctly includes all articles — verify after every new publish
+- Submit sitemap in Google Search Console: `https://www.starscoopdaily.site/sitemap.xml`
+- New domains take 2–6 months to earn consistent Google trust. Site launched ~June 2026. Index growth is expected to be slow through August.
+
+### 16e. Page Experience
+
+Google's Core Web Vitals (LCP, CLS, INP) affect ranking. Potential issues:
+- nexguild.js blocking script — investigate and remove if it delays content paint
+- Large hero images — confirm `next/image` with `priority` prop is used on article hero
+- ExitIntentPopup is acceptable — it triggers on mouseleave (not on load), is non-blocking, and has a clear close button. Not a Page Experience violation.
+
 | Path | Purpose |
 |---|---|
 | `data/articles/` | All published article JSON files |

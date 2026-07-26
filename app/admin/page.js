@@ -335,6 +335,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
   const [inline1UploadUrl, setInline1UploadUrl] = useState('');
   const [inline2UploadUrl, setInline2UploadUrl] = useState('');
   const [articleSubType, setArticleSubType] = useState('standard');
+  const [articleTemplate, setArticleTemplate] = useState('deep-dive');
   const [listItemCount, setListItemCount] = useState(10);
   const [listItems, setListItems] = useState([]);
   const [listIntro, setListIntro] = useState('');
@@ -643,6 +644,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       const groqKey = localStorage.getItem('ss_groq_key') || '';
       const body = { topic, category, apiKey: groqKey };
       if (articleSubType === 'list') { body.articleType = 'list'; body.itemCount = listItemCount; }
+      else { body.articleTemplate = articleTemplate; }
       const res = await fetch('/api/groq', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -833,7 +835,7 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
       </div>
 
       {/* Article Type Toggle */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
         {[{ id: 'standard', label: '📝 Standard Article' }, { id: 'list', label: '🔢 List Article' }].map(({ id, label }) => (
           <button key={id} onClick={() => setArticleSubType(id)}
             className={`px-5 py-2.5 rounded-lg font-bold text-sm transition-colors ${articleSubType === id ? 'bg-[#cc0000] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
@@ -850,6 +852,23 @@ function ArticleGenerator({ initialTopic = '', editArticle = null }) {
           </div>
         )}
       </div>
+
+      {/* Article Template — standard articles only */}
+      {articleSubType === 'standard' && (
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mr-1">Template:</span>
+          {[
+            { id: 'deep-dive', label: '🔍 Deep Dive', desc: '800–1500 words · profile / career / relationships' },
+            { id: 'breaking', label: '⚡ Breaking News', desc: '300–450 words · fast facts + public reaction' },
+            { id: 'ending', label: '🎬 Ending Explained', desc: '800–1200 words · 4-section film analysis' },
+          ].map(({ id, label, desc }) => (
+            <button key={id} onClick={() => setArticleTemplate(id)} title={desc}
+              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors border ${articleTemplate === id ? 'bg-[#cc0000] text-white border-[#cc0000]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#cc0000] hover:text-[#cc0000]'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Mode Toggle */}
       <div className="flex gap-2 mb-6">
