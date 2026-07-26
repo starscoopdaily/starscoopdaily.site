@@ -47,8 +47,8 @@ export default function ExitIntentPopup({ smartlink }) {
             ✕
           </button>
           <div className="text-5xl mb-3">🎬</div>
-          <h2 className="text-white font-black text-2xl leading-tight">Wait! Don&apos;t Leave Yet</h2>
-          <p className="text-gray-400 text-sm mt-2">Exclusive content is waiting for you right now</p>
+          <h2 className="text-white font-black text-2xl leading-tight">More Entertainment Inside</h2>
+          <p className="text-gray-400 text-sm mt-2">Find where to watch, stream, and stay updated</p>
         </div>
         <div className="p-6">
           <a
@@ -59,7 +59,7 @@ export default function ExitIntentPopup({ smartlink }) {
             className="flex items-center gap-3 w-full bg-[#cc0000] hover:bg-[#aa0000] text-white font-black py-4 px-5 rounded-xl text-base transition-colors mb-3 group"
           >
             <span className="text-2xl">▶</span>
-            <span className="flex-1 text-left">Watch Now — See Exclusive Content</span>
+            <span className="flex-1 text-left">Find Where to Watch →</span>
             <svg className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
             </svg>

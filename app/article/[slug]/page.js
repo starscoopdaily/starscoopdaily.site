@@ -12,20 +12,20 @@ import AdSlot from '@/components/AdSlot';
 import StickyArticleBar from '@/components/StickyArticleBar';
 
 const CATEGORY_BTNS = {
-  celebrity:          { icon: '📸', label: 'See Exclusive Photos & More',    sub: 'Full gallery — tap to view now' },
-  hollywood:          { icon: '▶',  label: 'Watch Full Movie Now',            sub: 'Free stream — no sign-up needed' },
-  bollywood:          { icon: '🎬', label: 'Watch Full Movie Now',            sub: 'Free streaming available' },
-  'tv-shows':         { icon: '▶',  label: 'Watch Full Episode Free',         sub: 'Stream instantly on any device' },
-  music:              { icon: '🎵', label: 'Listen Free — Full Album',        sub: 'Stream the complete album now' },
-  movies:             { icon: '🎬', label: 'Watch Full Movie Free',           sub: 'Available to stream right now' },
-  'ending-explained': { icon: '🎬', label: 'Watch the Full Movie Here',       sub: 'See the ending for yourself' },
-  relationships:      { icon: '💖', label: 'See the Full Story Here',         sub: 'More shocking details inside' },
-  'british-royals':   { icon: '👑', label: 'Read Full Exclusive Royal Story', sub: 'Palace insider reveals all' },
-  fashion:            { icon: '👗', label: 'Shop This Celebrity Look Now',    sub: 'Get the exact outfit' },
-  'pop-culture':      { icon: '🔥', label: "See What Everyone's Talking About", sub: 'The viral moment explained' },
-  'where-to-watch':   { icon: '📡', label: 'Find Where to Stream Free',       sub: 'Available on multiple platforms' },
+  celebrity:          { icon: '📸', label: 'See More Celebrity Content',      sub: 'More stories and updates inside' },
+  hollywood:          { icon: '▶',  label: 'Find Where to Watch →',           sub: 'See streaming options for this film' },
+  bollywood:          { icon: '🎬', label: 'Find Where to Watch →',           sub: 'See streaming options for this film' },
+  'tv-shows':         { icon: '▶',  label: 'Find Where to Stream →',          sub: 'See all available platforms' },
+  music:              { icon: '🎵', label: 'Stream This Artist →',            sub: 'Find on your favourite platform' },
+  movies:             { icon: '🎬', label: 'Find Where to Watch →',           sub: 'See streaming options now' },
+  'ending-explained': { icon: '🎬', label: 'Watch or Rewatch the Film →',     sub: 'Find streaming options here' },
+  relationships:      { icon: '💖', label: 'Read the Full Story →',           sub: 'More details on this story' },
+  'british-royals':   { icon: '👑', label: 'Read More Royal Coverage →',      sub: 'More from the royal family' },
+  fashion:            { icon: '👗', label: 'Explore This Celebrity Look →',   sub: 'More style and fashion coverage' },
+  'pop-culture':      { icon: '🔥', label: 'See More Pop Culture →',          sub: 'More viral moments and trends' },
+  'where-to-watch':   { icon: '📡', label: 'Find Where to Stream →',          sub: 'See all available platforms' },
 };
-const DEFAULT_BTN = { icon: '👉', label: 'See More Exclusive Content', sub: 'Click to discover more' };
+const DEFAULT_BTN = { icon: '👉', label: 'See More Entertainment →', sub: 'More stories inside' };
 
 function SmartLinkCTA({ smartlink, catSlug }) {
   if (!smartlink) return null;
