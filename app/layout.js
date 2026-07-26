@@ -100,8 +100,8 @@ export default function RootLayout({ children }) {
         <Script
           src="https://www.nexguild.in/nexguild-verify.js"
           data-site-slug="starscoopdaily"
-          data-countdown="45"
-          data-scroll="0.3"
+          data-countdown="0"
+          data-scroll="0"
           strategy="afterInteractive"
         />
         <MonetizationScripts />
