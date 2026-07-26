@@ -1,289 +1,411 @@
 # StarScoop Daily — Claude Operating Manual
 
+> Single source of truth for every Claude session working on this project.
+> Read this fully before writing any article, making any code change, or publishing anything.
+
+---
+
 ## 1. Project Overview
 
-**StarScoop Daily** (`starscoopdaily.site`) is an entertainment news and celebrity gossip site built for Google Discover, Pinterest, and organic SEO traffic. The goal is 2–3 published articles per day across 13 site categories.
-
-- **Stack**: Next.js 14 App Router, deployed on Vercel, source on GitHub
-- **Admin Panel**: `/admin` — password `StarScoop@2026`
-- **Publishing**: Articles are JSON files in `data/articles/`. Pushing to `main` triggers a Vercel auto-deploy.
-- **Contact email**: contact@starscoopdaily.site
+**StarScoop Daily** (`starscoopdaily.site`) is an entertainment news and celebrity gossip site.
+**Goal:** Organic SEO traffic → ad revenue (Adsterra) → 50K+ monthly sessions within 6 months.
+**Stack:** Next.js 14 App Router · Vercel (auto-deploys on push to `main`) · GitHub
+**Admin Panel:** `/admin` · Password: `StarScoop@2026`
+**Contact:** contact@starscoopdaily.site
 
 ---
 
 ## 2. Site Categories
 
-These are the exact slugs used in article JSON and routing. Use them verbatim.
+Use these slugs verbatim in every article JSON `category` field.
 
-| Slug | Display Name | Focus |
+| Slug | Display Name | Posts/Week | Best Day |
+|---|---|---|---|
+| `celebrity` | Celebrity | 3–4 | Any |
+| `hollywood` | Hollywood | 3–4 | Mon, Thu |
+| `bollywood` | Bollywood | 2–3 | Fri, Mon |
+| `british-royals` | British Royals | 2–3 | Tue–Wed |
+| `tv-shows` | TV Shows | 3–4 | Fri, Mon |
+| `web-series` | Web Series | 1–2 | Any |
+| `music` | Music | 2 | Fri, Tue |
+| `movies` | Movies | 3–4 | Fri, Sat |
+| `ending-explained` | Ending Explained | 2–3 | Release day or day after |
+| `where-to-watch` | Where to Watch | 2 | Any (evergreen) |
+| `relationships` | Relationships | 2 | Any |
+| `fashion` | Fashion | 1–2 | Day-of or day-after event |
+| `pop-culture` | Pop Culture | 1–2 | As news breaks |
+
+### Daily Schedule
+
+| Day | Articles | Focus Categories |
 |---|---|---|
-| `celebrity` | Celebrity | Gossip, scandals, red carpet, A-list news |
-| `hollywood` | Hollywood | US movies, box office, actor updates |
-| `bollywood` | Bollywood | Indian film industry, stars, drama |
-| `british-royals` | British Royals | Royal Family, palace news |
-| `tv-shows` | TV Shows | Netflix, HBO, streaming, reality TV |
-| `web-series` | Web Series | Indian & international OTT series |
-| `music` | Music | Album drops, tours, chart-toppers |
-| `movies` | Movies | Reviews, ratings, cast interviews |
-| `ending-explained` | Ending Explained | Plot twists, hidden meanings |
-| `where-to-watch` | Where to Watch | Streaming guides |
-| `relationships` | Relationships | Couples, breakups, dating drama |
-| `fashion` | Fashion | Celebrity fashion, red carpet, trends |
-| `pop-culture` | Pop Culture | Viral moments, memes, trending topics |
+| Monday | 3 | Hollywood, Celebrity, Bollywood |
+| Tuesday | 2 | British Royals, Music |
+| Wednesday | 3 | TV Shows, Relationships, Celebrity |
+| Thursday | 2 | Hollywood, Movies |
+| Friday | 3 | Ending Explained, TV Shows, Music |
+| Saturday | 2 | Movies, Pop Culture |
+| Sunday | 1–2 | Where to Watch, Fashion |
+
+**Priority when bandwidth is limited:** Ending Explained → Celebrity/Relationships → TV Shows/Hollywood → Where to Watch → Fashion/Pop Culture
 
 ---
 
-## 3. Pre-Write Checklist (Run Every Time, No Exceptions)
+## 3. Pre-Write Checklist (Mandatory — Every Article)
 
-### 3a. Check the Date
-- Read `currentDate` from the system context injected at session start.
-- Calculate the actual day of the week from the date — never trust a label from a summary or prior context.
-- **Anchor**: January 1, 2026 = Thursday. July 4, 2026 = Saturday.
+### 3a. Confirm the Date
+- Read `currentDate` from the system context.
+- **Calculate the actual day of the week** — never trust a label from a summary or prior context.
+- Anchor: January 1, 2026 = Thursday · July 4, 2026 = Saturday.
 - Use the verified date in the article `date` field and commit messages.
 
 ### 3b. Check for Duplicates
-Before writing any article:
 1. Run `ls data/articles/` to list all existing slugs.
-2. Scan titles and slugs for topic overlap with the planned article.
-3. If an existing article covers the same film, person, or event — pick a different topic or angle.
+2. Scan for topic overlap — same person, film, or event.
+3. If overlap exists — pick a different angle or topic entirely.
 4. Never assume a topic hasn't been covered.
 
-**Why this matters:** A duplicate Spider-Man article was published on July 24, 2026, which had to be deleted. This check is mandatory every single time.
-
-### 3c. Verify All Images Before Writing
-Every TMDB image URL must return HTTP 200 before it goes into an article:
+### 3c. Verify All Images Return 200
 ```bash
 curl -s -o /dev/null -w "%{http_code}" --max-time 8 -I "IMAGE_URL"
 ```
-- Use the site's TMDB proxy for lookups: `https://www.starscoopdaily.site/api/tmdb?query=NAME&type=person|movie|tv`
-- TMDB API is NOT directly accessible from the sandbox — always use the proxy.
-- Only use verified 200 images in article JSON.
+- Use the site's TMDB proxy (TMDB API is not directly accessible from sandbox):
+  ```
+  Person: https://www.starscoopdaily.site/api/tmdb?query=NAME&type=person
+  Movie:  https://www.starscoopdaily.site/api/tmdb?query=TITLE&type=movie
+  TV:     https://www.starscoopdaily.site/api/tmdb?query=TITLE&type=tv
+  ```
+- Hero images: `w1280` path · Portrait/inline: `w500` path
+- Every URL must return 200 before it goes into an article.
 
 ---
 
 ## 4. Article JSON Schema
 
-Every article is a JSON file at `data/articles/SLUG.json`. Required fields:
+File location: `data/articles/SLUG.json`
 
 ```json
 {
   "title": "Headline Here",
   "slug": "headline-here-2026",
-  "excerpt": "150-160 char SEO summary.",
+  "excerpt": "150–160 char SEO summary.",
   "category": "celebrity",
   "author": "StarScoop Daily Staff",
   "date": "2026-07-25",
   "featured": false,
   "articleType": "standard",
-  "image": "https://image.tmdb.org/t/p/w1280/VERIFIED_PATH.jpg",
-  "imageAlt": "Descriptive alt text",
-  "metaDescription": "Under 160 chars for Google.",
+  "image": "https://image.tmdb.org/t/p/w1280/VERIFIED.jpg",
+  "imageAlt": "Descriptive alt text with keyword",
+  "metaDescription": "Under 160 chars. Include main keyword.",
   "tags": ["Tag1", "Tag2", "Tag3"],
   "content": "<h2>...</h2><p>...</p>",
 
-  // Optional — for person-focused articles:
   "personTmdbId": 12345,
-  "personProfilePhoto": "https://image.tmdb.org/t/p/w500/VERIFIED_PATH.jpg"
+  "personProfilePhoto": "https://image.tmdb.org/t/p/w500/VERIFIED.jpg"
 }
 ```
 
-- **Slug format**: `topic-keywords-YYYY` (always include year)
-- **Category**: Must exactly match a slug from Section 2
-- **Content**: Valid HTML string — use `<h2>`, `<p>`, `<figure>`, `<img>`, `<strong>`, `<blockquote>`
+- **Slug:** `topic-keywords-YYYY` — always include year
+- **Minimum 3 images per article:** hero + 2 inline body images
+- **First inline image must be portrait** (2:3 ratio — TMDB poster or person profile) so Pinterest can pull it
 
 ---
 
-## 5. Editorial Rules — Voice & Style
-
-### DO
-- Keep sentences **under 20 words average**. Short. Punchy. Direct.
-- Write in an engaging, scannable, plugged-in culture voice.
-- Get straight to the facts — no long introductory essays.
-- Place `[EMBED_MEDIA: description of X/TikTok/IG post]` immediately after the introductory hook in breaking news articles.
-- Place `[IMAGE: description]` under every H2 heading in listicles.
-- Use active voice. Present tense where possible.
-
-### DON'T
-- Never use AI filler words: *In conclusion, Furthermore, Delve, Tapestry, Fascinating, Only time will tell, In recent news, It's worth noting, Notably*
-- Never fabricate celebrity quotes. Only use publicly documented statements.
-- Never publish unverified gossip as confirmed fact — attribute appropriately.
-- Never hardcode the TMDB API key in source code. It lives in Vercel env as `TMDB_API_KEY`.
-- Never place adult ads on the site.
-
----
-
-## 6. Article Structures
+## 5. Article Structures
 
 ### Breaking News (300–450 words)
-Use for: celebrity drama, chart entries, announcements, social media moments.
+For: celebrity drama, announcements, social media moments, chart entries.
 
 ```
-H1: Headline (under 10 words, catchy)
+H1: Headline — under 10 words, catchy
 Hook: 2 sentences — Who, What, When
-[EMBED_MEDIA: description of relevant social post]
+[EMBED_MEDIA: description of relevant X/TikTok/IG post]
 H2: The Breakdown
-  - 3–4 bullet points of fast facts
+  · 3–4 bullet points of fast facts
 H2: Public Reaction
-  - Summary of fan/social media response
-Closing engagement question (1 sentence, invites comment)
+  · Summary of fan/social media response
+Closing engagement question (1 sentence)
 ```
 
 ### Listicle / Ranking (800–1,200 words)
-Use for: Top 10s, best-of lists, rankings, streaming guides.
+For: Top 10s, best-of lists, streaming roundups.
 
 ```
-H1: Headline with Number ("Top 10...", "7 Reasons...")
+H1: Headline with number ("Top 10...", "7 Best...")
 Intro Hook: 75 words max — why this list matters right now
-List Entries (H2 per item):
+Per entry (H2):
   [IMAGE: description]
   2-sentence synopsis
-  "Why it makes the list" (1–2 sentences)
-  Quick Stats: bullet points (release year, rating, where to watch)
+  "Why it makes the list" — 1–2 sentences
+  Quick Stats: release year · rating · where to watch
 Wrap-Up: 2–3 sentences — no "In conclusion"
 ```
 
 ### Deep Dive / Profile (800–1,500 words)
-Use for: celebrity profiles, relationship timelines, career breakdowns, film explainers.
+For: celebrity profiles, relationship timelines, career breakdowns, film explainers.
 
 ```
 H1: Headline
-Intro: 2–3 sentences — hook the reader immediately
-H2 sections: Each covers one clear angle (career, relationship, controversy, etc.)
-[IMAGE: description] — one per major section
-Internal links: Link to related StarScoop articles where relevant
-Closing: Forward-looking sentence — what's next, what to watch for
+Intro: 2–3 sentences — hook immediately, no essay buildup
+H2 sections: one clear angle each (career / relationship / controversy / impact)
+[IMAGE] — one per major section
+Internal links: 2–3 related StarScoop articles
+Closing: Forward-looking — what's next, what to watch for
+```
+
+### Ending Explained (800–1,200 words)
+**Timing rule:** Publish within 24–48 hours of release. The search spike lasts 72 hours.
+
+```
+H1: "[Title] Ending Explained — What Really Happened"
+Intro: Set up the confusion without spoiling immediately
+H2: What Happened in the Final Scene
+H2: What It Actually Means
+H2: The [Twist/Symbol/Detail] You Missed
+H2: What It Sets Up Next (sequel / season 2)
 ```
 
 ---
 
-## 7. Image Sourcing Workflow
+## 6. Editorial Voice Rules
 
-### TMDB (movies, TV, actors)
-Search via site proxy:
-```
-Person:  https://www.starscoopdaily.site/api/tmdb?query=NAME&type=person
-Movie:   https://www.starscoopdaily.site/api/tmdb?query=TITLE&type=movie
-TV Show: https://www.starscoopdaily.site/api/tmdb?query=TITLE&type=tv
-```
-- Hero images (banners): use `w1280` size path
-- Portrait / inline: use `w500` size path
-- Always verify all URLs return 200 before writing article
+### DO
+- Sentences **under 20 words average** — short, punchy, direct.
+- Conversational but credible — like a knowledgeable friend who follows Hollywood obsessively.
+- Get straight to the facts — no long introductory essays.
+- Max 2–3 sentences per paragraph — white space = mobile readability.
+- **Bold** names, numbers, key facts on first mention in a paragraph.
+- Active voice: "Kate wore the dress" not "the dress was worn by Kate."
+- `[EMBED_MEDIA: description]` immediately after hook in breaking news.
+- `[IMAGE: description]` under every H2 in listicles.
 
-### Wikipedia / Wikimedia Commons
-For royals, politicians, and public figures not well-represented on TMDB:
-- Search API: `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=QUERY&format=json&origin=*`
-- Summary + thumbnail: `https://en.wikipedia.org/api/rest_v1/page/summary/PAGE_TITLE`
-- Free CORS API — no key needed.
+### DON'T
+- Never use: *In conclusion · Furthermore · Delve · Tapestry · Fascinating · Only time will tell · In recent news · It's worth noting · Needless to say · Let's dive in · At the end of the day*
+- Never fabricate celebrity quotes — only use publicly documented statements.
+- Never state unverified gossip as fact — use "reportedly", "sources say", "according to X."
+- Never publish thin content — minimum 400 words, all H2s must have real content.
+- Clickbait without payoff — headline must match content.
+
+### Headline Formulas
+```
+[Celebrity] Just [Did Something] — Here's What We Know
+Is [Celebrity] Really [Claim]? The Truth Revealed
+[Movie/Show] Ending Explained — What Really Happened
+Everything We Know About [Title] Before [Date]
+[Celebrity]'s [Event] — Full Breakdown
+Why [Celebrity] [Did X] — The Real Reason
+[Number] Things [Movie] Got Right/Wrong About [Topic]
+[Movie] Review — Worth Watching? (Spoiler-Free)
+```
+
+---
+
+## 7. SEO Rules (Every Article)
+
+- Keyword in title (within first 60 characters)
+- Keyword in meta description (under 155 characters)
+- Keyword in first paragraph
+- At least 3 H2 subheadings with related keywords
+- All images have descriptive alt text
+- Internal links to 2–3 related StarScoop articles
+- Target long-tail, not just celebrity name: "kate middleton summer style 2026" not "kate middleton"
+- Answer "People Also Ask" questions from Google as H2 subheadings — this is how you get featured snippets
+
+**Freshness rules:**
+- Breaking news: publish within 2 hours or skip it
+- Ending Explained: publish on release day or day-after
+- Evergreen (Where to Watch): update every 2–3 months
+
+---
+
+## 8. Image Sourcing
+
+### Priority Order
+1. TMDB API (via site proxy) — movie backdrops, posters, person profiles
+2. OMDb poster — movie fallback (auto-fetched in `/api/tmdb` route)
+3. Wikipedia REST API — royals, politicians, public figures
+4. Pexels — generic mood images only
+
+### Wikipedia (free, no key, CORS-enabled)
+```
+Search: https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=QUERY&format=json&origin=*
+Summary + thumbnail: https://en.wikipedia.org/api/rest_v1/page/summary/PAGE_TITLE
+```
+
+### Image Placement
+- Hero: landscape (w1280), full-bleed
+- First inline: **must be portrait** (w500) — TMDB poster or person profile
+- Second inline: landscape (w780 or w1280), mid-article
+- List articles: one image per section entry
 
 ### API Output Requirement
-At the bottom of every article draft, output the exact search strings used:
+At the bottom of every article draft, output:
 ```
-TMDB: query="NAME OR TITLE", type=person|movie|tv
-Wikipedia: search="QUERY"
-Images used: [list verified URLs]
+TMDB: query="...", type=person|movie|tv
+Wikipedia: search="..."
+Images verified 200: [list all URLs used]
 ```
 
 ---
 
-## 8. Publishing Workflow
+## 9. Publishing Workflow
 
-### Step 1 — Write & Verify
-- Complete pre-write checklist (Section 3)
-- Write article JSON following schema (Section 4)
-- Verify all image URLs return 200
+### Step 1 — Write
+- Complete Section 3 checklist (date · duplicates · images)
+- Write article JSON per Section 4 schema
+- All image URLs verified 200
 
-### Step 2 — Push to GitHub
+### Step 2 — Push
 ```bash
 git add data/articles/SLUG.json
-git commit -m "feat: ARTICLE_TITLE — CATEGORY"
+git commit -m "feat: ARTICLE TITLE — Category"
 git push origin main
 ```
-Vercel auto-deploys on push to `main`. If it doesn't trigger, push an empty commit:
+If Vercel doesn't auto-deploy after push:
 ```bash
 git commit --allow-empty -m "chore: trigger Vercel rebuild"
 git push origin main
 ```
+Do NOT use Vercel's "Redeploy" button — it re-runs the old build, not the latest code.
 
-### Step 3 — Post-Publish (Every Article, Every Time)
-Do these immediately after every publish — do not wait to be asked:
+### Step 3 — Post-Publish (Auto — No Need to Ask)
+Generate and output all of the following immediately after every article publish:
 
-1. **Google Search Console** — URL Inspection → paste article URL → Request Indexing
-   `https://www.starscoopdaily.site/article/SLUG`
+**1. GSC Indexing URL**
+```
+https://www.starscoopdaily.site/article/SLUG
+```
+Go to Google Search Console → URL Inspection → paste URL → Request Indexing.
 
-2. **Twitter/X** — post immediately to `@StarScoop_Daily`
-   Format: Punchy 1-2 sentence hook + link + 3–4 hashtags
+**2. Twitter/X Post** — @StarScoop_Daily
+```
+🚨 [hook line — punchy, under 15 words]
 
-3. **Pinterest** — pin with hero image to `StarScoopDaily` board
-   Format: SEO-friendly caption + relevant hashtags
+[1–2 line teaser — what's the drama?]
 
-Auto-generate both Twitter post and Pinterest caption at the end of every article write session — no need for user to ask.
+Full story 👇
+[article URL]
+
+#[Tag1] #[Tag2] #[Tag3] #Entertainment
+```
+Rules: max 280 chars including URL · 3–4 hashtags · emoji at start
+
+**3. Pinterest Pin** — StarScoop Daily Pinterest
+```
+Paste URL: [full article URL]
+
+Title:
+[Punchy headline — max 100 chars]
+
+Description:
+[2–3 sentences — what happened, why it matters]
+Read the full story 👇 starscoopdaily.site
+#[Tag1] #[Tag2] #[Tag3] #[Tag4] #[Tag5] #[Tag6] #[Tag7] #[Tag8] #StarScoopDaily
+
+Link: [full article URL]
+Board: [board name from table below]
+Alt Text: [1 sentence describing the image]
+Mark as AI-Modified: ON
+```
+
+### Pinterest Board → Category Mapping
+| Article Category | Pinterest Board |
+|---|---|
+| British Royals | British Royal Family News |
+| Celebrity | Celebrity Scandals & Drama |
+| Relationships | Celebrity Dating & Relationships |
+| Hollywood / Movies | Hollywood Gossip |
+| TV Shows | TV Show Updates |
+| Music / Pop Culture | Music & Pop Culture |
+| Bollywood | Bollywood Celebrities |
+| Fashion | Celebrity Style & Fashion |
 
 ---
 
-## 9. Traffic Growth Strategy
+## 10. Traffic Growth Strategy
 
-**Priority channels (in order):**
+**Priority order:**
+1. **Google Search Console** — request indexing within 30 minutes of every publish
+2. **Pinterest** — pin every article, best times 8–11pm EST
+3. **Twitter/X** — post immediately after publish, best times 9am / 12pm / 6pm / 9pm EST
+4. **Google News** — site submitted at publishercenter.google.com (one-time done)
+5. **Topical authority** — build 10+ articles on same celeb/topic before spreading wider
 
-1. **Google Search Console** — Request indexing after every article. Gets indexed same day vs. weeks of waiting.
-2. **Pinterest** — Pin every article. Celebrity gossip and royal content spreads massively here.
-3. **Twitter/X** — Post immediately after every publish. Drives same-day spikes.
-4. **Google News / Publisher Center** — Site submitted at publishercenter.google.com. One-time setup complete.
-5. **Topical authority** — Build 10+ articles on the same celebrity or topic before spreading wider. Google rewards depth.
+**NOT yet:** TikTok/Instagram (needs video) · Paid ads (wait for organic base) · Backlink outreach (too slow)
 
-**NOT yet (hold off):** TikTok/Instagram (requires video production), paid advertising (wait until organic traffic base is established), backlink outreach (too slow for current stage).
-
-**Target cadence:** 2–3 articles per day. Volume + publishing speed is the #1 Google Discover ranking signal.
+**Target cadence:** 2–3 articles per day. Volume + speed is the #1 Google Discover signal.
 
 ---
 
-## 10. Social Media Accounts
+## 11. Growth Phases
+
+| Phase | Articles | Monthly Sessions | Goal |
+|---|---|---|---|
+| Foundation | 0–25 | 500 | Get all categories indexed, set up socials |
+| Momentum | 25–100 | 5,000 | Double down on top 2 categories, first ad revenue |
+| Scale | 100–300 | 25,000 | Topic clusters, evergreen updates, $100–200/mo |
+| Authority | 300+ | 100,000+ | Own 2–3 niches, newsletter, $500+/mo |
+
+---
+
+## 12. Social Media Accounts
 
 | Platform | Handle / URL |
 |---|---|
-| Twitter/X | @StarScoop_Daily — `https://x.com/StarScoop_Daily` |
+| Twitter/X | @StarScoop_Daily · `https://x.com/StarScoop_Daily` |
 | Pinterest | `https://in.pinterest.com/StarScoopDaily/` |
 | Google Search Console | starscoopdaily.site property |
 | Google Publisher Center | StarScoop Daily (starscoopdaily.site) |
 
-All accounts registered with: **contact@starscoopdaily.site**
+All accounts: **contact@starscoopdaily.site**
 
 ---
 
-## 11. API Keys & Environment
+## 13. Technical — APIs & Environment
 
-Stored in `.env.local` and Vercel environment — **never hardcode in source**:
+Stored in `.env.local` and Vercel environment — **never hardcode in source code.**
 
-| Variable | Used For |
+| Variable | Purpose |
 |---|---|
 | `TMDB_API_KEY` | Movie/person image lookups |
-| `OMDB_API_KEY` | Ratings (auto-fetched in `/api/tmdb` route) |
+| `OMDB_API_KEY` | Ratings (auto-fetched inside `/api/tmdb` route) |
 | `GROQ_API_KEY` | AI article generation in admin panel |
-| `PEXELS_API_KEY` | Stock images |
+| `PEXELS_API_KEY` | Stock image fallback |
 
-- OMDB is already integrated inside `/api/tmdb/route.js` — auto-fetches ratings when a movie is searched.
-- Wikipedia API is free, CORS-enabled — no key needed. Call directly from the browser.
-- SmartLink ad URL stored only in `data/ad-config.json` — never in source code.
+GitHub token for publishing: stored in admin panel localStorage (Site Controls tab) — not in code.
+SmartLink ad URL: stored only in `data/ad-config.json` — not in source.
+
+### API Call Order (Article Generation)
+1. Claude AI → generates article HTML
+2. TMDB Search → finds matching movie/TV/person
+3. TMDB Details → backdrop, poster, cast, ratings
+4. OMDb (inside TMDB route) → IMDB rating, RT%, Metacritic
+5. Wikipedia (inside TMDB route) → person bio + thumbnail
+6. Pexels → fallback stock image if no TMDB match
+7. GitHub API → saves JSON to repo → triggers Vercel rebuild
 
 ---
 
-## 12. Security Rules (Non-Negotiable)
+## 14. Security Rules (Non-Negotiable)
 
 - Never hardcode any API key in source code
 - Never commit `.env.local`
 - Adult advertisements must never appear on the site
-- Never publish fabricated quotes attributed to real people as fact
-- Never publish unverified gossip as confirmed news — attribute to sources
+- Never publish fabricated quotes as real
+- Never link to pirated content
+- SmartLink URL lives only in `data/ad-config.json`
 
 ---
 
-## 13. Key File Locations
+## 15. Key File Locations
 
-| File / Path | Purpose |
+| Path | Purpose |
 |---|---|
 | `data/articles/` | All published article JSON files |
 | `data/ad-config.json` | Ad SmartLink URL |
 | `lib/categories.js` | Category slugs, colours, icons |
 | `app/admin/page.js` | Admin panel (News Fetcher, Generator, Image Fixer, etc.) |
-| `app/api/tmdb/route.js` | TMDB + OMDB proxy route |
-| `app/api/publish/route.js` | GitHub push endpoint for admin panel |
+| `app/api/tmdb/route.js` | TMDB + OMDb proxy route |
+| `app/api/publish/route.js` | GitHub push endpoint used by admin panel |
 | `components/Footer.js` | Site footer — X link: `https://x.com/StarScoop_Daily` |
+| `CONTENT_STRATEGY.md` | Full editorial + business strategy reference (for human reading) |
