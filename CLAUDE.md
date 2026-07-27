@@ -436,7 +436,13 @@ EEAT = **E**xpertise · **E**xperiencce · **A**uthoritativeness · **T**rustwor
 
 **Duplicate content:** Never re-write the same celebrity/film topic with minimal changes. Google de-indexes thin rewrites. Pick a new angle or wait 30+ days before returning to the same subject.
 
-**SmartLink labels:** The CTAs on article pages that read "Watch Full Movie Now" or "Free stream — no sign-up" are potentially deceptive because SmartLink destinations are not actually free streaming. Change these to neutral labels like "Stream Now →" or "Find Where to Watch" to reduce deceptive content risk.
+**SmartLink CTAs — currently disabled.** `SMARTLINK_CTAS_ENABLED = false` in `lib/adConfig.js` makes `getSmartLink()` return `''`, silencing all four consumers: the exit-intent popup, the in-article CTA, the category empty state, and the 404 page. The banner ad slots in `data/ad-config.json` are unaffected and keep running.
+
+Disabled because SmartLink points to an Adsterra redirect whose destination rotates and is not under our control (sweepstakes, dating, gambling) — which also makes the "no adult ads" rule in Section 14 unenforceable. Labels like "Find Where to Watch" or "Watch {Category} Content Free" promised streaming the link cannot deliver, a deceptive-content risk carrying manual-action exposure. At ~0 sessions these CTAs earned nothing, so the risk bought nothing during the window Google forms its first assessment of a new domain.
+
+**Re-enable only once traffic justifies it** (target a few thousand sessions/month). All labels have already been rewritten to "See Offer (Sponsored)" with `rel="nofollow noopener noreferrer sponsored"`, so flipping the flag to `true` is safe by default. Never restore streaming-promise copy.
+
+**Domain:** staying on `starscoopdaily.site` until the site generates revenue. Google applies no ranking penalty to new gTLDs, and the TLD was never the indexing blocker. Do not propose migrating to `.com`.
 
 ### 16d. Sitemap & Robots
 
@@ -450,7 +456,7 @@ EEAT = **E**xpertise · **E**xperiencce · **A**uthoritativeness · **T**rustwor
 Google's Core Web Vitals (LCP, CLS, INP) affect ranking. Potential issues:
 - nexguild.js blocking script — investigate and remove if it delays content paint
 - Large hero images — confirm `next/image` with `priority` prop is used on article hero
-- ExitIntentPopup is acceptable — it triggers on mouseleave (not on load), is non-blocking, and has a clear close button. Not a Page Experience violation.
+- ExitIntentPopup is safe by design — mouseleave at the top edge after 300px of scroll, once per session, never on page load, and never on touch devices (no `mouseleave` on mobile). Googlebot has no mouse, so it never renders for the crawler. Not an intrusive-interstitial violation. While SmartLink CTAs are off it shows the 3 latest articles, which lifts pages/session instead of bouncing readers off-site.
 
 | Path | Purpose |
 |---|---|

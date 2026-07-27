@@ -11,30 +11,37 @@ import ArticleBody from '@/components/ArticleBody';
 import AdSlot from '@/components/AdSlot';
 import StickyArticleBar from '@/components/StickyArticleBar';
 
-const CATEGORY_BTNS = {
-  celebrity:          { icon: '📸', label: 'See More Celebrity Content',      sub: 'More stories and updates inside' },
-  hollywood:          { icon: '▶',  label: 'Find Where to Watch →',           sub: 'See streaming options for this film' },
-  bollywood:          { icon: '🎬', label: 'Find Where to Watch →',           sub: 'See streaming options for this film' },
-  'tv-shows':         { icon: '▶',  label: 'Find Where to Stream →',          sub: 'See all available platforms' },
-  music:              { icon: '🎵', label: 'Stream This Artist →',            sub: 'Find on your favourite platform' },
-  movies:             { icon: '🎬', label: 'Find Where to Watch →',           sub: 'See streaming options now' },
-  'ending-explained': { icon: '🎬', label: 'Watch or Rewatch the Film →',     sub: 'Find streaming options here' },
-  relationships:      { icon: '💖', label: 'Read the Full Story →',           sub: 'More details on this story' },
-  'british-royals':   { icon: '👑', label: 'Read More Royal Coverage →',      sub: 'More from the royal family' },
-  fashion:            { icon: '👗', label: 'Explore This Celebrity Look →',   sub: 'More style and fashion coverage' },
-  'pop-culture':      { icon: '🔥', label: 'See More Pop Culture →',          sub: 'More viral moments and trends' },
-  'where-to-watch':   { icon: '📡', label: 'Find Where to Stream →',          sub: 'See all available platforms' },
+// Icons stay category-flavoured, but the copy must not promise a destination
+// the SmartLink cannot deliver — it is an ad redirect, not a streaming guide.
+// Labelling it as sponsored keeps this clear of Google's deceptive-content policy.
+const CATEGORY_ICONS = {
+  celebrity: '📸',
+  hollywood: '🎬',
+  bollywood: '🎬',
+  'tv-shows': '📺',
+  music: '🎵',
+  movies: '🎬',
+  'ending-explained': '🔍',
+  relationships: '💖',
+  'british-royals': '👑',
+  fashion: '👗',
+  'pop-culture': '🔥',
+  'where-to-watch': '📡',
 };
-const DEFAULT_BTN = { icon: '👉', label: 'See More Entertainment →', sub: 'More stories inside' };
 
 function SmartLinkCTA({ smartlink, catSlug }) {
   if (!smartlink) return null;
-  const btn = CATEGORY_BTNS[catSlug] || DEFAULT_BTN;
+  const icon = CATEGORY_ICONS[catSlug] || '👉';
+  const btn = {
+    icon,
+    label: 'See Offer (Sponsored) →',
+    sub: 'Advertisement from our partner',
+  };
   return (
     <a
       href={smartlink}
       target="_blank"
-      rel="nofollow noopener noreferrer"
+      rel="nofollow noopener noreferrer sponsored"
       className="flex items-center gap-4 bg-gray-900 text-white rounded-2xl p-4 sm:p-5 my-6 hover:bg-gray-800 transition-all group shadow-lg border border-gray-800 cursor-pointer no-underline"
     >
       <div className="w-14 h-14 bg-[#cc0000] rounded-full flex items-center justify-center text-2xl flex-shrink-0 shadow-md group-hover:scale-110 transition-transform">

@@ -89,7 +89,7 @@ export default function CategoryPage({ params }) {
                   className="inline-flex items-center gap-3 bg-gray-900 hover:bg-gray-800 text-white font-black py-4 px-7 rounded-2xl text-base transition-all group shadow-lg mb-5"
                 >
                   <span className="text-xl">{icon}</span>
-                  <span>Watch {pretty} Content Free</span>
+                  <span>See Offer (Sponsored)</span>
                   <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                   </svg>

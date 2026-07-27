@@ -7,6 +7,7 @@ import AdSlot from '@/components/AdSlot';
 import MonetizationScripts from '@/components/MonetizationScripts';
 import ExitIntentPopup from '@/components/ExitIntentPopup';
 import { getSmartLink } from '@/lib/adConfig';
+import { getLatestArticles } from '@/lib/articles';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -76,6 +77,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   const smartlink = getSmartLink();
+  const exitPicks = getLatestArticles(3).map(({ slug, title }) => ({ slug, title }));
   return (
     <html lang="en">
       <head>
@@ -107,7 +109,7 @@ export default function RootLayout({ children }) {
           strategy="afterInteractive"
         />
         <MonetizationScripts />
-        <ExitIntentPopup smartlink={smartlink} />
+        <ExitIntentPopup smartlink={smartlink} articles={exitPicks} />
       </body>
     </html>
   );
