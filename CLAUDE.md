@@ -119,7 +119,7 @@ For: celebrity drama, announcements, social media moments, chart entries.
 ```
 H1: Headline — under 10 words, catchy
 Hook: 2 sentences — Who, What, When
-[EMBED_MEDIA: description of relevant X/TikTok/IG post]
+[EMBED_MEDIA: https://x.com/user/status/123...]   ← must be a real URL, not a description
 H2: The Breakdown
   · 3–4 bullet points of fast facts
 H2: Public Reaction
@@ -176,7 +176,7 @@ H2: What It Sets Up Next (sequel / season 2)
 - Max 2–3 sentences per paragraph — white space = mobile readability.
 - **Bold** names, numbers, key facts on first mention in a paragraph.
 - Active voice: "Kate wore the dress" not "the dress was worn by Kate."
-- `[EMBED_MEDIA: description]` immediately after hook in breaking news.
+- `[EMBED_MEDIA: <full post URL>]` immediately after hook in breaking news. **Must be a real URL** — `ArticleBody` only converts the tag when it contains `http(s)://`. A description renders as literal bracket text on the live page. If no verified post URL is available, omit the embed entirely.
 - `[IMAGE: description]` under every H2 in listicles.
 
 ### DON'T
