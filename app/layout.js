@@ -24,18 +24,6 @@ export const metadata = {
   },
   description:
     'StarScoop Daily delivers the latest celebrity news, Hollywood scoops, British Royals gossip, UK celebrity news, TV show updates, and breaking entertainment news.',
-  keywords: [
-    'celebrity news',
-    'hollywood news',
-    'british celebrity news',
-    'royal family news',
-    'uk celebrity gossip',
-    'entertainment news',
-    'celebrity gossip',
-    'TV shows',
-    'music news',
-    'StarScoop Daily',
-  ],
   authors: [{ name: 'StarScoop Daily Staff' }],
   creator: 'StarScoop Daily',
   publisher: 'StarScoop Daily',

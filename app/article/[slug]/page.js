@@ -88,7 +88,6 @@ export async function generateMetadata({ params }) {
   return {
     title: article.title,
     description: article.metaDescription || article.excerpt?.slice(0, 160),
-    keywords: article.tags?.join(', '),
     alternates: {
       canonical: `https://www.starscoopdaily.site/article/${article.slug}`,
     },
