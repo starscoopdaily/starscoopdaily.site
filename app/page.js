@@ -166,7 +166,7 @@ export default function HomePage() {
 
           {/* Sidebar */}
           <div>
-            <Sidebar adContent={<AdSlot slot="sidebar" />} />
+            <Sidebar adContent={<div className="hidden lg:block"><AdSlot slot="sidebar" /></div>} />
           </div>
         </div>
       </div>
