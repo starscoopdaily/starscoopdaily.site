@@ -290,6 +290,14 @@ Full story 👇
 ```
 Rules: max 280 chars including URL · 3–4 hashtags · emoji at start
 
+**Pin image — always use the generator, never the og:image.**
+```
+https://www.starscoopdaily.site/api/pin?slug=SLUG
+```
+Returns a 1000x1500 (2:3) PNG built from the article's hero image with the headline burned in. Open it, save the PNG, upload it to Pinterest manually, then set the destination link to the article URL.
+
+Do **not** just paste the article URL into Pinterest — that pulls `og:image`, which is 1200x630 landscape. Pinterest ranks 2:3 vertical pins with text overlay far above landscape photos, so a pasted-URL pin gets buried. Route is `app/api/pin/route.js` (edge runtime); hitting `/api/pin` with no slug lists available ones.
+
 **3. Pinterest Pin** — StarScoop Daily Pinterest
 ```
 Paste URL: [full article URL]
