@@ -37,17 +37,51 @@ Use these slugs verbatim in every article JSON `category` field.
 
 ### Daily Schedule
 
-| Day | Articles | Focus Categories |
-|---|---|---|
-| Monday | 3 | Hollywood, Celebrity, Bollywood |
-| Tuesday | 2 | British Royals, Music |
-| Wednesday | 3 | TV Shows, Relationships, Celebrity |
-| Thursday | 2 | Hollywood, Movies |
-| Friday | 3 | Ending Explained, TV Shows, Music |
-| Saturday | 2 | Movies, Pop Culture |
-| Sunday | 1–2 | Where to Watch, Fashion |
+Every one of the 13 categories has a fixed slot. If a category has no day, it never gets written — that is exactly why `web-series` sat empty while the rest of the site grew.
 
-**Priority when bandwidth is limited:** Ending Explained → Celebrity/Relationships → TV Shows/Hollywood → Where to Watch → Fashion/Pop Culture
+| Day | Articles | Slot 1 | Slot 2 | Slot 3 |
+|---|---|---|---|---|
+| **Monday** | 3 | Hollywood | Celebrity | Bollywood |
+| **Tuesday** | 2 | British Royals | Music |  |
+| **Wednesday** | 3 | TV Shows | Relationships | Celebrity |
+| **Thursday** | 3 | Hollywood | Movies | **Web Series** |
+| **Friday** | 3 | **Ending Explained** | **Ending Explained** | TV Shows |
+| **Saturday** | 2 | Movies | Pop Culture |  |
+| **Sunday** | 2 | Where to Watch | Fashion |  |
+
+**Weekly total: 18.** Per-category output:
+
+| Category | Per week | Day |
+|---|---|---|
+| Hollywood | 2 | Mon, Thu |
+| Celebrity | 2 | Mon, Wed |
+| Ending Explained | 2 | Fri ×2 |
+| TV Shows | 2 | Wed, Fri |
+| Movies | 2 | Thu, Sat |
+| Bollywood | 1 | Mon |
+| British Royals | 1 | Tue |
+| Music | 1 | Tue |
+| Relationships | 1 | Wed |
+| Web Series | 1 | Thu |
+| Pop Culture | 1 | Sat |
+| Where to Watch | 1 | Sun |
+| Fashion | 1 | Sun |
+
+### Schedule Rules
+
+**Friday is double Ending Explained.** It is the highest-value format on this site — high-intent queries, a 72-hour search spike, and beatable competition because the questions are specific. Two per week is the floor, not a target.
+
+**Ending Explained overrides any slot.** If something major releases midweek, drop that day's lowest-priority article and publish the Ending Explained within 24–48 hours instead. The spike does not wait for Friday.
+
+**Priority when bandwidth is short:** Ending Explained → Celebrity/Relationships → TV Shows/Hollywood → Where to Watch → Web Series → Fashion/Pop Culture
+
+**Check the category counts before writing.** Run this to see what is starving:
+```bash
+node -e "const fs=require('fs'),p='data/articles';const c={};fs.readdirSync(p).filter(f=>f.endsWith('.json')).forEach(f=>{const d=JSON.parse(fs.readFileSync(p+'/'+f,'utf8'));c[d.category]=(c[d.category]||0)+1});console.log(c)"
+```
+An empty category is worse than no category — the page still sits in the sitemap serving a "No articles yet" state, which is a thin page Google is being asked to crawl.
+
+**Prefer topical depth over breadth.** Once a category has coverage, the higher-value move is a cluster: 5–8 interlinked articles on one subject (see the MCU cluster around `avengers-doomsday-cast-release-date-2026`). Clusters beat scattered one-offs because internal links concentrate authority and give Google a coherent signal about what the site knows.
 
 ---
 
