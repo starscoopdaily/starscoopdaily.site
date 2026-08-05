@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import JsonImport from '@/components/admin/JsonImport';
+import ImagePicker from '@/components/admin/ImagePicker';
 
 const ADMIN_PASSWORD = 'StarScoop@2026';
 const CATEGORIES = ['Celebrity', 'Hollywood', 'British Royals', 'Bollywood', 'TV Shows', 'Web Series', 'Music', 'Movies', 'Ending Explained', 'Where to Watch', 'Relationships', 'Fashion', 'Pop Culture'];
@@ -2554,6 +2556,8 @@ function ImageFixer() {
 const TABS = [
   { id: 'fetcher', icon: '📡', label: 'News Fetcher' },
   { id: 'generator', icon: '✍️', label: 'Article Generator' },
+  { id: 'images', icon: '🔍', label: 'Find Images' },
+  { id: 'jsonimport', icon: '📥', label: 'Paste & Publish' },
   { id: 'articles', icon: '📋', label: 'Published Articles' },
   { id: 'imgfixer', icon: '🖼️', label: 'Image Fixer' },
   { id: 'controls', icon: '⚙️', label: 'Site Controls' },
@@ -2693,6 +2697,8 @@ export default function AdminPage() {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-8">
               {activeTab === 'fetcher' && <NewsFetcher onUseTopic={handleUseTopic} />}
               {activeTab === 'generator' && <ArticleGenerator initialTopic={topicFromFetcher} editArticle={editArticleData} />}
+              {activeTab === 'images' && <ImagePicker />}
+              {activeTab === 'jsonimport' && <JsonImport />}
               {activeTab === 'articles' && <PublishedArticles onEdit={(a) => { setEditArticleData(a); setActiveTab('generator'); }} />}
               {activeTab === 'imgfixer' && <ImageFixer />}
               {activeTab === 'controls' && <SiteControls />}
