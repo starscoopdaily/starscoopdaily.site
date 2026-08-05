@@ -1,108 +1,40 @@
-# StarScoop Daily — Article Writing Prompt
+# StarScoop Daily — Daily Article System
 
-Copy everything between the `---START---` and `---END---` markers into Claude chat (claude.ai) or Gemini,
-fill in the two blanks at the bottom, and it returns article JSON ready to paste into
-**Admin → Paste & Publish**.
+Two prompts. **Gemini picks the topic. Claude writes it. You publish.**
 
-Save it once in your notes. You reuse the same block every day.
+Save both prompts in your notes. You reuse the same text every single day — only the date changes.
 
 ---
 
-## Daily workflow — 5 steps, all in the admin panel
+# The whole day in 4 steps
 
-Everything happens at `https://www.starscoopdaily.site/admin` except the writing itself.
+```
+STEP 1  Gemini      → paste PROMPT 1, get today's topics
+STEP 2  Admin       → Find Images → search → "Copy all for prompt"
+STEP 3  Claude      → paste PROMPT 2 + topic + images → get JSON
+STEP 4  Admin       → Paste & Publish → Check → Publish
+```
 
-**1. Pick topics** — check the day's categories in the table at the bottom of this file.
-Open **Published Articles** to see what's already covered so you don't repeat a topic.
-
-**2. Get images** — **Find Images** tab. Type a name or title, pick the right result from the
-thumbnails, click **Copy** on each URL. You see the actual picture before you copy it, so a broken
-image can't get through. Grab a hero (landscape) and 3 portraits/inlines.
-
-**3. Write** — paste the prompt below into Claude or Gemini, fill in the blanks with your topic and
-the URLs you just copied.
-
-**4. Publish** — **Paste & Publish** tab. Paste the JSON → **Check** → **Publish to GitHub**.
-It parses the JSON, rejects unknown categories, warns on thin content, and loads every image to
-confirm it works. If anything is red, it won't let you publish.
-
-**5. Promote** — request indexing in Search Console, then open
-`https://www.starscoopdaily.site/api/pin?slug=YOUR-SLUG`, save the PNG, upload to Pinterest.
-
-For royals and public figures TMDB is unreliable — it resolves "Prince William" to an unrelated
-musician. Use Wikipedia instead: open `https://en.wikipedia.org/api/rest_v1/page/summary/PAGE_TITLE`
-and copy `originalimage.source`.
+About 20 minutes per article. Repeat per article for the day.
 
 ---
 
-## The prompt
+# STEP 1 — Gemini picks the topic
 
----START---
+Open Gemini. Paste this. Change only the date on the last line.
 
-You are writing for StarScoop Daily, an entertainment news site. Return ONLY a valid JSON object — no
-commentary before or after, no markdown fences.
+---START PROMPT 1---
 
-SCHEMA — every field required unless marked optional:
-{
-  "title": "Headline, under 70 characters, main keyword in the first 60",
-  "slug": "lowercase-hyphenated-with-year-2026",
-  "excerpt": "150-160 character summary",
-  "category": "ONE of: celebrity, hollywood, bollywood, british-royals, tv-shows, web-series, music, movies, ending-explained, where-to-watch, relationships, fashion, pop-culture",
-  "author": "StarScoop Daily Staff",
-  "date": "YYYY-MM-DD",
-  "featured": false,
-  "articleType": "standard",
-  "image": "HERO IMAGE URL — landscape",
-  "imageAlt": "Descriptive alt text including the main keyword",
-  "metaDescription": "Under 155 characters, includes main keyword",
-  "tags": ["Tag1", "Tag2", "Tag3", "Tag4", "Tag5"],
-  "content": "HTML string — see rules below",
-  "personTmdbId": 12345,
-  "personProfilePhoto": "PORTRAIT URL (optional — only for articles about one person)"
-}
+You are the editor for StarScoop Daily, an entertainment news site at starscoopdaily.site.
 
-CONTENT RULES:
-- 900-1400 words of real substance. No padding.
-- Plain HTML only: <p>, <h2>, <ul>, <ol>, <li>, <strong>, <em>, <figure>, <img>, <a>. No <h1>.
-- At least 4 <h2> sections, each with real content under it.
-- Exactly 3 inline images as <figure><img src="URL" alt="descriptive alt" /></figure>.
-  The FIRST inline image must be portrait (a poster or person photo).
-- Answer the headline's question in the FIRST paragraph. Do not build up to it.
-- 2-3 internal links as <a href="/article/SLUG">descriptive anchor text</a> using slugs I give you.
-- End with one short engagement question.
+Your job: pick today's article topics and tell me exactly what to search for images.
 
-VOICE:
-- Sentences average under 20 words. Paragraphs max 3 sentences.
-- Active voice. Bold names and key numbers on first mention with <strong>.
-- Confident and specific. Explain WHY something matters, not just what happened.
-- Include at least one genuinely critical or sceptical observation. Do not write a press release.
+FIRST — fetch this URL and read it: https://www.starscoopdaily.site/api/articles
+That is every article already published. Note every `slug` and `category`.
 
-NEVER:
-- Never invent quotes. Only use publicly documented statements.
-- Never state rumour as fact — write "reportedly", "sources say", or attribute it.
-- Never invent a release date, box office figure, award, or cast member. If you are not certain,
-  write "not yet confirmed" instead of guessing.
-- Never use: In conclusion, Furthermore, Delve, Tapestry, Fascinating, Only time will tell,
-  It's worth noting, Needless to say, Let's dive in, At the end of the day, In recent news.
-- Never use an image URL I did not give you.
+SECOND — work out today's day of the week from the date I give you, then use this schedule:
 
-TODAY'S ARTICLE:
-- Date: [YYYY-MM-DD]
-- Category: [one slug from the list]
-- Topic: [what the article is about]
-- Hero image (landscape): [URL]
-- Inline image 1 (portrait): [URL]
-- Inline image 2: [URL]
-- Inline image 3: [URL]
-- Internal links available: [paste 3-4 existing slugs]
-
----END---
-
----
-
-## Which category on which day
-
-| Day | Slot 1 | Slot 2 | Slot 3 |
+| Day | Article 1 | Article 2 | Article 3 |
 |---|---|---|---|
 | Monday | hollywood | celebrity | bollywood |
 | Tuesday | british-royals | music | — |
@@ -112,39 +44,153 @@ TODAY'S ARTICLE:
 | Saturday | movies | pop-culture | — |
 | Sunday | where-to-watch | fashion | — |
 
-Full rules in `CLAUDE.md` Section 2.
+THIRD — pick one topic per slot. Rules for picking:
+
+- NEVER repeat a subject already covered. Check the slugs you fetched. If Zendaya has an article,
+  do not suggest Zendaya again.
+- Prefer SPECIFIC ANSWERABLE QUESTIONS over broad topics. This site is new and has no authority,
+  so it cannot outrank IGN or Variety for "avengers doomsday cast". It CAN rank for
+  "do you need to watch loki before avengers doomsday". Narrow beats big.
+- Prefer subjects with genuine current interest, but do not invent news. If you are not sure
+  something happened, pick an evergreen angle instead.
+- India-related topics are valuable — that is the site's strongest audience.
+- Favour subjects that connect to existing articles so they can link to each other.
+
+FOURTH — for each topic give me exactly this:
+
+TOPIC 1
+Category: [slug]
+Headline angle: [the specific question or claim the article answers]
+Why this can rank: [one line]
+Search for images: [exact name to type into the image tool] — type: person / movie / tv
+Link to these existing slugs: [3 real slugs you saw in the API response]
+
+Repeat for each slot.
+
+FIFTH — before you answer, verify: is every fact you are relying on something you actually know?
+If a release date, cast member or award is uncertain, say so explicitly rather than stating it.
+
+TODAY'S DATE: [YYYY-MM-DD]
+
+---END PROMPT 1---
 
 ---
 
-## Claude chat vs Gemini
+# STEP 2 — Get the images
 
-Both work. Practical differences:
+In the admin panel → **Find Images** tab.
 
-- **Claude** follows the JSON schema and the "never invent facts" rules more reliably, and holds the
-  voice rules across a long output. Fewer corrections needed.
-- **Gemini Pro** has a larger free allowance and can search the web, which helps for genuinely current
-  news. It is looser about output format — expect to strip markdown fences sometimes, which
-  **Paste & Publish** already handles for you.
+1. Type the name Gemini gave you under "Search for images"
+2. Pick the right thumbnail if several appear
+3. Click **📋 Copy all for prompt**
 
-Reasonable split: **Gemini for research** (what actually happened, is this cast confirmed), **Claude for
-the writing**. Or just use whichever you have quota on — the prompt is the same.
+That copies all four image lines at once. You do not need to understand the URLs — just paste
+the block into Step 3.
 
-**On Groq:** your instinct is right. `llama-3.3-70b` is fast and cheap but produces generic copy and
-invents details, which is the one thing this site cannot afford. The `/api/groq` route still exists in
-the admin panel if you want it, but the paste workflow is better output for the same effort.
+**If a preview looks blank or wrong, that image is broken. Search a different title.**
+
+For royals and politicians, TMDB is unreliable — it resolves "Prince William" to an unrelated
+musician. Use Wikipedia instead: open
+`https://en.wikipedia.org/api/rest_v1/page/summary/PAGE_TITLE` and copy `originalimage.source`.
 
 ---
 
-## The checks you lose, and what replaces them
+# STEP 3 — Claude writes it
 
-| Was automatic | Now |
-|---|---|
-| Duplicate slug check | Skim `/api/articles` before picking a topic |
-| Image returns 200 | **Paste & Publish** loads every image and shows ✅/❌ |
-| JSON valid, no BOM | **Paste & Publish** parses before allowing publish |
-| Build passes | Vercel emails you if a deploy fails |
-| Category slug correct | **Paste & Publish** rejects unknown categories |
-| Internal links resolve | Not checked — only use slugs you copied from `/api/articles` |
+Open Claude. Paste this, then paste Gemini's topic and your copied image block at the bottom.
 
-The last row is the one to be careful about. A link to a slug that doesn't exist is a 404 on your own
-site, and nothing will catch it for you. Copy slugs, don't type them from memory.
+---START PROMPT 2---
+
+You are writing for StarScoop Daily, an entertainment news site. Return ONLY a valid JSON object.
+No commentary before or after. No markdown fences.
+
+SCHEMA:
+{
+  "title": "Under 70 characters, main keyword in the first 60",
+  "slug": "lowercase-hyphenated-with-year-2026",
+  "excerpt": "150-160 characters",
+  "category": "ONE of: celebrity, hollywood, bollywood, british-royals, tv-shows, web-series, music, movies, ending-explained, where-to-watch, relationships, fashion, pop-culture",
+  "author": "StarScoop Daily Staff",
+  "date": "YYYY-MM-DD",
+  "featured": false,
+  "articleType": "standard",
+  "image": "the hero image URL I give you",
+  "imageAlt": "descriptive alt text including the main keyword",
+  "metaDescription": "under 155 characters, includes main keyword",
+  "tags": ["Tag1", "Tag2", "Tag3", "Tag4", "Tag5"],
+  "content": "HTML — see rules",
+  "personTmdbId": 12345,
+  "personProfilePhoto": "portrait URL — only if the article is about one person"
+}
+
+CONTENT:
+- 900-1400 words of real substance. No padding.
+- HTML only: <p> <h2> <ul> <ol> <li> <strong> <em> <figure> <img> <a>. Never <h1>.
+- At least 4 <h2> sections, each with real content under it.
+- Exactly 3 inline images: <figure><img src="URL" alt="descriptive alt" /></figure>
+  Use the URLs I give you, in the order given. The first inline MUST be the portrait.
+- Answer the headline's question in the FIRST paragraph. Never build up to it.
+- 2-3 internal links: <a href="/article/SLUG">descriptive anchor text</a> — ONLY the slugs I give you.
+- End with one short engagement question.
+
+VOICE:
+- Sentences average under 20 words. Paragraphs max 3 sentences.
+- Active voice. <strong> on names and key numbers at first mention.
+- Explain WHY something matters, not just what happened.
+- Include at least one genuinely critical or sceptical observation. This is not a press release.
+
+NEVER:
+- Never invent quotes. Only publicly documented statements.
+- Never state rumour as fact. Write "reportedly" or attribute it.
+- Never invent a release date, box office number, award, or cast member.
+  If uncertain, write "not yet confirmed" instead of guessing.
+- Never use an image URL I did not give you.
+- Never use: In conclusion, Furthermore, Delve, Tapestry, Fascinating, Only time will tell,
+  It's worth noting, Needless to say, Let's dive in, At the end of the day, In recent news.
+
+TODAY'S ARTICLE:
+Date: [YYYY-MM-DD]
+Category: [paste from Gemini]
+Topic: [paste Gemini's headline angle]
+Link to these slugs: [paste from Gemini]
+
+[PASTE YOUR COPIED IMAGE BLOCK HERE]
+
+---END PROMPT 2---
+
+---
+
+# STEP 4 — Publish
+
+Admin → **Paste & Publish** → paste the JSON → **Check** → **Publish to GitHub**.
+
+The Check button will:
+- Parse the JSON (handles stray fences or chatter automatically)
+- Reject an unknown category
+- Warn on thin content, too few headings, too few images
+- Load every image and show ✅ or ❌
+
+If anything is red it will not let you publish. Fix it and Check again.
+
+Live in 1–2 minutes.
+
+---
+
+# After publishing
+
+1. **Search Console** → URL Inspection → paste `https://www.starscoopdaily.site/article/YOUR-SLUG`
+   → Request Indexing
+2. **Pinterest** → open `https://www.starscoopdaily.site/api/pin?slug=YOUR-SLUG` → save the PNG
+   → upload it to Pinterest → set the link to the article URL
+3. **Twitter** → hook line, one-line teaser, article link, 3-4 hashtags
+
+Pinterest matters most. It moves in weeks; search takes months.
+
+---
+
+# The one thing nothing checks
+
+**Internal links.** If an article links to a slug that does not exist, that is a 404 on your own site
+and nothing will catch it.
+
+Only use slugs Gemini copied from the live API. Never type one from memory.

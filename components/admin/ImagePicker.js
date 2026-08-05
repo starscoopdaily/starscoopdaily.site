@@ -59,6 +59,7 @@ export default function ImagePicker() {
   const [results, setResults] = useState([]);
   const [details, setDetails] = useState(null);
   const [error, setError] = useState('');
+  const [copiedAll, setCopiedAll] = useState(false);
 
   const search = async (e) => {
     e?.preventDefault();
@@ -146,7 +147,30 @@ export default function ImagePicker() {
 
       {details && (
         <div className="border border-gray-200 rounded-xl p-4">
-          <p className="font-black text-gray-900 mb-3">{details.title || details.name}</p>
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <p className="font-black text-gray-900">{details.title || details.name}</p>
+            <button
+              onClick={async () => {
+                const block = [
+                  `Hero image (landscape): ${heroUrl}`,
+                  `Inline image 1 (portrait): ${portraitUrl}`,
+                  ...extraPhotos.map((p, i) => `Inline image ${i + 2}: ${p}`),
+                  details.tmdbId && type === 'person' ? `personTmdbId: ${details.tmdbId}` : '',
+                ].filter(Boolean).join('\n');
+                try {
+                  await navigator.clipboard.writeText(block);
+                  setCopiedAll(true);
+                  setTimeout(() => setCopiedAll(false), 2000);
+                } catch { /* clipboard blocked — rows below still copy individually */ }
+              }}
+              className={`shrink-0 font-bold text-sm px-4 py-2 rounded-lg ${copiedAll ? 'bg-green-600 text-white' : 'bg-[#cc0000] hover:bg-[#aa0000] text-white'}`}
+            >
+              {copiedAll ? '✓ Copied all' : '📋 Copy all for prompt'}
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mb-3">
+            One click copies every image line ready to paste into the Claude prompt.
+          </p>
 
           <div className="flex gap-3 mb-4">
             {heroUrl && (
