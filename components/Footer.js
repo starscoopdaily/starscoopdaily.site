@@ -30,9 +30,8 @@ export default function Footer() {
 
   return (
     <footer className="bg-gray-900 text-gray-300 mt-12">
-      {/* Hidden on mobile — article pages already carry two in-content slots
-          there, and stacking sidebar + footer on top reads as ad-heavy. */}
-      <div className="hidden sm:flex bg-white py-4 justify-center">
+      {/* Per-device visibility lives in data/ad-config.json — Admin → Ads Manager */}
+      <div className="bg-white py-4 flex justify-center">
         <AdSlot slot="footer" />
       </div>
       {/* Main Footer */}

@@ -2163,7 +2163,7 @@ function AdsManager() {
     if (!name || config.slots[name]) return;
     setConfig((prev) => ({
       ...prev,
-      slots: { ...prev.slots, [name]: { enabled: true, code: '' } },
+      slots: { ...prev.slots, [name]: { enabled: true, desktop: true, mobile: true, code: '' } },
     }));
     setNewSlotName('');
   };
@@ -2257,6 +2257,30 @@ function AdsManager() {
                 </span>
                 <Toggle enabled={slot.enabled} onChange={() => updateSlot(slotName, 'enabled', !slot.enabled)} />
               </div>
+            </div>
+
+            {/* Per-device visibility. Missing flags default to visible, so older
+                configs keep working. */}
+            <div className={`flex flex-wrap items-center gap-2 ${slot.enabled ? '' : 'opacity-40 pointer-events-none'}`}>
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-400 mr-1">Show on:</span>
+              {[
+                { field: 'desktop', label: '🖥️ Desktop' },
+                { field: 'mobile', label: '📱 Mobile' },
+              ].map(({ field, label }) => {
+                const on = slot[field] !== false;
+                return (
+                  <button
+                    key={field}
+                    onClick={() => updateSlot(slotName, field, !on)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${on ? 'bg-[#cc0000] text-white border-[#cc0000]' : 'bg-white text-gray-400 border-gray-200 hover:border-gray-300'}`}
+                  >
+                    {label} {on ? '✓' : '✕'}
+                  </button>
+                );
+              })}
+              {slot.enabled && slot.desktop === false && slot.mobile === false && (
+                <span className="text-xs text-amber-600 font-semibold">Off on both — this slot will not render.</span>
+              )}
             </div>
             <textarea
               rows={3}
