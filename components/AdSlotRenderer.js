@@ -1,91 +1,112 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
 /**
- * Adsterra's `atOptions` banner format writes to a single global variable.
- * When more than one of those banners is on the same page, each new slot
- * overwrites the previous slot's config before the async invoke.js runs —
- * so only one banner (or none) actually renders. This is why ads showed up
- * on desktop pages with a single slot but disappeared on mobile, where the
- * sidebar, in-article and footer slots all mount together.
+ * Adsterra's `atOptions` format writes to a single global, so several banners
+ * on one page overwrite each other's config before the async invoke.js runs.
  *
- * Fix: render each atOptions banner inside its own sandboxed iframe so every
- * slot gets a fresh `window` and its own `atOptions`. Container-based formats
- * (native banner / social bar) don't use the global, so they render inline.
+ * This was previously solved by rendering each banner in a sandboxed iframe.
+ * That fixed the collision but broke fill: the invoke script fingerprints its
+ * environment (SharedWorker, registerProtocolHandler, document.cookie,
+ * location.hostname) and a srcdoc iframe fails those checks — location.hostname
+ * is empty on about:srcdoc — so it bailed out and rendered nothing.
+ *
+ * Instead we load atOptions banners **sequentially in the main document**: set
+ * the global, inject the script, wait for it to load and read the config, then
+ * release the next slot. No iframe, no collision, environment checks intact.
+ *
+ * Note this cannot fix a shared zone key. Adsterra issues one key per
+ * placement; reusing one key across slots will still under-fill regardless of
+ * load order.
  */
 
-function isolatedDoc(html) {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-  html,body{margin:0;padding:0;overflow:hidden;background:transparent;}
-  body{display:flex;align-items:center;justify-content:center;}
-  iframe,img{max-width:100%;border:0;display:block;}
-</style></head><body>${html}</body></html>`;
+// Module-level chain shared by every slot on the page.
+let loadChain = Promise.resolve();
+
+function queueAtOptionsAd(html, container) {
+  loadChain = loadChain.then(
+    () =>
+      new Promise((resolve) => {
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        const scripts = Array.from(temp.querySelectorAll('script'));
+
+        // Inline config script first — this sets window.atOptions.
+        scripts
+          .filter((s) => !s.src && s.textContent)
+          .forEach((s) => {
+            try {
+              // eslint-disable-next-line no-new-func
+              new Function(s.textContent)();
+            } catch { /* malformed config — let the external script fall back */ }
+          });
+
+        // Non-script markup (container divs etc.)
+        Array.from(temp.childNodes)
+          .filter((n) => n.nodeName !== 'SCRIPT')
+          .forEach((n) => container.appendChild(n.cloneNode(true)));
+
+        const external = scripts.filter((s) => s.src);
+        if (!external.length) { resolve(); return; }
+
+        let pending = external.length;
+        const done = () => {
+          pending -= 1;
+          // Give invoke.js a moment to read atOptions before the next slot
+          // overwrites it.
+          if (pending === 0) setTimeout(resolve, 400);
+        };
+
+        external.forEach((s) => {
+          const el = document.createElement('script');
+          Array.from(s.attributes).forEach((a) => el.setAttribute(a.name, a.value));
+          el.onload = done;
+          el.onerror = done;
+          container.appendChild(el);
+        });
+
+        // Never let one stalled network request block every later slot.
+        setTimeout(resolve, 6000);
+      })
+  );
+  return loadChain;
 }
 
 export default function AdSlotRenderer({ html, className = '', height = 250 }) {
   const ref = useRef(null);
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
   const isAdmin = pathname?.startsWith('/admin');
 
-  // atOptions banners need their own window; anything else renders inline.
-  const needsIsolation = typeof html === 'string' && html.includes('atOptions');
-
-  useEffect(() => setMounted(true), []);
-
   useEffect(() => {
-    if (needsIsolation || !ref.current || !html || isAdmin) return;
+    const container = ref.current;
+    if (!container || !html || isAdmin) return;
 
-    ref.current.innerHTML = '';
+    container.innerHTML = '';
 
-    const temp = document.createElement('div');
-    temp.innerHTML = html;
+    // Container-based formats (native banner, social bar) don't touch the
+    // global, so they can render immediately.
+    if (!html.includes('atOptions')) {
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+      Array.from(temp.childNodes).forEach((node) => {
+        if (node.nodeName === 'SCRIPT') {
+          const script = document.createElement('script');
+          Array.from(node.attributes).forEach((attr) => script.setAttribute(attr.name, attr.value));
+          if (node.textContent) script.textContent = node.textContent;
+          container.appendChild(script);
+        } else {
+          container.appendChild(node.cloneNode(true));
+        }
+      });
+      return;
+    }
 
-    Array.from(temp.childNodes).forEach((node) => {
-      if (node.nodeName === 'SCRIPT') {
-        const script = document.createElement('script');
-        Array.from(node.attributes).forEach((attr) =>
-          script.setAttribute(attr.name, attr.value)
-        );
-        if (node.textContent) script.textContent = node.textContent;
-        ref.current.appendChild(script);
-      } else {
-        ref.current.appendChild(node.cloneNode(true));
-      }
-    });
-  }, [html, isAdmin, needsIsolation]);
+    queueAtOptionsAd(html, container);
+  }, [html, isAdmin]);
 
   if (isAdmin || !html) return null;
 
-  if (needsIsolation) {
-    // Render only after mount — srcDoc on the server would ship the ad markup
-    // into the static HTML that Googlebot reads.
-    if (!mounted) {
-      return <div className={`ad-slot ${className}`} style={{ minHeight: height }} />;
-    }
-    return (
-      <div className={`ad-slot ${className}`} style={{ minHeight: height }}>
-        <iframe
-          title="Advertisement"
-          srcDoc={isolatedDoc(html)}
-          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-          scrolling="no"
-          style={{
-            width: '100%',
-            maxWidth: 320,
-            height,
-            border: 0,
-            display: 'block',
-            margin: '0 auto',
-          }}
-        />
-      </div>
-    );
-  }
-
-  return <div ref={ref} className={`ad-slot ${className}`} />;
+  return <div ref={ref} className={`ad-slot ${className}`} style={{ minHeight: height }} />;
 }
