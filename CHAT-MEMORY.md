@@ -1,6 +1,12 @@
 # StarScoop Daily — Project Memory (for Claude chat)
 
-*Replaces the July 12 memory entirely. Accurate as of 5 August 2026.*
+*Replaces the July 12 memory entirely.*
+
+> **Status: living document — updated daily through 10 August 2026.**
+> Copy this into the Claude chat project memory on **10 August**, once it is final.
+> 11–12 August is the manual-workflow test period. Claude Code access ends 12 August.
+
+**Last updated:** 5 August 2026 (Wednesday's articles published)
 
 ---
 
