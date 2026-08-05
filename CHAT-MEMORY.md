@@ -116,8 +116,25 @@ cannot deliver — a deceptive-content risk with manual-action exposure. At ~0 s
 so the risk bought nothing. All labels have already been rewritten to "See Offer (Sponsored)" with
 `rel="sponsored"`, so flipping the flag back on is safe. Re-enable at a few thousand sessions/month.
 
+**Monetag popunder: OFF** — `POPUNDER_ENABLED = false` in `components/MonetizationScripts.js`.
+Zone 11371947 was redirecting readers off articles on tap. Found 5 August. This is the most damaging
+thing that can run on a content site: Google treats unexpected redirects as deceptive behaviour, which
+carries **manual-action exposure** rather than a ranking adjustment, and readers thrown off-site never
+reach the article they clicked. It earned nothing. **Never re-enable it.**
+
+**Monetag in-page push: ON** — zone 11371954, renders a notification-style banner in the page.
+Does not redirect. Safe.
+
 **Monetag vignette: OFF**, behind `VIGNETTE_ENABLED = false` — full-screen interstitials risk mobile
 ranking penalties.
+
+**Ad rendering:** `AdSlotRenderer` loads Adsterra `atOptions` banners **sequentially in the main
+document**. An earlier iframe-isolation approach broke fill entirely — the invoke script fingerprints
+its environment (`SharedWorker`, `registerProtocolHandler`, `document.cookie`) and a sandboxed
+`srcdoc` iframe fails those checks. Do not reintroduce iframes around ad code.
+
+**Per-device visibility** is set per slot in `data/ad-config.json` (`desktop` / `mobile` booleans),
+editable from Admin → Ads Manager. No hardcoded responsive classes around ad slots.
 
 **Adult ads: NEVER.** The old memory said "adult ads enabled" — that is wrong and contradicts the
 project's own security rules. It is also unenforceable while SmartLink is live, which is part of why
