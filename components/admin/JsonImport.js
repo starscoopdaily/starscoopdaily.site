@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ALL_KNOWN_CATEGORIES } from '@/lib/categories';
+import { buildSocialKit } from '@/lib/social';
 
 /**
  * Paste a complete article JSON (from Claude chat, Gemini, anywhere) and
@@ -55,6 +56,7 @@ export default function JsonImport() {
   const [checking, setChecking] = useState(false);
   const [status, setStatus] = useState('');
   const [publishing, setPublishing] = useState(false);
+  const [kit, setKit] = useState(null);
 
   const check = async () => {
     setStatus(''); setArticle(null); setImages([]);
@@ -120,7 +122,10 @@ export default function JsonImport() {
       });
       const data = await res.json();
       if (!res.ok) setStatus('❌ ' + (data.error || 'Publish failed'));
-      else setStatus(`✅ Published. Live in ~1–2 min at /article/${article.slug}`);
+      else {
+        setStatus(`✅ Published. Live in ~1–2 min at /article/${article.slug}`);
+        setKit(buildSocialKit(article));
+      }
     } catch (e) {
       setStatus('❌ ' + e.message);
     }
@@ -210,6 +215,86 @@ export default function JsonImport() {
       )}
 
       {status && <p className="mt-3 text-sm font-semibold">{status}</p>}
+
+      {kit && (
+        <div className="mt-5 border-2 border-green-200 bg-green-50 rounded-xl p-4">
+          <h3 className="font-black text-green-900 mb-1">Now promote it — 3 steps</h3>
+          <p className="text-xs text-green-700 mb-4">
+            Pinterest matters most. It moves in weeks; search takes months.
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-gray-500 mb-1">
+                1 · Google — request indexing
+              </p>
+              <CopyBox value={kit.url} />
+              <p className="text-[11px] text-gray-500 mt-1">
+                Search Console → URL Inspection → paste → Request Indexing
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-gray-500 mb-1">
+                2 · Pinterest — board: <span className="text-[#cc0000]">{kit.board}</span>
+              </p>
+              <a
+                href={kit.pinImage}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-[#cc0000] hover:bg-[#aa0000] text-white font-bold text-xs px-4 py-2 rounded-lg mb-2"
+              >
+                🖼️ Open pin image → save the PNG
+              </a>
+              <CopyBox value={kit.pinterest} rows={11} />
+            </div>
+
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-gray-500 mb-1">
+                3 · Twitter / X
+              </p>
+              <CopyBox value={kit.twitter} rows={6} />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CopyBox({ value, rows = 1 }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* clipboard blocked — the field is selectable */ }
+  };
+  return (
+    <div className="flex gap-2 items-start">
+      {rows > 1 ? (
+        <textarea
+          readOnly
+          rows={rows}
+          value={value}
+          onFocus={(e) => e.target.select()}
+          className="flex-1 text-[11px] font-mono px-2 py-1.5 bg-white border border-gray-200 rounded resize-none"
+        />
+      ) : (
+        <input
+          readOnly
+          value={value}
+          onFocus={(e) => e.target.select()}
+          className="flex-1 text-[11px] font-mono px-2 py-1.5 bg-white border border-gray-200 rounded"
+        />
+      )}
+      <button
+        onClick={copy}
+        className={`shrink-0 text-xs font-bold px-3 py-1.5 rounded ${copied ? 'bg-green-600 text-white' : 'bg-gray-900 hover:bg-gray-800 text-white'}`}
+      >
+        {copied ? '✓' : 'Copy'}
+      </button>
     </div>
   );
 }
