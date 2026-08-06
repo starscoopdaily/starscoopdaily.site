@@ -251,9 +251,21 @@ export default function JsonImport() {
 
             <div>
               <p className="text-xs font-black uppercase tracking-wider text-gray-500 mb-1">
-                3 · Twitter / X
+                3 · Twitter / X — single post
               </p>
               <CopyBox value={kit.twitter} rows={6} />
+            </div>
+
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-gray-500 mb-1">
+                4 · Twitter / X — thread (better reach)
+              </p>
+              {kit.thread?.map((t, i) => (
+                <div key={i} className="mb-1.5">
+                  <p className="text-[10px] text-gray-400 font-bold mb-0.5">Tweet {i + 1}</p>
+                  <CopyBox value={t} rows={4} />
+                </div>
+              ))}
             </div>
           </div>
         </div>

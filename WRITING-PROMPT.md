@@ -112,8 +112,13 @@ Open Claude. Paste this, then paste Gemini's topic and your copied image block a
 
 ---START PROMPT 2---
 
-You are writing for StarScoop Daily, an entertainment news site. Return ONLY a valid JSON object.
-No commentary before or after. No markdown fences.
+You are writing for StarScoop Daily, an entertainment news site.
+
+FIRST, give me 3 alternative headlines, each under 60 characters, numbered 1-3.
+They should drive curiosity or promise a specific payoff — never fake or deceptive.
+Then say: "Using #1 below — swap it if you prefer another."
+
+THEN return the JSON object. No commentary after it. No markdown fences.
 
 SCHEMA:
 {
