@@ -32,7 +32,14 @@ Your job: pick today's article topics and tell me exactly what to search for ima
 FIRST — fetch this URL and read it: https://www.starscoopdaily.site/api/articles
 That is every article already published. Note every `slug` and `category`.
 
-SECOND — work out today's day of the week from the date I give you, then use this schedule:
+SECOND — check what is ACTUALLY being searched right now. Do not pick from memory.
+Check these and report what you found:
+  - Google Trends, region United States, category Entertainment
+  - reddit.com/r/movies and reddit.com/r/television front pages
+  - Rotten Tomatoes or IMDb "Most Popular"
+Prefer subjects appearing in more than one source.
+
+THIRD — work out today's day of the week from the date I give you, then use this schedule:
 
 | Day | Article 1 | Article 2 | Article 3 |
 |---|---|---|---|
@@ -44,7 +51,7 @@ SECOND — work out today's day of the week from the date I give you, then use t
 | Saturday | movies | pop-culture | — |
 | Sunday | where-to-watch | fashion | — |
 
-THIRD — pick one topic per slot. Rules for picking:
+FOURTH — pick one topic per slot. Rules for picking:
 
 - NEVER repeat a subject already covered. Check the slugs you fetched. If Zendaya has an article,
   do not suggest Zendaya again.
@@ -53,10 +60,14 @@ THIRD — pick one topic per slot. Rules for picking:
   "do you need to watch loki before avengers doomsday". Narrow beats big.
 - Prefer subjects with genuine current interest, but do not invent news. If you are not sure
   something happened, pick an evergreen angle instead.
-- India-related topics are valuable — that is the site's strongest audience.
+- India-related topics are valuable — that is the site's strongest audience, and far less
+  competitive than US Hollywood coverage. Keep roughly a third of picks Indian.
+- Two formats worth favoring, both high-intent and lightly covered by big sites:
+    TRUE CRIME follow-ups — "where are they now" after a documentary drops
+    LORE EXPLAINERS — how a complex show/film universe actually works
 - Favour subjects that connect to existing articles so they can link to each other.
 
-FOURTH — for each topic give me exactly this:
+FIFTH — for each topic give me exactly this:
 
 TOPIC 1
 Category: [slug]
@@ -67,7 +78,7 @@ Link to these existing slugs: [3 real slugs you saw in the API response]
 
 Repeat for each slot.
 
-FIFTH — before you answer, verify: is every fact you are relying on something you actually know?
+SIXTH — before you answer, verify: is every fact you are relying on something you actually know?
 If a release date, cast member or award is uncertain, say so explicitly rather than stating it.
 
 TODAY'S DATE: [YYYY-MM-DD]
@@ -106,7 +117,7 @@ No commentary before or after. No markdown fences.
 
 SCHEMA:
 {
-  "title": "Under 70 characters, main keyword in the first 60",
+  "title": "Under 60 characters. Keyword first. Promise a specific payoff, not vague hype",
   "slug": "lowercase-hyphenated-with-year-2026",
   "excerpt": "150-160 characters",
   "category": "ONE of: celebrity, hollywood, bollywood, british-royals, tv-shows, web-series, music, movies, ending-explained, where-to-watch, relationships, fashion, pop-culture",
@@ -130,18 +141,27 @@ CONTENT:
 - Exactly 3 inline images: <figure><img src="URL" alt="descriptive alt" /></figure>
   Use the URLs I give you, in the order given. The first inline MUST be the portrait.
 - Answer the headline's question in the FIRST paragraph. Never build up to it.
+- After the first paragraph, insert a FAST-FACTS table so mobile readers get instant value:
+  <table><tr><th>Detail</th><th>Info</th></tr><tr><td>...</td><td>...</td></tr></table>
+  3-5 rows of the concrete facts (cast, platform, release window, rating, runtime).
+  This is what wins featured snippets.
 - 2-3 internal links: <a href="/article/SLUG">descriptive anchor text</a> — ONLY the slugs I give you.
 - End with one short engagement question.
+
+AMERICAN ENGLISH — the audience is US/UK/Canada/Australia:
+- "color" not "colour", "theater" not "theatre", "favorite" not "favourite",
+  "realize" not "realise", "skeptical" not "sceptical", "rumor" not "rumour".
+- Dates as "August 14, 2026". Money in USD first. Never lakhs or crores.
 
 VOICE:
 - Sentences average under 20 words. Paragraphs max 3 sentences.
 - Active voice. <strong> on names and key numbers at first mention.
 - Explain WHY something matters, not just what happened.
-- Include at least one genuinely critical or sceptical observation. This is not a press release.
+- Include at least one genuinely critical or skeptical observation. This is not a press release.
 
 NEVER:
 - Never invent quotes. Only publicly documented statements.
-- Never state rumour as fact. Write "reportedly" or attribute it.
+- Never state rumor as fact. Write "reportedly" or attribute it.
 - Never invent a release date, box office number, award, or cast member.
   If uncertain, write "not yet confirmed" instead of guessing.
 - Never use an image URL I did not give you.
