@@ -62,9 +62,17 @@ FOURTH — pick one topic per slot. Rules for picking:
   something happened, pick an evergreen angle instead.
 - India-related topics are valuable — that is the site's strongest audience, and far less
   competitive than US Hollywood coverage. Keep roughly a third of picks Indian.
-- Two formats worth favoring, both high-intent and lightly covered by big sites:
+- Formats worth favoring — all high-intent and lightly covered by big sites:
     TRUE CRIME follow-ups — "where are they now" after a documentary drops
     LORE EXPLAINERS — how a complex show/film universe actually works
+    "SHOWS LIKE X" — what to watch after finishing something. Very high intent.
+- K-DRAMA and ANIME are the biggest open gaps. Huge global audiences, badly
+  served by Western entertainment sites, far less competitive than Marvel or
+  Hollywood. Check Netflix non-English charts and Crunchyroll seasonal lineups.
+- ENDING EXPLAINED should target MID-TIER titles, not blockbusters. Everyone
+  covers the Nolan film. Almost nobody covers the finale of a Hulu or Apple TV+
+  show, or a Korean series that just topped the non-English chart. Mid-tier is
+  where this format actually wins.
 - Favour subjects that connect to existing articles so they can link to each other.
 
 FIFTH — for each topic give me exactly this:
